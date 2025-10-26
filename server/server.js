@@ -5,6 +5,7 @@ import connectDB from './config/db.js';
 import { verifyCloudinaryConfig } from './config/cloudinary.js';
 import authRoutes from './routes/auth.js';
 import groupFundRoutes from './routes/groupFund.js';
+import reimbursementRoutes from './routes/reimbursement.js';
 
 // Load environment variables
 dotenv.config();
@@ -45,6 +46,7 @@ if (process.env.NODE_ENV === 'development') {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/groupfund', groupFundRoutes);
+app.use('/api/reimbursement', reimbursementRoutes);
 
 // Root Route
 app.get('/', (req, res) => {
@@ -55,6 +57,7 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/auth',
       groupFund: '/api/groupfund',
+      reimbursement: '/api/reimbursement',
     },
   });
 });
@@ -102,7 +105,11 @@ const server = app.listen(PORT, () => {
   console.log(`   - POST   http://localhost:${PORT}/api/auth/logout`);
   console.log(`   - GET    http://localhost:${PORT}/api/groupfund/my-payments`);
   console.log(`   - POST   http://localhost:${PORT}/api/groupfund/submit-payment`);
-  console.log(`   - GET    http://localhost:${PORT}/api/groupfund/settings\n`);
+  console.log(`   - GET    http://localhost:${PORT}/api/groupfund/settings`);
+  console.log(`   - POST   http://localhost:${PORT}/api/reimbursement/request`);
+  console.log(`   - GET    http://localhost:${PORT}/api/reimbursement/my-requests`);
+  console.log(`   - POST   http://localhost:${PORT}/api/reimbursement/confirm-receipt/:id`);
+  console.log(`   - DELETE http://localhost:${PORT}/api/reimbursement/request/:id\n`);
 });
 
 // Handle unhandled promise rejections

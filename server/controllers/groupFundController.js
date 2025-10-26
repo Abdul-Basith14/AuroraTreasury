@@ -317,3 +317,266 @@ export const getPaymentSummary = async (req, res) => {
     });
   }
 };
+
+/**
+ * @desc    Get all failed payments for logged-in user
+ * @route   GET /api/groupfund/failed-payments
+ * @access  Private (Member)
+ */
+export const getFailedPayments = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Fetch all failed payment records for the user, sorted by year and month (newest first)
+    const failedPayments = await GroupFund.find({
+      userId,
+      status: 'Failed',
+    })
+      .sort({ year: -1, monthNumber: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      count: failedPayments.length,
+      payments: failedPayments,
+    });
+  } catch (error) {
+    console.error('Error fetching failed payments:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch failed payments',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Resubmit payment proof for a failed payment
+ * @route   POST /api/groupfund/resubmit-payment/:id
+ * @access  Private (Member)
+ */
+export const resubmitPayment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { note } = req.body;
+    const userId = req.user._id;
+
+    // Find the payment record
+    const payment = await GroupFund.findById(id);
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Payment record not found',
+      });
+    }
+
+    // Verify ownership - only the owner can resubmit
+    if (payment.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized access',
+      });
+    }
+
+    // Check if status is Failed
+    if (payment.status !== 'Failed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Can only resubmit payment for failed records',
+      });
+    }
+
+    // Check if already has a pending resubmission
+    if (
+      payment.failedPaymentSubmission &&
+      payment.failedPaymentSubmission.resubmittedPhoto
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment resubmission is already pending treasurer verification',
+      });
+    }
+
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment proof photo is required',
+      });
+    }
+
+    // Update payment record with resubmission
+    payment.failedPaymentSubmission = {
+      resubmittedPhoto: req.file.path, // Cloudinary URL
+      resubmittedDate: new Date(),
+      resubmissionNote: note || '',
+    };
+
+    // Add to status history
+    payment.statusHistory.push({
+      status: 'Failed',
+      changedBy: userId,
+      changedDate: new Date(),
+      reason: 'Member resubmitted payment proof for failed payment',
+    });
+
+    await payment.save();
+
+    res.status(200).json({
+      success: true,
+      message:
+        'Payment proof resubmitted successfully. Awaiting treasurer verification.',
+      payment: payment,
+    });
+  } catch (error) {
+    console.error('Error resubmitting payment:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to resubmit payment',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Get payment status history for a specific payment
+ * @route   GET /api/groupfund/payment-history/:id
+ * @access  Private (Member - own payments, Treasurer - all payments)
+ */
+export const getPaymentHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+    const userRole = req.user.role;
+
+    // Find payment and populate user details in history
+    const payment = await GroupFund.findById(id)
+      .populate('statusHistory.changedBy', 'name email role')
+      .populate('verifiedBy', 'name email')
+      .lean();
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Payment record not found',
+      });
+    }
+
+    // Verify ownership - user can only view their own payment history unless they're treasurer
+    if (userRole !== 'treasurer' && payment.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized access',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      history: payment.statusHistory || [],
+      currentStatus: payment.status,
+      payment: {
+        month: payment.month,
+        year: payment.year,
+        amount: payment.amount,
+        deadline: payment.deadline,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching payment history:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch payment history',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Verify resubmitted payment (Treasurer only)
+ * @route   POST /api/groupfund/verify-resubmission/:id
+ * @access  Private (Treasurer only)
+ */
+export const verifyResubmittedPayment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { approve } = req.body; // true or false
+    const userId = req.user._id;
+
+    // Find the payment record
+    const payment = await GroupFund.findById(id);
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Payment record not found',
+      });
+    }
+
+    // Check if there's a resubmission
+    if (
+      !payment.failedPaymentSubmission ||
+      !payment.failedPaymentSubmission.resubmittedPhoto
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'No resubmission found for this payment',
+      });
+    }
+
+    if (approve) {
+      // Approve: Change status from Failed to Paid
+      payment.status = 'Paid';
+      payment.paymentProof = payment.failedPaymentSubmission.resubmittedPhoto;
+      payment.paymentDate = payment.failedPaymentSubmission.resubmittedDate;
+      payment.verifiedBy = userId;
+      payment.verifiedDate = new Date();
+
+      // Update user's total paid
+      const user = await User.findById(payment.userId);
+      if (user) {
+        user.totalPaid += payment.amount;
+        await user.save();
+      }
+
+      // Add to status history
+      payment.statusHistory.push({
+        status: 'Paid',
+        changedBy: userId,
+        changedDate: new Date(),
+        reason: 'Treasurer approved resubmitted payment',
+      });
+    } else {
+      // Reject: Keep as Failed, clear resubmission
+      payment.failedPaymentSubmission = {
+        resubmittedPhoto: null,
+        resubmittedDate: null,
+        resubmissionNote: '',
+      };
+
+      payment.statusHistory.push({
+        status: 'Failed',
+        changedBy: userId,
+        changedDate: new Date(),
+        reason: 'Treasurer rejected resubmitted payment',
+      });
+    }
+
+    await payment.save();
+
+    res.status(200).json({
+      success: true,
+      message: approve
+        ? 'Payment approved successfully'
+        : 'Payment rejected. Member can resubmit again.',
+      payment: payment,
+    });
+  } catch (error) {
+    console.error('Error verifying resubmitted payment:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to verify resubmitted payment',
+      error: error.message,
+    });
+  }
+};

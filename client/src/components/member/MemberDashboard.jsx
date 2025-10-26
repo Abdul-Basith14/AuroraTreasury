@@ -7,6 +7,8 @@ import PaymentSummaryCard from './PaymentSummaryCard';
 import MemberInfoCard from './MemberInfoCard';
 import PaymentHistoryTable from './PaymentHistoryTable';
 import PayGroupFundModal from './PayGroupFundModal';
+import ReimbursementSection from './ReimbursementSection';
+import FailedPaymentsSection from './FailedPaymentsSection';
 
 /**
  * MemberDashboard Component
@@ -191,6 +193,9 @@ const MemberDashboard = () => {
               </div>
             </div>
 
+            {/* Failed Payments Section - Shows ONLY if there are failed payments */}
+            <FailedPaymentsSection />
+
             {/* Payment History Table */}
             <PaymentHistoryTable
               payments={payments}
@@ -207,6 +212,9 @@ const MemberDashboard = () => {
                 <span>Pay Group Fund</span>
               </button>
             </div>
+
+            {/* Reimbursement Section */}
+            <ReimbursementSection userData={user} />
           </div>
         )}
       </main>

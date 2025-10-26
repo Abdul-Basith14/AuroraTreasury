@@ -5,9 +5,13 @@ import {
   getSettings,
   downloadPaymentProof,
   getPaymentSummary,
+  getFailedPayments,
+  resubmitPayment,
+  getPaymentHistory,
+  verifyResubmittedPayment,
 } from '../controllers/groupFundController.js';
 import { protect } from '../middleware/auth.js';
-import { uploadPaymentProof, handleUploadError } from '../middleware/upload.js';
+import { uploadPaymentProof, uploadResubmissionProof, handleUploadError } from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -60,5 +64,43 @@ router.get('/download-proof/:id', protect, downloadPaymentProof);
  * @access  Private
  */
 router.get('/summary', protect, getPaymentSummary);
+
+/**
+ * @route   GET /api/groupfund/failed-payments
+ * @desc    Get all failed payments for logged-in user
+ * @access  Private (Member)
+ */
+router.get('/failed-payments', protect, getFailedPayments);
+
+/**
+ * @route   POST /api/groupfund/resubmit-payment/:id
+ * @desc    Resubmit payment proof for a failed payment
+ * @access  Private (Member)
+ * 
+ * This route handles multipart/form-data with image file
+ * Required fields: paymentProof (file)
+ * Optional fields: note
+ */
+router.post(
+  '/resubmit-payment/:id',
+  protect,
+  uploadResubmissionProof, // Multer middleware for resubmission upload
+  handleUploadError, // Error handler for upload errors
+  resubmitPayment // Controller function
+);
+
+/**
+ * @route   GET /api/groupfund/payment-history/:id
+ * @desc    Get payment status history for a specific payment
+ * @access  Private (Member - own payments, Treasurer - all)
+ */
+router.get('/payment-history/:id', protect, getPaymentHistory);
+
+/**
+ * @route   POST /api/groupfund/verify-resubmission/:id
+ * @desc    Verify resubmitted payment (Treasurer only)
+ * @access  Private (Treasurer)
+ */
+router.post('/verify-resubmission/:id', protect, verifyResubmittedPayment);
 
 export default router;

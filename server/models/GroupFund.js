@@ -100,6 +100,48 @@ const groupFundSchema = new mongoose.Schema(
       maxlength: [500, 'Notes cannot exceed 500 characters'],
     },
 
+    // Failed Payment Resubmission - for members to resubmit payment proof
+    failedPaymentSubmission: {
+      resubmittedPhoto: {
+        type: String, // Cloudinary URL for new payment proof
+        default: null,
+      },
+      resubmittedDate: {
+        type: Date,
+        default: null,
+      },
+      resubmissionNote: {
+        type: String, // Optional note from member
+        default: '',
+        maxlength: [200, 'Resubmission note cannot exceed 200 characters'],
+      },
+    },
+
+    // Status History - tracks all status changes over time
+    statusHistory: [
+      {
+        status: {
+          type: String,
+          enum: ['Pending', 'Paid', 'Failed'],
+          required: true,
+        },
+        changedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+        changedDate: {
+          type: Date,
+          default: Date.now,
+        },
+        reason: {
+          type: String,
+          default: '',
+          maxlength: [300, 'Reason cannot exceed 300 characters'],
+        },
+      },
+    ],
+
     // Created timestamp
     createdAt: {
       type: Date,
@@ -128,6 +170,25 @@ groupFundSchema.index({ status: 1, deadline: 1 });
  */
 groupFundSchema.methods.isOverdue = function () {
   return this.status === 'Pending' && new Date() > this.deadline;
+};
+
+/**
+ * Method to update status and track change in history
+ * @param {string} newStatus - New status value
+ * @param {ObjectId} userId - ID of user making the change
+ * @param {string} reason - Reason for status change
+ */
+groupFundSchema.methods.updateStatus = function (newStatus, userId, reason = '') {
+  // Add current status to history before updating
+  this.statusHistory.push({
+    status: this.status,
+    changedBy: userId,
+    changedDate: new Date(),
+    reason: reason,
+  });
+  
+  // Update to new status
+  this.status = newStatus;
 };
 
 /**

@@ -123,6 +123,64 @@ export const groupFundAPI = {
   
   // Get payment summary
   getSummary: () => api.get('/groupfund/summary'),
+
+  // Get all failed payments for current user
+  getFailedPayments: () => api.get('/groupfund/failed-payments'),
+
+  // Resubmit payment proof for failed payment
+  resubmitPayment: (paymentId, formData) => {
+    return axios.post(
+      `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/groupfund/resubmit-payment/${paymentId}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        timeout: 30000, // 30 seconds for file upload
+      }
+    ).then(res => res.data);
+  },
+
+  // Get payment history with status changes
+  getPaymentHistory: (paymentId) => api.get(`/groupfund/payment-history/${paymentId}`),
+
+  // Verify resubmitted payment (Treasurer only)
+  verifyResubmission: (paymentId, approve) => 
+    api.post(`/groupfund/verify-resubmission/${paymentId}`, { approve }),
+};
+
+// Reimbursement API calls
+export const reimbursementAPI = {
+  // Create a new reimbursement request with bill proof photo
+  createRequest: (formData) => {
+    return axios.post(
+      `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/reimbursement/request`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        timeout: 30000, // 30 seconds for file upload
+      }
+    ).then(res => res.data);
+  },
+
+  // Get all reimbursement requests for logged-in user
+  getMyRequests: () => api.get('/reimbursement/my-requests'),
+
+  // Get a single reimbursement request by ID
+  getRequestById: (id) => api.get(`/reimbursement/request/${id}`),
+
+  // Confirm receipt of payment from treasurer
+  confirmReceipt: (id) => api.post(`/reimbursement/confirm-receipt/${id}`),
+
+  // Delete a reimbursement request
+  deleteRequest: (id) => api.delete(`/reimbursement/request/${id}`),
+
+  // Get reimbursement statistics
+  getStatistics: () => api.get('/reimbursement/statistics'),
 };
 
 export default api;

@@ -55,6 +55,97 @@ export const uploadPaymentProof = upload.single('paymentProof');
 export const uploadMultipleImages = upload.array('images', 5); // Max 5 images
 
 /**
+ * Configure Cloudinary storage for Reimbursement Bills
+ * Supports images and PDFs with larger file size limit
+ */
+const reimbursementStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'aurora-treasury/reimbursement-bills', // Separate folder for reimbursement bills
+    allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'heic', 'webp'], // Allow images and PDFs
+    transformation: [{ width: 1200, height: 1600, crop: 'limit' }], // Larger limit for bills
+    resource_type: 'auto', // Auto-detect resource type (image or raw for PDF)
+  },
+});
+
+/**
+ * File filter for reimbursement bills (images and PDFs)
+ */
+const reimbursementFileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/webp', 'application/pdf'];
+  
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files (JPG, PNG, HEIC, WEBP) and PDF files are allowed'), false);
+  }
+};
+
+/**
+ * Multer configuration for reimbursement bills
+ * - Storage: Cloudinary
+ * - File size limit: 10MB (larger for bills/receipts)
+ * - File filter: Images and PDFs
+ */
+const reimbursementUpload = multer({
+  storage: reimbursementStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit for bills
+  },
+  fileFilter: reimbursementFileFilter,
+});
+
+/**
+ * Middleware to handle single reimbursement bill upload with field name 'billProof'
+ */
+export const uploadReimbursementBill = reimbursementUpload.single('billProof');
+
+/**
+ * Configure Cloudinary storage for Failed Payment Resubmissions
+ * Separate folder for tracking resubmitted payment proofs
+ */
+const resubmissionStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'aurora-treasury/failed-payment-resubmissions', // Separate folder for resubmissions
+    allowed_formats: ['jpg', 'jpeg', 'png', 'heic', 'webp'], // Allow common image formats
+    transformation: [{ width: 1000, height: 1000, crop: 'limit' }], // Limit image size
+  },
+});
+
+/**
+ * File filter for resubmission payment proofs (images only)
+ */
+const resubmissionFileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/webp'];
+  
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files (JPG, PNG, HEIC, WEBP) are allowed'), false);
+  }
+};
+
+/**
+ * Multer configuration for resubmission payment proofs
+ * - Storage: Cloudinary
+ * - File size limit: 5MB
+ * - File filter: Images only
+ */
+const resubmissionUpload = multer({
+  storage: resubmissionStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: resubmissionFileFilter,
+});
+
+/**
+ * Middleware to handle resubmission payment proof upload with field name 'paymentProof'
+ */
+export const uploadResubmissionProof = resubmissionUpload.single('paymentProof');
+
+/**
  * Error handling middleware for Multer
  * Usage: Add this after routes that use upload middleware
  */
@@ -64,7 +155,7 @@ export const handleUploadError = (err, req, res, next) => {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
         success: false,
-        message: 'File size too large. Maximum size is 5MB.',
+        message: 'File size too large. Maximum size is 10MB for bills or 5MB for payment proofs.',
       });
     }
     if (err.code === 'LIMIT_UNEXPECTED_FILE') {
