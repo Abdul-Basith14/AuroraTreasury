@@ -33,6 +33,52 @@ const clubSettingsSchema = new mongoose.Schema(
       min: [1, 'Payment deadline must be between 1 and 31'],
       max: [31, 'Payment deadline must be between 1 and 31'],
     },
+    // New fields for group fund management
+    treasurerQRCode: {
+      type: String,
+      default: null, // Cloudinary URL for treasurer's payment QR code
+    },
+    paymentInstructions: {
+      type: String,
+      default: 'Please pay the monthly group fund by the deadline. Upload payment proof after payment.',
+      maxlength: [1000, 'Payment instructions cannot exceed 1000 characters'],
+    },
+    fundAmountByYear: {
+      type: {
+        firstYear: {
+          type: Number,
+          default: 50,
+          min: [0, 'Amount cannot be negative'],
+        },
+        secondYear: {
+          type: Number,
+          default: 100,
+          min: [0, 'Amount cannot be negative'],
+        },
+        thirdYear: {
+          type: Number,
+          default: 150,
+          min: [0, 'Amount cannot be negative'],
+        },
+        fourthYear: {
+          type: Number,
+          default: 200,
+          min: [0, 'Amount cannot be negative'],
+        },
+      },
+      default: {
+        firstYear: 50,
+        secondYear: 100,
+        thirdYear: 150,
+        fourthYear: 200,
+      },
+    },
+    paymentDeadlineDay: {
+      type: Number,
+      default: 5, // 5th of every month
+      min: [1, 'Payment deadline day must be between 1 and 31'],
+      max: [31, 'Payment deadline day must be between 1 and 31'],
+    },
     clubName: {
       type: String,
       default: 'Aurora Theatrical Club',

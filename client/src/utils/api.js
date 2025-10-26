@@ -94,8 +94,35 @@ export const authAPI = {
   logout: () => api.post('/auth/logout'),
 };
 
-// You can add more API modules here as you build more features
-// export const paymentsAPI = { ... };
-// export const reimbursementsAPI = { ... };
+// Group Fund API calls
+export const groupFundAPI = {
+  // Get all payments for logged-in user
+  getMyPayments: () => api.get('/groupfund/my-payments'),
+  
+  // Submit payment proof with image
+  submitPayment: (formData) => {
+    // Create a separate axios instance for multipart/form-data
+    return axios.post(
+      `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/groupfund/submit-payment`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        timeout: 30000, // 30 seconds for file upload
+      }
+    ).then(res => res.data);
+  },
+  
+  // Get club settings (QR code, payment info)
+  getSettings: () => api.get('/groupfund/settings'),
+  
+  // Get payment proof URL for a specific payment
+  downloadProof: (paymentId) => api.get(`/groupfund/download-proof/${paymentId}`),
+  
+  // Get payment summary
+  getSummary: () => api.get('/groupfund/summary'),
+};
 
 export default api;

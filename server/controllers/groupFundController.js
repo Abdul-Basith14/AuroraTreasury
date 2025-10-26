@@ -1,0 +1,319 @@
+import GroupFund from '../models/GroupFund.js';
+import ClubSettings from '../models/ClubSettings.js';
+import User from '../models/User.js';
+
+/**
+ * @desc    Get all payment records for logged-in user
+ * @route   GET /api/groupfund/my-payments
+ * @access  Private (Member/Treasurer)
+ */
+export const getMyPayments = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Fetch all payment records for the user, sorted by year and month (newest first)
+    const payments = await GroupFund.find({ userId })
+      .sort({ year: -1, monthNumber: -1 })
+      .lean();
+
+    // Calculate total paid amount
+    const totalPaid = payments
+      .filter((payment) => payment.status === 'Paid')
+      .reduce((sum, payment) => sum + payment.amount, 0);
+
+    // Calculate summary statistics
+    const summary = {
+      totalPaid,
+      totalPending: payments.filter((p) => p.status === 'Pending').length,
+      totalFailed: payments.filter((p) => p.status === 'Failed').length,
+      totalRecords: payments.length,
+    };
+
+    res.status(200).json({
+      success: true,
+      data: {
+        payments,
+        summary,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching payments:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching payment records',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Submit payment proof for a specific month
+ * @route   POST /api/groupfund/submit-payment
+ * @access  Private (Member)
+ */
+export const submitPayment = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { month, year, monthNumber, academicYear, notes } = req.body;
+
+    // Validate required fields
+    if (!month || !year || !monthNumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Month, year, and monthNumber are required',
+      });
+    }
+
+    // Check if payment proof file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment proof image is required',
+      });
+    }
+
+    // Get payment proof URL from Cloudinary
+    const paymentProof = req.file.path;
+
+    // Get club settings to determine payment amount
+    const settings = await ClubSettings.findOne({ isActive: true });
+    if (!settings) {
+      return res.status(500).json({
+        success: false,
+        message: 'Club settings not configured. Please contact administrator.',
+      });
+    }
+
+    // Get user details to determine year and calculate amount
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Calculate payment amount based on user's academic year
+    let amount = 0;
+    switch (user.year) {
+      case '1st':
+        amount = settings.fundAmountByYear.firstYear;
+        break;
+      case '2nd':
+        amount = settings.fundAmountByYear.secondYear;
+        break;
+      case '3rd':
+        amount = settings.fundAmountByYear.thirdYear;
+        break;
+      case '4th':
+        amount = settings.fundAmountByYear.fourthYear;
+        break;
+      default:
+        amount = settings.monthlyFundAmount; // Fallback to default
+    }
+
+    // Calculate deadline (paymentDeadlineDay of the given month)
+    const deadline = new Date(year, monthNumber - 1, settings.paymentDeadlineDay);
+
+    // Check if payment record already exists for this month
+    const existingPayment = await GroupFund.findOne({
+      userId,
+      month,
+      year,
+    });
+
+    let payment;
+
+    if (existingPayment) {
+      // Update existing record
+      existingPayment.paymentProof = paymentProof;
+      existingPayment.status = 'Pending'; // Reset to pending for verification
+      existingPayment.submittedDate = new Date();
+      existingPayment.amount = amount;
+      existingPayment.deadline = deadline;
+      existingPayment.academicYear = academicYear || settings.academicYear;
+      if (notes) existingPayment.notes = notes;
+
+      payment = await existingPayment.save();
+    } else {
+      // Create new payment record
+      payment = await GroupFund.create({
+        userId,
+        academicYear: academicYear || settings.academicYear,
+        month,
+        monthNumber: parseInt(monthNumber),
+        year: parseInt(year),
+        amount,
+        status: 'Pending',
+        paymentProof,
+        submittedDate: new Date(),
+        deadline,
+        notes: notes || '',
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Payment proof submitted successfully. Awaiting treasurer verification.',
+      data: payment,
+    });
+  } catch (error) {
+    console.error('Error submitting payment:', error);
+
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment record for this month already exists',
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Error submitting payment proof',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Get club settings (QR code, payment instructions, amounts)
+ * @route   GET /api/groupfund/settings
+ * @access  Private (Member/Treasurer)
+ */
+export const getSettings = async (req, res) => {
+  try {
+    // Fetch active club settings
+    const settings = await ClubSettings.findOne({ isActive: true });
+
+    if (!settings) {
+      return res.status(404).json({
+        success: false,
+        message: 'Club settings not configured. Please contact administrator.',
+      });
+    }
+
+    // Get user's year to determine payment amount
+    const user = req.user;
+    let userAmount = 0;
+
+    switch (user.year) {
+      case '1st':
+        userAmount = settings.fundAmountByYear.firstYear;
+        break;
+      case '2nd':
+        userAmount = settings.fundAmountByYear.secondYear;
+        break;
+      case '3rd':
+        userAmount = settings.fundAmountByYear.thirdYear;
+        break;
+      case '4th':
+        userAmount = settings.fundAmountByYear.fourthYear;
+        break;
+      default:
+        userAmount = settings.monthlyFundAmount;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        treasurerQRCode: settings.treasurerQRCode,
+        paymentInstructions: settings.paymentInstructions,
+        fundAmountByYear: settings.fundAmountByYear,
+        paymentDeadlineDay: settings.paymentDeadlineDay,
+        academicYear: settings.academicYear,
+        userAmount, // Amount specific to logged-in user
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching settings:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching club settings',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Download payment proof for a specific payment
+ * @route   GET /api/groupfund/download-proof/:id
+ * @access  Private (Member - own payments only, Treasurer - all payments)
+ */
+export const downloadPaymentProof = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+    const userRole = req.user.role;
+
+    // Find the payment record
+    const payment = await GroupFund.findById(id);
+
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Payment record not found',
+      });
+    }
+
+    // Check authorization - user can only view their own payments unless they're treasurer
+    if (userRole !== 'treasurer' && payment.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not authorized to view this payment proof',
+      });
+    }
+
+    // Check if payment proof exists
+    if (!payment.paymentProof) {
+      return res.status(404).json({
+        success: false,
+        message: 'No payment proof found for this record',
+      });
+    }
+
+    // Return the Cloudinary URL
+    res.status(200).json({
+      success: true,
+      data: {
+        paymentProofUrl: payment.paymentProof,
+        month: payment.month,
+        year: payment.year,
+        amount: payment.amount,
+      },
+    });
+  } catch (error) {
+    console.error('Error downloading payment proof:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving payment proof',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Get payment summary statistics for user
+ * @route   GET /api/groupfund/summary
+ * @access  Private (Member)
+ */
+export const getPaymentSummary = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Use the static method from GroupFund model
+    const summary = await GroupFund.getUserPaymentSummary(userId);
+
+    res.status(200).json({
+      success: true,
+      data: summary,
+    });
+  } catch (error) {
+    console.error('Error fetching payment summary:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching payment summary',
+      error: error.message,
+    });
+  }
+};

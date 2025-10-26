@@ -2,7 +2,9 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
+import { verifyCloudinaryConfig } from './config/cloudinary.js';
 import authRoutes from './routes/auth.js';
+import groupFundRoutes from './routes/groupFund.js';
 
 // Load environment variables
 dotenv.config();
@@ -12,6 +14,9 @@ const app = express();
 
 // Connect to MongoDB
 connectDB();
+
+// Verify Cloudinary configuration
+verifyCloudinaryConfig();
 
 // Middleware
 
@@ -39,6 +44,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/groupfund', groupFundRoutes);
 
 // Root Route
 app.get('/', (req, res) => {
@@ -48,6 +54,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       auth: '/api/auth',
+      groupFund: '/api/groupfund',
     },
   });
 });
@@ -92,7 +99,10 @@ const server = app.listen(PORT, () => {
   console.log(`   - POST   http://localhost:${PORT}/api/auth/login`);
   console.log(`   - GET    http://localhost:${PORT}/api/auth/me`);
   console.log(`   - POST   http://localhost:${PORT}/api/auth/verify`);
-  console.log(`   - POST   http://localhost:${PORT}/api/auth/logout\n`);
+  console.log(`   - POST   http://localhost:${PORT}/api/auth/logout`);
+  console.log(`   - GET    http://localhost:${PORT}/api/groupfund/my-payments`);
+  console.log(`   - POST   http://localhost:${PORT}/api/groupfund/submit-payment`);
+  console.log(`   - GET    http://localhost:${PORT}/api/groupfund/settings\n`);
 });
 
 // Handle unhandled promise rejections

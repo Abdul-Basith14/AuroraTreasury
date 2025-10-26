@@ -30,12 +30,22 @@ const seedClubSettings = async () => {
 
     // Create default club settings
     const clubSettings = await ClubSettings.create({
-      auroraCode: 'AURORA2024', // Default aurora code - CHANGE THIS!
-      academicYear: '2024-2025',
-      monthlyFundAmount: 100, // ₹100 per month
-      paymentDeadline: 10, // 10th of each month
+      auroraCode: 'AURORA2025', // Default aurora code - CHANGE THIS!
+      academicYear: '2025-2026',
+      monthlyFundAmount: 100, // ₹100 per month (fallback)
+      paymentDeadline: 5, // 5th of each month (legacy field)
+      paymentDeadlineDay: 5, // 5th of each month (new field)
       clubName: 'Aurora Theatrical Club',
       clubDescription: 'A vibrant theatrical club promoting performing arts and creativity',
+      // Group Fund Payment Configuration
+      fundAmountByYear: {
+        firstYear: 50,
+        secondYear: 100,
+        thirdYear: 150,
+        fourthYear: 200,
+      },
+      paymentInstructions: 'Please pay the monthly group fund by the 5th of every month. Upload payment proof after making the payment via UPI.',
+      treasurerQRCode: null, // Upload treasurer's QR code URL here later
       isActive: true,
     });
 
@@ -43,11 +53,17 @@ const seedClubSettings = async () => {
     console.log('📋 Club Configuration:');
     console.log(`   Aurora Code: ${clubSettings.auroraCode}`);
     console.log(`   Academic Year: ${clubSettings.academicYear}`);
-    console.log(`   Monthly Fund Amount: ₹${clubSettings.monthlyFundAmount}`);
-    console.log(`   Payment Deadline: ${clubSettings.paymentDeadline}th of each month`);
+    console.log(`   Payment Deadline: ${clubSettings.paymentDeadlineDay}th of each month`);
     console.log(`   Club Name: ${clubSettings.clubName}`);
-    console.log('\n⚠️  IMPORTANT: Change the Aurora Code before going to production!');
-    console.log('   Users will need this code to login.\n');
+    console.log('\n💰 Group Fund Amounts by Year:');
+    console.log(`   1st Year: ₹${clubSettings.fundAmountByYear.firstYear}`);
+    console.log(`   2nd Year: ₹${clubSettings.fundAmountByYear.secondYear}`);
+    console.log(`   3rd Year: ₹${clubSettings.fundAmountByYear.thirdYear}`);
+    console.log(`   4th Year: ₹${clubSettings.fundAmountByYear.fourthYear}`);
+    console.log('\n⚠️  IMPORTANT:');
+    console.log('   1. Change the Aurora Code before going to production!');
+    console.log('   2. Upload treasurer QR code to Cloudinary and update treasurerQRCode field');
+    console.log('   3. Update payment instructions as needed\n');
 
     process.exit(0);
   } catch (error) {
