@@ -6,6 +6,7 @@ import { verifyCloudinaryConfig } from './config/cloudinary.js';
 import authRoutes from './routes/auth.js';
 import groupFundRoutes from './routes/groupFund.js';
 import reimbursementRoutes from './routes/reimbursement.js';
+import treasurerRoutes from './routes/treasurer.js';
 
 // Load environment variables
 dotenv.config();
@@ -47,6 +48,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api/auth', authRoutes);
 app.use('/api/groupfund', groupFundRoutes);
 app.use('/api/reimbursement', reimbursementRoutes);
+app.use('/api/treasurer', treasurerRoutes);
 
 // Root Route
 app.get('/', (req, res) => {
@@ -58,6 +60,7 @@ app.get('/', (req, res) => {
       auth: '/api/auth',
       groupFund: '/api/groupfund',
       reimbursement: '/api/reimbursement',
+      treasurer: '/api/treasurer',
     },
   });
 });

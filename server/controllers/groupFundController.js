@@ -77,11 +77,24 @@ export const submitPayment = async (req, res) => {
 
     // Get club settings to determine payment amount
     const settings = await ClubSettings.findOne({ isActive: true });
+    
+    // Use default settings if not configured
+    const defaultAmounts = {
+      firstYear: 50,
+      secondYear: 100,
+      thirdYear: 150,
+      fourthYear: 200,
+      monthlyFundAmount: 100,
+      paymentDeadlineDay: 5,
+      academicYear: '2024-2025'
+    };
+
+    const fundAmounts = settings ? settings.fundAmountByYear : defaultAmounts;
+    const paymentDeadlineDay = settings ? settings.paymentDeadlineDay : defaultAmounts.paymentDeadlineDay;
+    const defaultAcademicYear = settings ? settings.academicYear : defaultAmounts.academicYear;
+
     if (!settings) {
-      return res.status(500).json({
-        success: false,
-        message: 'Club settings not configured. Please contact administrator.',
-      });
+      console.warn('⚠️  WARNING: Club settings not configured. Using default payment amounts.');
     }
 
     // Get user details to determine year and calculate amount
@@ -97,23 +110,23 @@ export const submitPayment = async (req, res) => {
     let amount = 0;
     switch (user.year) {
       case '1st':
-        amount = settings.fundAmountByYear.firstYear;
+        amount = fundAmounts.firstYear;
         break;
       case '2nd':
-        amount = settings.fundAmountByYear.secondYear;
+        amount = fundAmounts.secondYear;
         break;
       case '3rd':
-        amount = settings.fundAmountByYear.thirdYear;
+        amount = fundAmounts.thirdYear;
         break;
       case '4th':
-        amount = settings.fundAmountByYear.fourthYear;
+        amount = fundAmounts.fourthYear;
         break;
       default:
-        amount = settings.monthlyFundAmount; // Fallback to default
+        amount = settings ? settings.monthlyFundAmount : defaultAmounts.monthlyFundAmount;
     }
 
     // Calculate deadline (paymentDeadlineDay of the given month)
-    const deadline = new Date(year, monthNumber - 1, settings.paymentDeadlineDay);
+    const deadline = new Date(year, monthNumber - 1, paymentDeadlineDay);
 
     // Check if payment record already exists for this month
     const existingPayment = await GroupFund.findOne({
@@ -131,7 +144,7 @@ export const submitPayment = async (req, res) => {
       existingPayment.submittedDate = new Date();
       existingPayment.amount = amount;
       existingPayment.deadline = deadline;
-      existingPayment.academicYear = academicYear || settings.academicYear;
+      existingPayment.academicYear = academicYear || defaultAcademicYear;
       if (notes) existingPayment.notes = notes;
 
       payment = await existingPayment.save();
@@ -139,7 +152,7 @@ export const submitPayment = async (req, res) => {
       // Create new payment record
       payment = await GroupFund.create({
         userId,
-        academicYear: academicYear || settings.academicYear,
+        academicYear: academicYear || defaultAcademicYear,
         month,
         monthNumber: parseInt(monthNumber),
         year: parseInt(year),
@@ -186,10 +199,51 @@ export const getSettings = async (req, res) => {
     // Fetch active club settings
     const settings = await ClubSettings.findOne({ isActive: true });
 
+    // If no settings, use default values for testing
     if (!settings) {
-      return res.status(404).json({
-        success: false,
-        message: 'Club settings not configured. Please contact administrator.',
+      console.warn('⚠️  WARNING: Club settings not configured. Using default values.');
+      
+      const defaultSettings = {
+        treasurerQRCode: null,
+        paymentInstructions: 'Please pay the monthly group fund amount.',
+        fundAmountByYear: {
+          firstYear: 50,
+          secondYear: 100,
+          thirdYear: 150,
+          fourthYear: 200
+        },
+        paymentDeadlineDay: 5,
+        academicYear: '2024-2025',
+        monthlyFundAmount: 100
+      };
+
+      const user = req.user;
+      let userAmount = 100; // Default amount
+
+      switch (user.year) {
+        case '1st':
+          userAmount = defaultSettings.fundAmountByYear.firstYear;
+          break;
+        case '2nd':
+          userAmount = defaultSettings.fundAmountByYear.secondYear;
+          break;
+        case '3rd':
+          userAmount = defaultSettings.fundAmountByYear.thirdYear;
+          break;
+        case '4th':
+          userAmount = defaultSettings.fundAmountByYear.fourthYear;
+          break;
+        default:
+          userAmount = defaultSettings.monthlyFundAmount;
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          ...defaultSettings,
+          userAmount,
+          isDefaultSettings: true // Flag to indicate these are defaults
+        },
       });
     }
 

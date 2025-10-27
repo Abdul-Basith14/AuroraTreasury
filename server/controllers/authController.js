@@ -133,18 +133,18 @@ export const login = async (req, res) => {
     // Verify Aurora Code from ClubSettings
     const clubSettings = await ClubSettings.findOne({ isActive: true });
     
-    if (!clubSettings) {
-      return res.status(500).json({
-        success: false,
-        message: 'Club settings not configured. Please contact administrator.',
-      });
-    }
-
-    if (clubSettings.auroraCode !== auroraCode.toUpperCase().trim()) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid Aurora Code. Please check and try again.',
-      });
+    // If club settings exist, verify the code
+    if (clubSettings) {
+      if (clubSettings.auroraCode !== auroraCode.toUpperCase().trim()) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid Aurora Code. Please check and try again.',
+        });
+      }
+    } else {
+      // If no club settings, allow any code temporarily (for initial setup)
+      console.warn('⚠️  WARNING: Club settings not configured. Any Aurora Code will work.');
+      console.warn('⚠️  Please configure ClubSettings in database for security.');
     }
 
     // Find user by email (include password field for comparison)

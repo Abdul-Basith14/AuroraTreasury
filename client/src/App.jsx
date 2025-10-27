@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import MemberDashboard from './pages/MemberDashboard';
 import TreasurerDashboard from './pages/TreasurerDashboard';
+import PaymentRequestsPage from './components/treasurer/PaymentRequestsPage';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
@@ -62,6 +63,16 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['treasurer']}>
               <TreasurerDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Routes - Treasurer Payment Requests */}
+        <Route
+          path="/treasurer/payment-requests"
+          element={
+            <ProtectedRoute allowedRoles={['treasurer']}>
+              <PaymentRequestsPage />
             </ProtectedRoute>
           }
         />

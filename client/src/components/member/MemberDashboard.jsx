@@ -31,6 +31,19 @@ const MemberDashboard = () => {
   // Fetch payment data on component mount
   useEffect(() => {
     fetchPayments();
+    
+    // Refresh payments when page becomes visible again
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchPayments(false); // Refresh without showing loader
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   /**
