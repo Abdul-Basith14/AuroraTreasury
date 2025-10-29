@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users } from 'lucide-react';
 import MemberCard from './MemberCard';
 import MemberDetailsModal from './MemberDetailsModal';
@@ -7,9 +7,26 @@ import MemberDetailsModal from './MemberDetailsModal';
  * Members List Section Component
  * Displays grid of member cards with loading and empty states
  */
-const MembersListSection = ({ members, loading, selectedYear, selectedStatus }) => {
+const MembersListSection = ({ members, loading, selectedYear, selectedStatus, refreshMembers }) => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  
+  // Listen for payment verification events
+  useEffect(() => {
+    const handlePaymentVerified = (event) => {
+      console.log('Payment verified, refreshing member list...', event.detail);
+      // Refresh the member list
+      if (refreshMembers) {
+        refreshMembers();
+      }
+    };
+    
+    window.addEventListener('paymentVerified', handlePaymentVerified);
+    
+    return () => {
+      window.removeEventListener('paymentVerified', handlePaymentVerified);
+    };
+  }, [refreshMembers]);
   
   /**
    * Handle viewing member details
@@ -54,6 +71,25 @@ const MembersListSection = ({ members, loading, selectedYear, selectedStatus }) 
     );
   }
   
+  // Group members by year
+  const groupedMembers = members.reduce((groups, member) => {
+    const year = member.year || 'Unknown';
+    if (!groups[year]) {
+      groups[year] = [];
+    }
+    groups[year].push(member);
+    return groups;
+  }, {});
+  
+  // Sort years in order
+  const years = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+  const sortedYears = years.filter(year => groupedMembers[year] && groupedMembers[year].length > 0);
+  
+  // Add Unknown year if exists
+  if (groupedMembers['Unknown'] && groupedMembers['Unknown'].length > 0) {
+    sortedYears.push('Unknown');
+  }
+  
   // Members Grid
   return (
     <>
@@ -61,15 +97,49 @@ const MembersListSection = ({ members, loading, selectedYear, selectedStatus }) 
         <div className="mb-4 text-sm text-gray-600">
           Showing {members.length} member{members.length !== 1 ? 's' : ''}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {members.map(member => (
-            <MemberCard
-              key={member._id}
-              member={member}
-              onViewDetails={handleViewMember}
-            />
-          ))}
-        </div>
+        
+        {/* Display grouped by year when "All Years" is selected */}
+        {selectedYear === 'all' && sortedYears.length > 0 ? (
+          <div className="space-y-8">
+            {sortedYears.map(year => (
+              <div key={year}>
+                {/* Year Header */}
+                <div className="flex items-center mb-4">
+                  <div className="flex-1 border-t-2 border-gray-200"></div>
+                  <h3 className="px-4 text-lg font-bold text-gray-900 bg-blue-50 py-2 rounded-full">
+                    {year}
+                    <span className="ml-2 text-sm font-normal text-gray-600">
+                      ({groupedMembers[year].length} member{groupedMembers[year].length !== 1 ? 's' : ''})
+                    </span>
+                  </h3>
+                  <div className="flex-1 border-t-2 border-gray-200"></div>
+                </div>
+                
+                {/* Members Grid for this year */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {groupedMembers[year].map(member => (
+                    <MemberCard
+                      key={member._id}
+                      member={member}
+                      onViewDetails={handleViewMember}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          // Show single year (when filtered by specific year)
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {members.map(member => (
+              <MemberCard
+                key={member._id}
+                member={member}
+                onViewDetails={handleViewMember}
+              />
+            ))}
+          </div>
+        )}
       </div>
       
       {/* Member Details Modal */}
@@ -77,6 +147,7 @@ const MembersListSection = ({ members, loading, selectedYear, selectedStatus }) 
         isOpen={showDetailsModal}
         onClose={handleCloseModal}
         member={selectedMember}
+        refreshMembers={refreshMembers}
       />
     </>
   );

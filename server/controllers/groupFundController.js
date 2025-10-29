@@ -12,7 +12,8 @@ export const getMyPayments = async (req, res) => {
     const userId = req.user._id;
 
     // Fetch all payment records for the user, sorted by year and month (newest first)
-    const payments = await GroupFund.find({ userId })
+    // Exclude records that are intentionally hidden from members (visibleToMember === false)
+    const payments = await GroupFund.find({ userId, visibleToMember: { $ne: false } })
       .sort({ year: -1, monthNumber: -1 })
       .lean();
 

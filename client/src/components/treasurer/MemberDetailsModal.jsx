@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { getMemberPayments } from '../../utils/treasurerAPI';
-import { X, User, IndianRupee, Calendar } from 'lucide-react';
+import { X, User, IndianRupee, Calendar, CheckCircle } from 'lucide-react';
+import ManualPaymentUpdateModal from './ManualPaymentUpdateModal';
 
 /**
  * Member Details Modal Component
  * Shows detailed payment history for a specific member
  */
-const MemberDetailsModal = ({ isOpen, onClose, member }) => {
+const MemberDetailsModal = ({ isOpen, onClose, member, refreshMembers }) => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showManualUpdateModal, setShowManualUpdateModal] = useState(false);
+  const [selectedPaymentForUpdate, setSelectedPaymentForUpdate] = useState(null);
   
   // Fetch member payments when modal opens
   useEffect(() => {
@@ -31,6 +34,28 @@ const MemberDetailsModal = ({ isOpen, onClose, member }) => {
       console.error('Error fetching member payments:', error);
     } finally {
       setLoading(false);
+    }
+  };
+  
+  /**
+   * Handle manual payment update
+   */
+  const handleManualUpdate = (payment) => {
+    setSelectedPaymentForUpdate(payment);
+    setShowManualUpdateModal(true);
+  };
+
+  /**
+   * Handle manual update success
+   */
+  const handleManualUpdateSuccess = () => {
+    setShowManualUpdateModal(false);
+    setSelectedPaymentForUpdate(null);
+    fetchMemberPayments(); // Refresh payments in modal
+    
+    // Also refresh the main member list
+    if (refreshMembers) {
+      refreshMembers();
     }
   };
   
@@ -159,6 +184,19 @@ const MemberDetailsModal = ({ isOpen, onClose, member }) => {
                         </div>
                       )}
                       
+                      {payment.paymentMethod && (
+                        <div>
+                          <span className="text-gray-600">Method:</span>
+                          <span className={`ml-2 font-medium ${
+                            payment.paymentMethod === 'Cash' ? 'text-green-700' : 
+                            payment.paymentMethod === 'Bank Transfer' ? 'text-blue-700' :
+                            payment.paymentMethod === 'Online' ? 'text-purple-700' : 'text-gray-900'
+                          }`}>
+                            {payment.paymentMethod}
+                          </span>
+                        </div>
+                      )}
+                      
                       {payment.verifiedBy && (
                         <div>
                           <span className="text-gray-600">Verified By:</span>
@@ -169,17 +207,32 @@ const MemberDetailsModal = ({ isOpen, onClose, member }) => {
                       )}
                     </div>
                     
-                    {/* Payment Proof */}
-                    {payment.paymentProof && (
-                      <div className="mt-3">
+                    {/* Action Buttons */}
+                    <div className="flex space-x-2 mt-4">
+                      {/* Payment Proof */}
+                      {payment.paymentProof && (
                         <button
                           onClick={() => window.open(payment.paymentProof, '_blank')}
-                          className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
+                          className="flex-1 text-sm text-blue-600 hover:text-blue-800 font-medium py-2 px-3 border border-blue-200 rounded hover:bg-blue-50 transition-colors duration-200"
                         >
-                          View Payment Proof →
+                          View Proof
                         </button>
-                      </div>
-                    )}
+                      )}
+                      
+                      {/* Manual Update Button - Only for Pending status and when there's no payment proof */}
+                      {payment.status === 'Pending' && !payment.paymentProof && (
+                        <button
+                          onClick={() => handleManualUpdate(payment)}
+                          className="flex-1 text-sm text-green-600 hover:text-green-800 font-medium py-2 px-3 border border-green-200 rounded hover:bg-green-50 flex items-center justify-center transition-colors duration-200"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Mark as Paid
+                        </button>
+                      )}
+                      {payment.status === 'Pending' && payment.paymentProof && (
+                        <span className="flex-1 text-sm text-yellow-700 font-medium py-2 px-3 text-center">Pending (awaiting verification)</span>
+                      )}
+                    </div>
                     
                     {/* Resubmission Info */}
                     {payment.failedPaymentSubmission?.resubmittedPhoto && (
@@ -225,6 +278,15 @@ const MemberDetailsModal = ({ isOpen, onClose, member }) => {
           </button>
         </div>
       </div>
+      
+      {/* Manual Payment Update Modal */}
+      <ManualPaymentUpdateModal
+        isOpen={showManualUpdateModal}
+        onClose={() => setShowManualUpdateModal(false)}
+        payment={selectedPaymentForUpdate}
+        member={member}
+        onSuccess={handleManualUpdateSuccess}
+      />
     </div>
   );
 };

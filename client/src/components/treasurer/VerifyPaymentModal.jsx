@@ -19,6 +19,15 @@ const VerifyPaymentModal = ({ request, isResubmission, onClose, onSuccess }) => 
       
       if (data.success) {
         toast.success(data.message || 'Payment verified successfully!');
+        
+        // Emit event for member list refresh
+        window.dispatchEvent(new CustomEvent('paymentVerified', { 
+          detail: { 
+            memberId: request.userId._id,
+            paymentId: request._id 
+          } 
+        }));
+        
         onSuccess();
         onClose();
       } else {

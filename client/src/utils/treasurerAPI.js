@@ -123,7 +123,7 @@ export const getFailedPaymentsSummary = async () => {
 export const getMonthBasedMemberList = async (month, year) => {
   try {
     const response = await API.get(`/treasurer/member-list/${month}/${year}`);
-    return response;
+    return response; // Already unwrapped by interceptor
   } catch (error) {
     console.error('Get month-based member list error:', error);
     throw error;
@@ -282,6 +282,75 @@ export const rejectResubmission = async (paymentId, reason) => {
     return response;
   } catch (error) {
     console.error('Reject resubmission error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create manual payment for member (treasurer-initiated)
+ * For recording cash/offline payments without member submission
+ * @param {Object} data - { userId, month, year, amount, paymentMethod, note? }
+ * @returns {Promise} - Created payment result
+ */
+export const createManualPayment = async (data) => {
+  try {
+    console.log('Creating manual payment with data:', data);
+    const response = await API.post('/treasurer/create-manual-payment', data);
+    console.log('Create manual payment response:', response);
+    return response;
+  } catch (error) {
+    console.error('Create manual payment error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response,
+      data: error.response?.data
+    });
+    throw error;
+  }
+};
+
+/**
+ * Manually update payment status from Pending to Paid
+ * For cash/offline payments without online proof
+ * @param {string} paymentId - Payment ID to update
+ * @param {Object} data - { paymentMethod: string, note?: string }
+ * @returns {Promise} - Update result
+ */
+export const manualPaymentUpdate = async (paymentId, data) => {
+  try {
+    const response = await API.post(`/treasurer/manual-payment-update/${paymentId}`, data);
+    return response;
+  } catch (error) {
+    console.error('Manual payment update error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create monthly payment records for all members
+ * @param {Object} data - { 
+ *   month: string, 
+ *   year: number, 
+ *   yearAmounts: Array<{year: number, amount: number}>, 
+ *   deadline: Date 
+ * }
+ * @returns {Promise} - Creation result
+ */
+export const createMonthlyRecords = async (data) => {
+  try {
+    // Transform yearAmounts into the format expected by the backend
+    const requestData = {
+      month: data.month,
+      year: data.year,
+      yearAmounts: data.yearAmounts,
+      deadline: data.deadline
+    };
+    
+    console.log('Sending createMonthlyRecords request:', requestData);
+    const response = await API.post('/treasurer/create-monthly-records', requestData);
+    return response; // Already unwrapped by interceptor
+  } catch (error) {
+    console.error('Create monthly records error:', error);
     throw error;
   }
 };

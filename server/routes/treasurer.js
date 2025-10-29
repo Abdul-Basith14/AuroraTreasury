@@ -5,6 +5,7 @@ import {
   getStatistics,
   getFailedPaymentsSummary,
   getMonthBasedMemberList,
+  createMonthlyRecordsForAll,
   deleteMonthlyRecords,
   getWallet,
   addMoneyToWallet,
@@ -14,7 +15,9 @@ import {
   rejectPayment,
   getResubmissionRequests,
   verifyResubmission,
-  rejectResubmission
+  rejectResubmission,
+  createManualPayment,
+  manualPaymentUpdate
 } from '../controllers/treasurerController.js';
 import { protect } from '../middleware/auth.js';
 import treasurerAuth from '../middleware/treasurerAuth.js';
@@ -64,6 +67,14 @@ router.get('/failed-payments-summary', getFailedPaymentsSummary);
  * @example /api/treasurer/member-list/November/2024
  */
 router.get('/member-list/:month/:year', getMonthBasedMemberList);
+
+/**
+ * @route   POST /api/treasurer/create-monthly-records
+ * @desc    Create payment records for all members for a specific month
+ * @access  Private (Treasurer only)
+ * @body    { month: string, year: number, amount: number, deadline: Date }
+ */
+router.post('/create-monthly-records', createMonthlyRecordsForAll);
 
 /**
  * @route   DELETE /api/treasurer/delete-monthly-records/:month/:year
@@ -140,5 +151,21 @@ router.post('/verify-resubmission/:paymentId', verifyResubmission);
  * @body    { reason: string }
  */
 router.post('/reject-resubmission/:paymentId', rejectResubmission);
+
+/**
+ * @route   POST /api/treasurer/create-manual-payment
+ * @desc    Create and mark payment as paid for members who paid cash/offline
+ * @access  Private (Treasurer only)
+ * @body    { userId: string, month: string, year: number, amount: number, paymentMethod: string, note?: string }
+ */
+router.post('/create-manual-payment', createManualPayment);
+
+/**
+ * @route   POST /api/treasurer/manual-payment-update/:paymentId
+ * @desc    Manually mark payment as paid for cash/offline payments
+ * @access  Private (Treasurer only)
+ * @body    { paymentMethod: string ('Cash'|'Bank Transfer'|'Other'), note?: string }
+ */
+router.post('/manual-payment-update/:paymentId', manualPaymentUpdate);
 
 export default router;

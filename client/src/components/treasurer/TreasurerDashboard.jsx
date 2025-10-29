@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { getMembers, getStatistics } from '../../utils/treasurerAPI';
-import { AlertCircle, RefreshCw, Download } from 'lucide-react';
+import { AlertCircle, RefreshCw, Download, Calendar } from 'lucide-react';
 import DashboardStats from './DashboardStats';
 import MembersListSection from './MembersListSection';
 import YearFilterTabs from './YearFilterTabs';
@@ -13,6 +14,7 @@ import FailedPaymentsQuickView from './FailedPaymentsQuickView';
  * Main dashboard for treasurers to manage and view all members
  */
 const TreasurerDashboard = () => {
+  const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -179,6 +181,14 @@ const TreasurerDashboard = () => {
         {/* Quick Actions Bar */}
         <div className="mb-8 flex flex-wrap gap-4">
           <button
+            onClick={() => navigate('/treasurer/members-by-month')}
+            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center"
+          >
+            <Calendar className="w-5 h-5 mr-2" />
+            Members by Month
+          </button>
+          
+          <button
             onClick={handleViewFailedPayments}
             className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center"
           >
@@ -274,6 +284,7 @@ const TreasurerDashboard = () => {
             loading={loading}
             selectedYear={selectedYear}
             selectedStatus={selectedStatus}
+            refreshMembers={fetchMembers}
           />
         </div>
       </div>

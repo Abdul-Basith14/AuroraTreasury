@@ -100,6 +100,13 @@ const groupFundSchema = new mongoose.Schema(
       maxlength: [500, 'Notes cannot exceed 500 characters'],
     },
 
+    // Payment method - tracks how payment was made
+    paymentMethod: {
+      type: String,
+      enum: ['Online', 'Cash', 'Bank Transfer', 'Other'],
+      default: 'Online',
+    },
+
     // Failed Payment Resubmission - for members to resubmit payment proof
     failedPaymentSubmission: {
       resubmittedPhoto: {
@@ -146,6 +153,33 @@ const groupFundSchema = new mongoose.Schema(
     createdAt: {
       type: Date,
       default: Date.now,
+    },
+    
+    // Treasurer-only marker: when treasurer marks a payment as paid in the
+    // members list, we set this flag so the treasurer UI can show it as paid
+    // without changing the official payment.status (which is what member
+    // dashboards and collection logic rely on).
+    treasurerMarkedPaid: {
+      type: Boolean,
+      default: false
+    },
+
+    treasurerMarkedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    },
+
+    treasurerMarkedDate: {
+      type: Date,
+      default: null
+    },
+    // Whether this record should be visible to the member's dashboard
+    // New records created by the treasurer (draft) will be created with
+    // visibleToMember: false so members don't see them until published.
+    visibleToMember: {
+      type: Boolean,
+      default: true,
     },
   },
   {

@@ -7,6 +7,7 @@ import Signup from './pages/Signup';
 import MemberDashboard from './pages/MemberDashboard';
 import TreasurerDashboard from './pages/TreasurerDashboard';
 import PaymentRequestsPage from './components/treasurer/PaymentRequestsPage';
+import MembersByMonthPage from './components/treasurer/MembersByMonthPage';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
@@ -73,6 +74,16 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['treasurer']}>
               <PaymentRequestsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Routes - Treasurer Members by Month */}
+        <Route
+          path="/treasurer/members-by-month"
+          element={
+            <ProtectedRoute allowedRoles={['treasurer']}>
+              <MembersByMonthPage />
             </ProtectedRoute>
           }
         />
