@@ -101,7 +101,7 @@ const ReimbursementRequestCard = ({
       <div className="space-y-3 mb-4">
         {/* Amount */}
         <div className="flex justify-between items-center">
-          <span className="text-3xl font-bold text-gray-900">₹{request.amount.toLocaleString('en-IN')}</span>
+          <span className="text-3xl font-bold text-gray-900">₹ {request.amount.toLocaleString('en-IN')}</span>
           <span className={`text-xs ${status.text} font-semibold px-2 py-1 rounded ${status.bg}`}>
             {status.message}
           </span>

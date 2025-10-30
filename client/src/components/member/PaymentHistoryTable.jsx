@@ -146,7 +146,7 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
                   <div className="flex items-center space-x-1">
                     <DollarSign className="w-4 h-4 text-gray-400" />
                     <span className="text-sm font-semibold text-gray-900">
-                      ₹{payment.amount}
+                      ₹ {payment.amount}
                     </span>
                   </div>
                 </td>
@@ -221,7 +221,7 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
             {/* Amount */}
             <div className="flex items-center justify-between">
               <span className="text-xs text-gray-600">Amount</span>
-              <span className="text-sm font-bold text-gray-900">₹{payment.amount}</span>
+              <span className="text-sm font-bold text-gray-900">₹ {payment.amount}</span>
             </div>
 
             {/* Deadline */}

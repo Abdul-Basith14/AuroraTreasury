@@ -6,9 +6,19 @@ import {
   confirmReceipt,
   deleteRequest,
   getStatistics,
+  // NEW TREASURER ROUTES
+  getAllReimbursementRequests,
+  payReimbursement,
+  rejectReimbursement,
+  getTreasurerWallet
 } from '../controllers/reimbursementController.js';
 import { protect } from '../middleware/auth.js';
-import { uploadReimbursementBill, handleUploadError } from '../middleware/upload.js';
+import treasurerAuth from '../middleware/treasurerAuth.js';
+import { 
+  uploadReimbursementBill, 
+  handleUploadError,
+  uploadReimbursementPaymentProof 
+} from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -86,5 +96,57 @@ router.delete('/request/:id', protect, deleteRequest);
  * Returns statistics by status and amounts
  */
 router.get('/statistics', protect, getStatistics);
+
+/**
+ * TREASURER ROUTES
+ * All routes below require treasurer authentication
+ */
+
+/**
+ * @route   GET /api/reimbursement/all-requests
+ * @desc    Get all reimbursement requests for treasurer
+ * @access  Private (Treasurer only)
+ * 
+ * Returns all requests with member details
+ * Can be filtered by status, year, and search query
+ */
+router.get('/all-requests', protect, treasurerAuth, getAllReimbursementRequests);
+
+/**
+ * @route   POST /api/reimbursement/pay/:id
+ * @desc    Mark request as paid and upload payment proof
+ * @access  Private (Treasurer only)
+ * 
+ * Updates status to 'Paid'
+ * Requires payment proof photo and optional message
+ * Amount is deducted from treasurer's wallet after member confirms
+ */
+router.post(
+  '/pay/:id', 
+  protect, 
+  treasurerAuth,
+  uploadReimbursementPaymentProof,
+  handleUploadError,
+  payReimbursement
+);
+
+/**
+ * @route   POST /api/reimbursement/reject/:id
+ * @desc    Reject a reimbursement request
+ * @access  Private (Treasurer only)
+ * 
+ * Updates status to 'Rejected'
+ * Requires rejection reason
+ */
+router.post('/reject/:id', protect, treasurerAuth, rejectReimbursement);
+
+/**
+ * @route   GET /api/reimbursement/treasurer-wallet
+ * @desc    Get treasurer's wallet balance and stats
+ * @access  Private (Treasurer only)
+ * 
+ * Returns total collected, reimbursed, and current balance
+ */
+router.get('/treasurer-wallet', protect, treasurerAuth, getTreasurerWallet);
 
 export default router;

@@ -10,8 +10,10 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    auroraCode: '',
+    treasurerKey: '',
   });
+
+  const [loginAs, setLoginAs] = useState('member'); // 'member' or 'treasurer'
 
   const [errors, setErrors] = useState({});
 
@@ -30,6 +32,19 @@ const Login = () => {
     }
   };
 
+  const handleLoginAsChange = (role) => {
+    setLoginAs(role);
+
+    // If switching to member, clear treasurer-only fields and errors so member login isn't blocked
+    if (role === 'member') {
+      setFormData((prev) => ({ ...prev, treasurerKey: '' }));
+      setErrors((prev) => {
+        const { treasurerKey, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -43,8 +58,11 @@ const Login = () => {
       newErrors.password = 'Password is required';
     }
 
-    if (!formData.auroraCode.trim()) {
-      newErrors.auroraCode = 'Aurora code is required';
+    // If logging in as treasurer, require treasurer key
+    if (loginAs === 'treasurer') {
+      if (!formData.treasurerKey.trim()) {
+        newErrors.treasurerKey = 'Treasurer key is required';
+      }
     }
 
     setErrors(newErrors);
@@ -58,7 +76,17 @@ const Login = () => {
       return;
     }
 
-    const result = await login(formData);
+    // Prepare payload
+    const payload = {
+      email: formData.email,
+      password: formData.password,
+    };
+
+    if (loginAs === 'treasurer') {
+      payload.treasurerKey = formData.treasurerKey;
+    }
+
+    const result = await login(payload);
 
     if (result.success) {
       // Redirect based on user role
@@ -129,27 +157,44 @@ const Login = () => {
               {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
             </div>
 
-            {/* Aurora Code */}
+            {/* Login Type Toggle */}
             <div>
-              <label htmlFor="auroraCode" className="block text-sm font-medium text-gray-700 mb-2">
-                Aurora Code
-              </label>
-              <div className="relative">
-                <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  id="auroraCode"
-                  name="auroraCode"
-                  type="text"
-                  value={formData.auroraCode}
-                  onChange={handleChange}
-                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                    errors.auroraCode ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="Enter club aurora code"
-                />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Login As</label>
+              <div className="flex items-center space-x-4">
+                <label className={`px-3 py-2 rounded-lg cursor-pointer ${loginAs === 'member' ? 'bg-purple-50 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>
+                  <input type="radio" name="loginAs" value="member" checked={loginAs === 'member'} onChange={() => handleLoginAsChange('member')} className="hidden" />
+                  Member
+                </label>
+                <label className={`px-3 py-2 rounded-lg cursor-pointer ${loginAs === 'treasurer' ? 'bg-purple-50 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>
+                  <input type="radio" name="loginAs" value="treasurer" checked={loginAs === 'treasurer'} onChange={() => handleLoginAsChange('treasurer')} className="hidden" />
+                  Treasurer
+                </label>
               </div>
-              {errors.auroraCode && <p className="mt-1 text-sm text-red-600">{errors.auroraCode}</p>}
             </div>
+
+            {/* Treasurer Key (shown only when loginAs === 'treasurer') */}
+            {loginAs === 'treasurer' && (
+              <div>
+                <label htmlFor="treasurerKey" className="block text-sm font-medium text-gray-700 mb-2">
+                  Treasurer Key
+                </label>
+                <div className="relative">
+                  <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    id="treasurerKey"
+                    name="treasurerKey"
+                    type="text"
+                    value={formData.treasurerKey}
+                    onChange={handleChange}
+                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                      errors.treasurerKey ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Enter treasurer key"
+                  />
+                </div>
+                {errors.treasurerKey && <p className="mt-1 text-sm text-red-600">{errors.treasurerKey}</p>}
+              </div>
+            )}
 
             {/* Submit Button */}
             <button
@@ -202,9 +247,9 @@ const Login = () => {
         </div>
 
         {/* Footer Note */}
-        <div className="mt-6 text-center">
+          <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
-            Contact your club treasurer if you don't know the Aurora code
+            Contact your club treasurer for access or assistance
           </p>
         </div>
       </div>

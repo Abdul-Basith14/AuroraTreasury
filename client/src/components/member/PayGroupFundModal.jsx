@@ -223,19 +223,19 @@ const PayGroupFundModal = ({ isOpen, onClose, onSuccess }) => {
                   <div className="grid grid-cols-2 gap-2 mt-3">
                     <div className="text-sm">
                       <span className="text-blue-700">1st Year:</span>
-                      <span className="font-semibold text-blue-900"> ₹{settings?.fundAmountByYear?.firstYear || 50}</span>
+                      <span className="font-semibold text-blue-900"> ₹ {settings?.fundAmountByYear?.firstYear || 50}</span>
                     </div>
                     <div className="text-sm">
                       <span className="text-blue-700">2nd Year:</span>
-                      <span className="font-semibold text-blue-900"> ₹{settings?.fundAmountByYear?.secondYear || 100}</span>
+                      <span className="font-semibold text-blue-900"> ₹ {settings?.fundAmountByYear?.secondYear || 100}</span>
                     </div>
                     <div className="text-sm">
                       <span className="text-blue-700">3rd Year:</span>
-                      <span className="font-semibold text-blue-900"> ₹{settings?.fundAmountByYear?.thirdYear || 150}</span>
+                      <span className="font-semibold text-blue-900"> ₹ {settings?.fundAmountByYear?.thirdYear || 150}</span>
                     </div>
                     <div className="text-sm">
                       <span className="text-blue-700">4th Year:</span>
-                      <span className="font-semibold text-blue-900"> ₹{settings?.fundAmountByYear?.fourthYear || 200}</span>
+                      <span className="font-semibold text-blue-900"> ₹ {settings?.fundAmountByYear?.fourthYear || 200}</span>
                     </div>
                   </div>
                 </div>
@@ -243,7 +243,7 @@ const PayGroupFundModal = ({ isOpen, onClose, onSuccess }) => {
                 {/* Your Amount */}
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <p className="text-sm text-green-700">Your Payment Amount:</p>
-                  <p className="text-3xl font-bold text-green-900">₹{settings?.userAmount || 0}</p>
+                  <p className="text-3xl font-bold text-green-900">₹ {settings?.userAmount || 0}</p>
                 </div>
 
                 {/* QR Code */}

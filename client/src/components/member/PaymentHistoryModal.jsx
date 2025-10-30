@@ -68,7 +68,7 @@ const PaymentHistoryModal = ({ isOpen, onClose, payment }) => {
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Payment History</h2>
             <p className="text-sm text-gray-600 mt-1">
-              {payment.month} - ₹{payment.amount}
+              {payment.month} - ₹ {payment.amount}
             </p>
           </div>
           <button

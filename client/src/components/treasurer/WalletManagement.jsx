@@ -197,10 +197,10 @@ const WalletManagement = () => {
                   <p className={`text-lg font-bold ${
                     transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {transaction.type === 'credit' ? '+' : '-'}₹{transaction.amount.toLocaleString('en-IN')}
+                    {transaction.type === 'credit' ? '+' : '-'}₹ {transaction.amount.toLocaleString('en-IN')}
                   </p>
                   <p className="text-xs text-gray-600 mt-1">
-                    Balance: ₹{transaction.newBalance.toLocaleString('en-IN')}
+                    Balance: ₹ {transaction.newBalance.toLocaleString('en-IN')}
                   </p>
                 </div>
               </div>
@@ -278,7 +278,7 @@ const WalletManagement = () => {
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Remove Money from Wallet</h3>
             <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p className="text-sm text-yellow-800">
-                <strong>Available Balance:</strong> ₹{wallet?.balance?.toLocaleString('en-IN') || 0}
+                <strong>Available Balance:</strong> ₹ {wallet?.balance?.toLocaleString('en-IN') || 0}
               </p>
             </div>
             <form onSubmit={handleRemoveMoney}>

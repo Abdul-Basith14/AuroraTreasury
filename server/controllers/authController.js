@@ -120,31 +120,24 @@ export const signup = async (req, res) => {
  */
 export const login = async (req, res) => {
   try {
-    const { email, password, auroraCode } = req.body;
+    const { email, password, treasurerKey, auroraCode } = req.body;
 
-    // Validation: Check all fields
-    if (!email || !password || !auroraCode) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide email, password, and aurora code',
-      });
+    // DEV: log incoming login requests for easier debugging
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Login request body:', JSON.stringify(req.body));
     }
 
-    // Verify Aurora Code from ClubSettings
-    const clubSettings = await ClubSettings.findOne({ isActive: true });
-    
-    // If club settings exist, verify the code
-    if (clubSettings) {
-      if (clubSettings.auroraCode !== auroraCode.toUpperCase().trim()) {
-        return res.status(401).json({
-          success: false,
-          message: 'Invalid Aurora Code. Please check and try again.',
-        });
-      }
-    } else {
-      // If no club settings, allow any code temporarily (for initial setup)
-      console.warn('⚠️  WARNING: Club settings not configured. Any Aurora Code will work.');
-      console.warn('⚠️  Please configure ClubSettings in database for security.');
+    // Validation: Check required fields and return which ones are missing
+    const missing = [];
+    if (!email) missing.push('email');
+    if (!password) missing.push('password');
+
+    if (missing.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Please provide ${missing.join(' and ')}`,
+        missingFields: missing,
+      });
     }
 
     // Find user by email (include password field for comparison)
@@ -163,6 +156,19 @@ export const login = async (req, res) => {
         success: false,
         message: 'Your account has been deactivated. Please contact administrator.',
       });
+    }
+
+    // If the user is a treasurer, require the treasurerKey to access treasurer features
+    if (user.role === 'treasurer') {
+      // For this deployment, the treasurer key is fixed to 'ADARSH'
+      const expectedKey = 'ADARSH';
+
+      if (!treasurerKey || treasurerKey.trim().toUpperCase() !== expectedKey) {
+        return res.status(401).json({
+          success: false,
+          message: `Treasurer key is required and must be '${expectedKey}' to login as treasurer.`,
+        });
+      }
     }
 
     // Verify password

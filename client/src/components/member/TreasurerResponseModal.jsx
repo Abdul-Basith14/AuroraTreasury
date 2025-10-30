@@ -78,7 +78,7 @@ const TreasurerResponseModal = ({ isOpen, onClose, request, onConfirmReceipt }) 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Amount:</span>
-                  <span className="font-bold text-gray-900">₹{request.amount.toLocaleString('en-IN')}</span>
+                  <span className="font-bold text-gray-900">₹ {request.amount.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Description:</span>

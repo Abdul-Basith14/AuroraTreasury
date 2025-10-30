@@ -395,7 +395,7 @@ const MembersListByMonth = () => {
             </div>
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
               <IndianRupee className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-purple-900">₹{summary.totalCollected}</div>
+              <div className="text-2xl font-bold text-purple-900">₹ {summary.totalCollected}</div>
               <div className="text-xs text-purple-700">Collected</div>
             </div>
           </div>
@@ -470,7 +470,7 @@ const MembersListByMonth = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                    {member.amount > 0 ? `₹${member.amount}` : '-'}
+                    {member.amount > 0 ? `₹ ${member.amount}` : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {member.paymentDate ? new Date(member.paymentDate).toLocaleDateString('en-IN') : '-'}

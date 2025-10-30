@@ -8,6 +8,7 @@ import MemberDashboard from './pages/MemberDashboard';
 import TreasurerDashboard from './pages/TreasurerDashboard';
 import PaymentRequestsPage from './components/treasurer/PaymentRequestsPage';
 import MembersByMonthPage from './components/treasurer/MembersByMonthPage';
+import ReimbursementRequestsPage from './components/treasurer/ReimbursementRequestsPage';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
@@ -68,6 +69,12 @@ function App() {
           }
         />
 
+        {/* Compatibility: allow old '/treasurer/dashboard' path to work */}
+        <Route
+          path="/treasurer/dashboard"
+          element={<Navigate to="/treasurer-dashboard" replace />}
+        />
+
         {/* Protected Routes - Treasurer Payment Requests */}
         <Route
           path="/treasurer/payment-requests"
@@ -84,6 +91,16 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['treasurer']}>
               <MembersByMonthPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Routes - Treasurer Reimbursement Requests */}
+        <Route
+          path="/treasurer/reimbursement-requests"
+          element={
+            <ProtectedRoute allowedRoles={['treasurer']}>
+              <ReimbursementRequestsPage />
             </ProtectedRoute>
           }
         />

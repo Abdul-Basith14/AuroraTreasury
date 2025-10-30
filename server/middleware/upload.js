@@ -146,6 +146,37 @@ const resubmissionUpload = multer({
 export const uploadResubmissionProof = resubmissionUpload.single('paymentProof');
 
 /**
+ * Configure Cloudinary storage for Treasurer's Reimbursement Payment Proofs
+ */
+const reimbursementPaymentStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'aurora-treasury/reimbursement-payments', // Separate folder for treasurer payments
+    allowed_formats: ['jpg', 'jpeg', 'png', 'heic', 'webp'],
+    transformation: [{ width: 1000, height: 1000, crop: 'limit' }],
+  },
+});
+
+/**
+ * Multer configuration for treasurer's reimbursement payment proofs
+ * - Storage: Cloudinary
+ * - File size limit: 5MB
+ * - File filter: Images only
+ */
+const reimbursementPaymentUpload = multer({
+  storage: reimbursementPaymentStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: resubmissionFileFilter, // Reuse the same file filter
+});
+
+/**
+ * Middleware to handle treasurer's reimbursement payment proof uploads
+ */
+export const uploadReimbursementPaymentProof = reimbursementPaymentUpload.single('paymentProof');
+
+/**
  * Error handling middleware for Multer
  * Usage: Add this after routes that use upload middleware
  */

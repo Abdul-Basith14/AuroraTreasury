@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
 
   /**
    * Login user
-   * @param {Object} credentials - { email, password, auroraCode }
+   * @param {Object} credentials - { email, password }
    */
   const login = async (credentials) => {
     try {

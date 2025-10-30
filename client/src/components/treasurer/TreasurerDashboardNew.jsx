@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { getStatistics, getWallet } from '../../utils/treasurerAPI';
-import { Users, IndianRupee, AlertCircle, Clock, Wallet, ClipboardCheck } from 'lucide-react';
+import { Users, IndianRupee, AlertCircle, Clock, Wallet, ClipboardCheck, FileText as ReimburseIcon } from 'lucide-react';
 import WalletManagement from './WalletManagement';
 import MembersListByMonth from './MembersListByMonth';
 
@@ -86,6 +86,19 @@ const TreasurerDashboardNew = () => {
                 {statistics?.pendingResubmissions > 0 && (
                   <span className="ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full">
                     {statistics.pendingResubmissions}
+                  </span>
+                )}
+              </button>
+              
+              <button
+                onClick={() => navigate('/treasurer/reimbursement-requests')}
+                className="px-6 py-3 bg-white text-pink-600 rounded-lg font-semibold hover:bg-pink-50 transition flex items-center shadow-lg border-2 border-pink-200"
+              >
+                <ReimburseIcon className="w-5 h-5 mr-2" />
+                Reimbursement Requests
+                {statistics?.reimbursementPending > 0 && (
+                  <span className="ml-2 px-2 py-1 bg-pink-500 text-white text-xs rounded-full">
+                    {statistics.reimbursementPending}
                   </span>
                 )}
               </button>

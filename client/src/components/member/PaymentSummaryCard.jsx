@@ -54,7 +54,7 @@ const PaymentSummaryCard = ({ totalPaid = 0 }) => {
         </p>
         <div className="flex items-baseline space-x-1">
           <span className="text-5xl font-bold tracking-tight">
-            ₹{displayAmount.toLocaleString('en-IN')}
+            ₹ {displayAmount.toLocaleString('en-IN')}
           </span>
         </div>
       </div>

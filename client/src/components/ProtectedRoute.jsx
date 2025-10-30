@@ -34,6 +34,11 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
   // Check if user has required role
   if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+    // Allow treasurer to access member routes (treasurer is also a member)
+    if (allowedRoles.includes('member') && user?.role === 'treasurer') {
+      return children;
+    }
+
     // Redirect to appropriate dashboard based on their actual role
     if (user?.role === 'treasurer') {
       return <Navigate to="/treasurer-dashboard" replace />;

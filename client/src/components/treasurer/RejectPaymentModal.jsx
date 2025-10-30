@@ -71,7 +71,7 @@ const RejectPaymentModal = ({ request, isResubmission, onClose, onSuccess }) => 
             </div>
             <div className="flex justify-between">
               <span className="text-sm font-medium text-gray-700">Amount:</span>
-              <span className="text-sm font-semibold text-gray-900">₹{request.amount}</span>
+              <span className="text-sm font-semibold text-gray-900">₹ {request.amount}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm font-medium text-gray-700">Month:</span>

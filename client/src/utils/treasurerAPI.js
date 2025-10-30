@@ -355,4 +355,72 @@ export const createMonthlyRecords = async (data) => {
   }
 };
 
+/**
+ * Get all reimbursement requests
+ * @param {Object} params - Query parameters
+ * @param {string} params.status - Filter by status (all/pending/paid/received/rejected)
+ * @param {string} params.year - Filter by member year
+ * @param {string} params.search - Search by name, USN, or description
+ * @returns {Promise} - Reimbursement requests data
+ */
+export const getReimbursementRequests = async (params = {}) => {
+  try {
+    const response = await API.get('/reimbursement/all-requests', { params });
+    return response;
+  } catch (error) {
+    console.error('Get reimbursement requests error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Pay reimbursement and upload proof
+ * @param {string} requestId - Reimbursement request ID
+ * @param {FormData} formData - Form data with paymentProof and optional message
+ * @returns {Promise} - Payment result
+ */
+export const payReimbursement = async (requestId, formData) => {
+  try {
+    const response = await API.post(`/reimbursement/pay/${requestId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error('Pay reimbursement error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Reject reimbursement request
+ * @param {string} requestId - Reimbursement request ID
+ * @param {Object} data - { reason: string }
+ * @returns {Promise} - Rejection result
+ */
+export const rejectReimbursement = async (requestId, data) => {
+  try {
+    const response = await API.post(`/reimbursement/reject/${requestId}`, data);
+    return response;
+  } catch (error) {
+    console.error('Reject reimbursement error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get treasurer wallet balance and stats
+ * @returns {Promise} - Wallet data including totalCollected, totalReimbursed, currentBalance
+ */
+export const getTreasurerWallet = async () => {
+  try {
+    const response = await API.get('/reimbursement/treasurer-wallet');
+    return response;
+  } catch (error) {
+    console.error('Get treasurer wallet error:', error);
+    throw error;
+  }
+};
+
 export default API;

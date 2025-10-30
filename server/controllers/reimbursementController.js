@@ -1,5 +1,6 @@
 import Reimbursement from '../models/Reimbursement.js';
 import User from '../models/User.js';
+import GroupFund from '../models/GroupFund.js';
 import { deleteImageFromCloudinary } from '../middleware/upload.js';
 
 /**
@@ -370,6 +371,246 @@ export const getStatistics = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching statistics',
+    });
+  }
+};
+
+/**
+ * TREASURER CONTROLLERS
+ */
+
+/**
+ * @desc    Get all reimbursement requests for treasurer
+ * @route   GET /api/reimbursement/all-requests
+ * @access  Private (Treasurer)
+ */
+export const getAllReimbursementRequests = async (req, res) => {
+  try {
+    const { status, year, search } = req.query;
+    
+    // Build query
+    let query = {};
+    
+    // Status filter
+    if (status && status !== 'all') {
+      query.status = status.charAt(0).toUpperCase() + status.slice(1);
+    }
+    
+    // Fetch requests with member details
+    let requests = await Reimbursement.find(query)
+      .populate('userId', 'name usn email year branch profilePhoto mobileNumber')
+      .populate('treasurerResponse.respondedBy', 'name email')
+      .sort({ requestDate: 1 }); // Oldest first
+    
+    // Filter by member's year
+    if (year && year !== 'all') {
+      requests = requests.filter(r => r.userId && r.userId.year === year);
+    }
+    
+    // Search filter
+    if (search) {
+      const searchLower = search.toLowerCase();
+      requests = requests.filter(r => {
+        if (!r.userId) return false;
+        return (
+          r.userId.name.toLowerCase().includes(searchLower) ||
+          r.userId.usn.toLowerCase().includes(searchLower) ||
+          r.description.toLowerCase().includes(searchLower)
+        );
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      count: requests.length,
+      requests: requests
+    });
+  } catch (error) {
+    console.error('Get reimbursement requests error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch reimbursement requests',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Pay reimbursement and upload proof
+ * @route   POST /api/reimbursement/pay/:id
+ * @access  Private (Treasurer)
+ */
+export const payReimbursement = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { message } = req.body;
+    
+    // Check if payment proof was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment proof screenshot is required'
+      });
+    }
+    
+    // Find reimbursement request with member details
+    const request = await Reimbursement.findById(requestId).populate('userId');
+    
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reimbursement request not found'
+      });
+    }
+    
+    // Check if already paid/received
+    if (request.status === 'Paid' || request.status === 'Received') {
+      return res.status(400).json({
+        success: false,
+        message: `Request already ${request.status.toLowerCase()}`
+      });
+    }
+    
+    // Check if status is Pending
+    if (request.status !== 'Pending') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot pay request with status: ${request.status}`
+      });
+    }
+    
+    // Update request with treasurer's payment
+    request.status = 'Paid';
+    request.treasurerResponse = {
+      message: message || 'Payment sent. Please check your account and confirm receipt.',
+      paymentProofPhoto: req.file.path, // Cloudinary URL
+      respondedBy: req.user._id,
+      respondedDate: new Date()
+    };
+    
+    await request.save();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Payment proof uploaded successfully. Awaiting member confirmation.',
+      request: request
+    });
+    
+  } catch (error) {
+    console.error('Pay reimbursement error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process payment',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Reject reimbursement request
+ * @route   POST /api/reimbursement/reject/:id
+ * @access  Private (Treasurer)
+ */
+export const rejectReimbursement = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { reason } = req.body;
+    
+    if (!reason || reason.trim().length < 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rejection reason is required (min 10 characters)'
+      });
+    }
+    
+    const request = await Reimbursement.findById(requestId);
+    
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reimbursement request not found'
+      });
+    }
+    
+    if (request.status === 'Rejected') {
+      return res.status(400).json({
+        success: false,
+        message: 'Request already rejected'
+      });
+    }
+    
+    if (request.status === 'Paid' || request.status === 'Received') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot reject a paid/received request'
+      });
+    }
+    
+    request.status = 'Rejected';
+    request.rejectionReason = reason;
+    request.treasurerResponse = {
+      message: `Request rejected: ${reason}`,
+      respondedBy: req.user._id,
+      respondedDate: new Date()
+    };
+    
+    await request.save();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Reimbursement request rejected',
+      request: request
+    });
+    
+  } catch (error) {
+    console.error('Reject reimbursement error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reject request',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Get treasurer wallet balance
+ * @route   GET /api/reimbursement/treasurer-wallet
+ * @access  Private (Treasurer)
+ */
+export const getTreasurerWallet = async (req, res) => {
+  try {
+    // Get total collected from paid group funds
+    const paidPayments = await GroupFund.find({ status: 'Paid' });
+    const totalCollected = paidPayments.reduce((sum, p) => sum + p.amount, 0);
+    
+    // Get total reimbursed: only include requests with status 'Received'
+    // (Amount should be deducted from wallet only after member confirms receipt)
+    const receivedReimbursements = await Reimbursement.find({ status: 'Received' });
+    const totalReimbursed = receivedReimbursements.reduce((sum, r) => sum + r.amount, 0);
+
+    // Calculate current balance (deduct only confirmed reimbursements)
+    const currentBalance = totalCollected - totalReimbursed;
+    
+    // Get pending reimbursement requests count
+    const pendingCount = await Reimbursement.countDocuments({ status: 'Pending' });
+    const paidAwaitingConfirmation = await Reimbursement.countDocuments({ status: 'Paid' });
+    
+    res.status(200).json({
+      success: true,
+      wallet: {
+        totalCollected,
+        totalReimbursed,
+        currentBalance,
+        pendingCount,
+        paidAwaitingConfirmation
+      }
+    });
+  } catch (error) {
+    console.error('Get treasurer wallet error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch wallet balance',
+      error: error.message
     });
   }
 };

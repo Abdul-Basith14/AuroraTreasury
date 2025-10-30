@@ -240,7 +240,7 @@ const MemberDashboard = () => {
       />
 
       {/* Custom CSS for fade-in animation */}
-      <style jsx>{`
+      <style>{`
         @keyframes fadeIn {
           from {
             opacity: 0;

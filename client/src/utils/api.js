@@ -52,18 +52,19 @@ api.interceptors.response.use(
           break;
         case 403:
           // Forbidden - user doesn't have permission
-          console.error('Access forbidden:', data.message);
+          console.error('Access forbidden:', status, data);
           break;
         case 404:
           // Not found
-          console.error('Resource not found:', data.message);
+          console.error('Resource not found:', status, data);
           break;
         case 500:
           // Server error
-          console.error('Server error:', data.message);
+          console.error('Server error:', status, data);
           break;
         default:
-          console.error('API Error:', data.message);
+          // Log status and full response data for easier debugging
+          console.error('API Error:', status, data);
       }
 
       return Promise.reject(data);

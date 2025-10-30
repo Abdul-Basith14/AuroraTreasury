@@ -165,7 +165,7 @@ const PayFailedPaymentModal = ({ isOpen, onClose, payment, refreshPayments }) =>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Amount:</span>
-                <span className="font-bold text-xl text-gray-900">₹{payment.amount}</span>
+                <span className="font-bold text-xl text-gray-900">₹ {payment.amount}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Original Deadline:</span>
@@ -195,7 +195,7 @@ const PayFailedPaymentModal = ({ isOpen, onClose, payment, refreshPayments }) =>
               </div>
               <div className="mt-3 space-y-1">
                 <p className="text-sm text-gray-700">
-                  <span className="font-medium">Amount to Pay:</span> ₹{payment.amount}
+                  <span className="font-medium">Amount to Pay:</span> ₹ {payment.amount}
                 </p>
               </div>
             </div>
