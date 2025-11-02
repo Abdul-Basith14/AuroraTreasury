@@ -93,6 +93,9 @@ export const authAPI = {
   getMe: () => api.get('/auth/me'),
   verify: () => api.post('/auth/verify'),
   logout: () => api.post('/auth/logout'),
+  sendOTP: (data) => api.post('/auth/send-otp', data),
+  verifyOTP: (data) => api.post('/auth/verify-otp', data),
+  resendOTP: (data) => api.post('/auth/resend-otp', data),
 };
 
 // Group Fund API calls

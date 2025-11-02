@@ -5,6 +5,8 @@ import {
   getMe,
   verifyToken,
   logout,
+  sendOTP,
+  verifyOTP,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -13,6 +15,16 @@ const router = express.Router();
 /**
  * Authentication Routes
  */
+
+// @route   POST /api/auth/send-otp
+// @desc    Send OTP for email verification
+// @access  Public
+router.post('/send-otp', sendOTP);
+
+// @route   POST /api/auth/verify-otp
+// @desc    Verify OTP
+// @access  Public
+router.post('/verify-otp', verifyOTP);
 
 // @route   POST /api/auth/signup
 // @desc    Register a new user

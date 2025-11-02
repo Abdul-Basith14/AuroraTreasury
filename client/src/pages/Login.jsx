@@ -2,18 +2,24 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogIn, Mail, Lock, Key } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { authAPI } from '../utils/api';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, verifyOTP } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     treasurerKey: '',
+    otp: ''
   });
 
   const [loginAs, setLoginAs] = useState('member'); // 'member' or 'treasurer'
+  const [showOTPInput, setShowOTPInput] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [countdown, setCountdown] = useState(0);
 
   const [errors, setErrors] = useState({});
 
@@ -69,6 +75,43 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const startCountdown = () => {
+    setCountdown(60);
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleSendOTP = async () => {
+    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
+      setErrors({ email: 'Please enter a valid email address' });
+      return;
+    }
+
+    setIsVerifying(true);
+    try {
+      const response = await authAPI.sendOTP({
+        email: formData.email,
+        type: 'login'
+      });
+      if (response.success) {
+        toast.success('OTP sent to your email');
+        setShowOTPInput(true);
+        startCountdown();
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to send OTP');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -76,25 +119,35 @@ const Login = () => {
       return;
     }
 
-    // Prepare payload
-    const payload = {
-      email: formData.email,
-      password: formData.password,
-    };
-
-    if (loginAs === 'treasurer') {
-      payload.treasurerKey = formData.treasurerKey;
+    if (!showOTPInput) {
+      await handleSendOTP();
+      return;
     }
 
-    const result = await login(payload);
+    if (!formData.otp) {
+      setErrors((prev) => ({ ...prev, otp: 'OTP is required' }));
+      return;
+    }
 
-    if (result.success) {
-      // Redirect based on user role
-      if (result.user.role === 'treasurer') {
-        navigate('/treasurer-dashboard');
+    try {
+      // Verify OTP using AuthContext helper which will set token/user on success
+      const result = await verifyOTP(formData.email, formData.otp, 'login');
+
+      if (result.success && result.user) {
+        // Redirect based on user role
+        if (result.user.role === 'treasurer') {
+          navigate('/treasurer-dashboard');
+        } else {
+          navigate('/member-dashboard');
+        }
+      } else if (result.success) {
+        // OTP verified but no user/token returned (edge-case)
+        toast.success('OTP verified');
       } else {
-        navigate('/member-dashboard');
+        toast.error(result.error || 'OTP verification failed');
       }
+    } catch (error) {
+      toast.error(error.message || 'Login failed');
     }
   };
 
@@ -196,13 +249,50 @@ const Login = () => {
               </div>
             )}
 
+            {/* OTP Input */}
+            {showOTPInput && (
+              <div>
+                <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
+                  Enter OTP
+                </label>
+                <div className="relative">
+                  <input
+                    id="otp"
+                    name="otp"
+                    type="text"
+                    value={formData.otp}
+                    onChange={handleChange}
+                    className={`w-full pl-4 pr-20 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                      errors.otp ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Enter 6-digit OTP"
+                    maxLength="6"
+                  />
+                  {countdown > 0 ? (
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">
+                      {countdown}s
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleSendOTP}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-purple-600 hover:text-purple-700"
+                    >
+                      Resend OTP
+                    </button>
+                  )}
+                </div>
+                {errors.otp && <p className="mt-1 text-sm text-red-600">{errors.otp}</p>}
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
               className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              {isLoading ? (
+              {isLoading || isVerifying ? (
                 <>
                   <svg
                     className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -224,12 +314,12 @@ const Login = () => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Signing in...
+                  {isVerifying ? 'Sending OTP...' : 'Signing in...'}
                 </>
               ) : (
                 <>
                   <LogIn className="w-5 h-5 mr-2" />
-                  Sign In
+                  {showOTPInput ? 'Verify & Sign In' : 'Continue with Email'}
                 </>
               )}
             </button>

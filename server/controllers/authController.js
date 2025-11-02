@@ -1,6 +1,8 @@
 import User from '../models/User.js';
 import ClubSettings from '../models/ClubSettings.js';
 import { generateToken } from '../middleware/auth.js';
+import OTP from '../models/OTP.js';
+import { sendOTPEmail } from '../utils/emailService.js';
 
 /**
  * @desc    Register a new user
@@ -272,6 +274,134 @@ export const logout = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error during logout',
+    });
+  }
+};
+
+/**
+ * @desc    Send OTP for verification
+ * @route   POST /api/auth/send-otp
+ * @access  Public
+ */
+export const sendOTP = async (req, res) => {
+  try {
+    const { email, type } = req.body;
+
+    if (!email || !type) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide email and type (login/signup)',
+      });
+    }
+
+    // Generate a 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Save OTP to database
+    await OTP.create({
+      email: email.toLowerCase(),
+      otp,
+      type,
+    });
+
+    // Send OTP via email
+    await sendOTPEmail(email, otp);
+
+    res.status(200).json({
+      success: true,
+      message: 'OTP sent successfully',
+    });
+  } catch (error) {
+    console.error('Send OTP Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error sending OTP',
+    });
+  }
+};
+
+/**
+ * @desc    Verify OTP
+ * @route   POST /api/auth/verify-otp
+ * @access  Public
+ */
+export const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp, type } = req.body;
+
+    if (!email || !otp || !type) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide email, OTP, and type',
+      });
+    }
+
+    // Find the latest OTP record for this email and type
+    const otpRecord = await OTP.findOne({
+      email: email.toLowerCase(),
+      type,
+    }).sort({ createdAt: -1 });
+
+    if (!otpRecord) {
+      return res.status(400).json({
+        success: false,
+        message: 'No OTP found. Please request a new one.',
+      });
+    }
+
+    // Check if OTP matches
+    if (otpRecord.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid OTP',
+      });
+    }
+
+    // Check if OTP is expired
+    if (otpRecord.isExpired()) {
+      return res.status(400).json({
+        success: false,
+        message: 'OTP has expired. Please request a new one.',
+      });
+    }
+
+    // If type is login, get user and generate token
+    if (type === 'login') {
+      const user = await User.findOne({ email: email.toLowerCase() });
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found',
+        });
+      }
+
+      const token = generateToken(user._id);
+
+      // Delete the used OTP
+      await otpRecord.deleteOne();
+
+      return res.status(200).json({
+        success: true,
+        message: 'OTP verified successfully',
+        data: {
+          user,
+          token,
+        },
+      });
+    }
+
+    // For signup, just verify OTP
+    await otpRecord.deleteOne();
+    
+    res.status(200).json({
+      success: true,
+      message: 'OTP verified successfully',
+    });
+  } catch (error) {
+    console.error('Verify OTP Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error verifying OTP',
     });
   }
 };

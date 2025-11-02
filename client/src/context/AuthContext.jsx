@@ -67,6 +67,11 @@ export const AuthProvider = ({ children }) => {
       const response = await authAPI.login(credentials);
 
       if (response.success) {
+        if (response.requireOTP) {
+          toast.success('OTP sent to your email!');
+          return { success: true, requireOTP: true };
+        }
+
         const { user, token } = response.data;
         
         // Store token and user in localStorage
@@ -98,6 +103,10 @@ export const AuthProvider = ({ children }) => {
       const response = await authAPI.signup(userData);
 
       if (response.success) {
+        if (response.requireOTP) {
+          toast.success('OTP sent to your email!');
+          return { success: true, requireOTP: true };
+        }
         toast.success('Registration successful! Please login.');
         return { success: true };
       }
@@ -137,6 +146,61 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
+  /**
+   * Verify OTP for login/signup
+   * @param {string} email - User's email
+   * @param {string} otp - OTP code
+   * @param {string} type - Type of verification ('login' or 'signup')
+   */
+  const verifyOTP = async (email, otp, type) => {
+    try {
+      setIsLoading(true);
+      const response = await authAPI.verifyOTP({ email, otp, type });
+
+      if (response.success) {
+        if (type === 'login') {
+          const { user, token } = response.data;
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(user));
+          setUser(user);
+          setIsAuthenticated(true);
+          toast.success('Login successful!');
+          return { success: true, user };
+        } else {
+          toast.success('Registration successful! Please login.');
+          return { success: true };
+        }
+      }
+    } catch (error) {
+      toast.error(error.message || 'OTP verification failed');
+      return { success: false, error: error.message };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Resend OTP
+   * @param {string} email - User's email
+   * @param {string} type - Type of verification ('login' or 'signup')
+   */
+  const resendOTP = async (email, type) => {
+    try {
+      setIsLoading(true);
+      const response = await authAPI.resendOTP({ email, type });
+
+      if (response.success) {
+        toast.success('New OTP sent to your email!');
+        return { success: true };
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to resend OTP');
+      return { success: false, error: error.message };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value = {
     user,
     isAuthenticated,
@@ -145,6 +209,8 @@ export const AuthProvider = ({ children }) => {
     signup,
     logout,
     updateUser,
+    verifyOTP,
+    resendOTP,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
