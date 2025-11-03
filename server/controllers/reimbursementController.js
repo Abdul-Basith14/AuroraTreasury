@@ -1,6 +1,7 @@
 import Reimbursement from '../models/Reimbursement.js';
 import User from '../models/User.js';
 import GroupFund from '../models/GroupFund.js';
+import Wallet from '../models/Wallet.js';
 import { deleteImageFromCloudinary } from '../middleware/upload.js';
 
 /**
@@ -209,6 +210,8 @@ export const confirmReceipt = async (req, res) => {
     // Find reimbursement by ID
     const reimbursement = await Reimbursement.findById(id);
 
+    console.log(`ConfirmReceipt: requestId=${id} user=${req.user?._id} found=${!!reimbursement} status=${reimbursement?reimbursement.status:'N/A'}`);
+
     if (!reimbursement) {
       return res.status(404).json({
         success: false,
@@ -232,16 +235,37 @@ export const confirmReceipt = async (req, res) => {
       });
     }
 
-    // Update status to 'Received'
+    // Deduct amount from treasurer wallet before finalizing receipt
+    // Find treasurer user to mark who performed the deduction (fallback to system/member if not found)
+    const treasurerUser = await User.findOne({ role: 'treasurer' });
+    let treasurerId = treasurerUser ? treasurerUser._id : req.user._id;
+
+    const wallet = await Wallet.getWallet();
+
+    try {
+      // Attempt to remove money from wallet; will throw if insufficient
+      await wallet.removeMoney(reimbursement.amount, `Reimbursement paid for request ${id} to user ${reimbursement.userId}`, treasurerId);
+    } catch (walletError) {
+      console.error('Wallet deduction failed during confirmReceipt:', walletError);
+      return res.status(400).json({
+        success: false,
+        message: walletError.message || 'Insufficient wallet balance to confirm receipt. Please contact administrator.'
+      });
+    }
+
+    // Update status to 'Received' after successful deduction
     reimbursement.status = 'Received';
     reimbursement.receivedDate = new Date();
     await reimbursement.save();
+
+    console.log(`ConfirmReceipt: requestId=${id} marked Received and wallet deducted by user=${treasurerId}`);
 
     res.status(200).json({
       success: true,
       message: 'Payment receipt confirmed successfully! Thank you.',
       data: {
         reimbursement,
+        wallet: await Wallet.getWallet()
       },
     });
   } catch (error) {
@@ -442,7 +466,7 @@ export const getAllReimbursementRequests = async (req, res) => {
  */
 export const payReimbursement = async (req, res) => {
   try {
-    const { requestId } = req.params;
+    const { id } = req.params;
     const { message } = req.body;
     
     // Check if payment proof was uploaded
@@ -454,7 +478,7 @@ export const payReimbursement = async (req, res) => {
     }
     
     // Find reimbursement request with member details
-    const request = await Reimbursement.findById(requestId).populate('userId');
+    const request = await Reimbursement.findById(id).populate('userId');
     
     if (!request) {
       return res.status(404).json({
@@ -583,26 +607,32 @@ export const getTreasurerWallet = async (req, res) => {
     const paidPayments = await GroupFund.find({ status: 'Paid' });
     const totalCollected = paidPayments.reduce((sum, p) => sum + p.amount, 0);
     
-    // Get total reimbursed: only include requests with status 'Received'
-    // (Amount should be deducted from wallet only after member confirms receipt)
+    // Get total reimbursed (confirmed/received)
     const receivedReimbursements = await Reimbursement.find({ status: 'Received' });
     const totalReimbursed = receivedReimbursements.reduce((sum, r) => sum + r.amount, 0);
 
-    // Calculate current balance (deduct only confirmed reimbursements)
-    const currentBalance = totalCollected - totalReimbursed;
+    // Get paid but not yet received reimbursements
+    const paidReimbursements = await Reimbursement.find({ status: 'Paid' });
+    const totalPaidPending = paidReimbursements.reduce((sum, r) => sum + r.amount, 0);
+
+    // Calculate balances
+    const currentBalance = totalCollected - totalReimbursed; // Balance excluding pending payments
+    const availableBalance = currentBalance - totalPaidPending; // Actual available balance
     
-    // Get pending reimbursement requests count
+    // Get request counts
     const pendingCount = await Reimbursement.countDocuments({ status: 'Pending' });
-    const paidAwaitingConfirmation = await Reimbursement.countDocuments({ status: 'Paid' });
+    const paidAwaitingConfirmation = paidReimbursements.length;
     
     res.status(200).json({
       success: true,
       wallet: {
         totalCollected,
-        totalReimbursed,
-        currentBalance,
-        pendingCount,
-        paidAwaitingConfirmation
+        totalReimbursed,         // Amount officially deducted (received)
+        totalPaidPending,        // Amount paid but awaiting confirmation
+        currentBalance,          // Balance without pending payments
+        availableBalance,        // Balance minus pending payments
+        pendingCount,            // New requests awaiting review
+        paidAwaitingConfirmation // Payments awaiting confirmation
       }
     });
   } catch (error) {

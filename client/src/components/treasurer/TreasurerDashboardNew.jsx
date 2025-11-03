@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { getStatistics, getWallet } from '../../utils/treasurerAPI';
-import { Users, IndianRupee, AlertCircle, Clock, Wallet, ClipboardCheck, FileText as ReimburseIcon } from 'lucide-react';
+import { Users, Wallet, ClipboardCheck, FileText as ReimburseIcon } from 'lucide-react';
 import WalletManagement from './WalletManagement';
 import MembersListByMonth from './MembersListByMonth';
 
@@ -108,56 +108,22 @@ const TreasurerDashboardNew = () => {
       </div>
       
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          {/* Total Members */}
-          <StatCard
+        {/* Statistics Cards - simplified: show only Total Members and Wallet as rectangular cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <RectCard
             title="Total Members"
             value={statistics?.totalMembers || 0}
             subtitle="Registered"
             icon={Users}
-            gradient="from-blue-500 to-blue-600"
             loading={statsLoading}
           />
-          
-          {/* Total Collection */}
-          <StatCard
-            title="Total Collection"
-            value={`₹${statistics?.totalCollection || 0}`}
-            subtitle="All payments"
-            icon={IndianRupee}
-            gradient="from-green-500 to-green-600"
-            loading={statsLoading}
-          />
-          
-          {/* Failed Payments */}
-          <StatCard
-            title="Failed"
-            value={statistics?.failedPayments || 0}
-            subtitle="Need attention"
-            icon={AlertCircle}
-            gradient="from-red-500 to-red-600"
-            loading={statsLoading}
-          />
-          
-          {/* Pending Verification */}
-          <StatCard
-            title="Pending"
-            value={statistics?.pendingPayments || 0}
-            subtitle="To review"
-            icon={Clock}
-            gradient="from-yellow-500 to-yellow-600"
-            loading={statsLoading}
-          />
-          
-          {/* Wallet Balance */}
-          <StatCard
-            title="Wallet Balance"
+
+          <RectCard
+            title="Total Wallet"
             value={`₹${walletBalance.toLocaleString('en-IN')}`}
             subtitle="Club funds"
             icon={Wallet}
-            gradient="from-purple-500 to-purple-600"
-            loading={false}
+            loading={statsLoading}
           />
         </div>
         
@@ -217,6 +183,37 @@ const StatCard = ({ title, value, subtitle, icon: Icon, gradient, loading }) => 
       <div className="text-3xl font-bold mb-1">{value}</div>
       <div className="text-sm opacity-90">{title}</div>
       <div className="text-xs opacity-75 mt-2">{subtitle}</div>
+    </div>
+  );
+};
+
+/**
+ * Rectangular Card used for simplified Treasurer Dashboard
+ */
+const RectCard = ({ title, value, subtitle, icon: Icon, loading }) => {
+  if (loading) {
+    return (
+      <div className="bg-white rounded-md p-6 shadow-sm animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-24 mb-4"></div>
+        <div className="h-8 bg-gray-200 rounded w-32"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-md p-6 shadow-sm hover:shadow-md transition-all duration-150">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 bg-gray-100 rounded-md">
+            <Icon className="w-6 h-6 text-gray-700" />
+          </div>
+          <div>
+            <div className="text-sm text-gray-500">{title}</div>
+            <div className="text-2xl font-semibold text-gray-900">{value}</div>
+          </div>
+        </div>
+      </div>
+      {subtitle && <div className="text-xs text-gray-400">{subtitle}</div>}
     </div>
   );
 };

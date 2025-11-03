@@ -546,31 +546,19 @@ export const addMoneyToWallet = async (req, res) => {
         message: 'Valid amount is required'
       });
     }
+    // Use Wallet static helper to retrieve or create the wallet
+    const wallet = await Wallet.getWallet();
 
-    let wallet = await Wallet.findOne();
-    
-    if (!wallet) {
-      wallet = await Wallet.create({
-        balance: 0,
-        transactions: []
-      });
-    }
+    // Ensure amount is a number
+    const amt = parseFloat(amount);
 
-    wallet.balance += amount;
-    wallet.transactions.push({
-      type: 'credit',
-      amount,
-      description: description || 'Money added to wallet',
-      date: new Date(),
-      performedBy: req.user._id
-    });
-
-    await wallet.save();
+    // Use model method to add money (ensures transaction fields and validation)
+    await wallet.addMoney(amt, description || 'Money added to wallet', req.user._id);
 
     res.status(200).json({
       success: true,
       message: 'Money added successfully',
-      wallet
+      wallet: await Wallet.getWallet()
     });
   } catch (error) {
     console.error('Error in addMoneyToWallet:', error);
@@ -597,38 +585,17 @@ export const removeMoneyFromWallet = async (req, res) => {
         message: 'Valid amount is required'
       });
     }
+    // Use Wallet helper
+    const wallet = await Wallet.getWallet();
+    const amt = parseFloat(amount);
 
-    let wallet = await Wallet.findOne();
-    
-    if (!wallet) {
-      return res.status(400).json({
-        success: false,
-        message: 'Wallet not found'
-      });
-    }
-
-    if (wallet.balance < amount) {
-      return res.status(400).json({
-        success: false,
-        message: 'Insufficient balance'
-      });
-    }
-
-    wallet.balance -= amount;
-    wallet.transactions.push({
-      type: 'debit',
-      amount,
-      description: description || 'Money removed from wallet',
-      date: new Date(),
-      performedBy: req.user._id
-    });
-
-    await wallet.save();
+    // Use model method to remove money (will throw if insufficient)
+    await wallet.removeMoney(amt, description || 'Money removed from wallet', req.user._id);
 
     res.status(200).json({
       success: true,
       message: 'Money removed successfully',
-      wallet
+      wallet: await Wallet.getWallet()
     });
   } catch (error) {
     console.error('Error in removeMoneyFromWallet:', error);

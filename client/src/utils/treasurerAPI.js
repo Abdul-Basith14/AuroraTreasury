@@ -379,9 +379,9 @@ export const getReimbursementRequests = async (params = {}) => {
  * @param {FormData} formData - Form data with paymentProof and optional message
  * @returns {Promise} - Payment result
  */
-export const payReimbursement = async (requestId, formData) => {
+export const payReimbursement = async (id, formData) => {
   try {
-    const response = await API.post(`/reimbursement/pay/${requestId}`, formData, {
+    const response = await API.post(`/reimbursement/pay/${id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
