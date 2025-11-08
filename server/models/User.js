@@ -77,6 +77,12 @@ const userSchema = new mongoose.Schema(
  * Hash password before saving to database
  * Only hash if password is modified
  */
+// Add reset password fields to schema
+userSchema.add({
+  resetPasswordToken: String,
+  resetPasswordExpires: Date
+});
+
 userSchema.pre('save', async function (next) {
   // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) {

@@ -7,6 +7,8 @@ import {
   logout,
   sendOTP,
   verifyOTP,
+  requestPasswordReset,
+  resetPassword
 } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -50,5 +52,15 @@ router.post('/verify', protect, verifyToken);
 // @desc    Logout user
 // @access  Private (requires valid token)
 router.post('/logout', protect, logout);
+
+// @route   POST /api/auth/request-reset
+// @desc    Request password reset (sends email with reset link)
+// @access  Public
+router.post('/request-reset', requestPasswordReset);
+
+// @route   POST /api/auth/reset
+// @desc    Reset password using token
+// @access  Public
+router.post('/reset', resetPassword);
 
 export default router;
