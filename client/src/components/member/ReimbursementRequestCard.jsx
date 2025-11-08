@@ -13,43 +13,48 @@ import {
  * Status configuration for different reimbursement states
  */
 const statusConfig = {
+  // Pending: Yellow -> Muted Olive-Gray
   Pending: {
-    color: 'yellow',
-    bg: 'bg-yellow-100',
-    text: 'text-yellow-800',
-    border: 'border-yellow-200',
+    color: 'gray',
+    bg: 'bg-[#3A3E36]',
+    text: 'text-[#E8E3C5]',
+    border: 'border-[#3A3E36]',
     icon: Clock,
     message: 'Awaiting treasurer review',
   },
+  // Approved: Blue -> Accent Olive Muted
   Approved: {
-    color: 'blue',
-    bg: 'bg-blue-100',
-    text: 'text-blue-800',
-    border: 'border-blue-200',
+    color: 'olive-light',
+    bg: 'bg-[#A6C36F]/30',
+    text: 'text-[#A6C36F]',
+    border: 'border-[#A6C36F]/40',
     icon: CheckCircle,
     message: 'Approved! Payment in progress',
   },
+  // Paid: Green -> Strong Accent Olive
   Paid: {
-    color: 'green',
-    bg: 'bg-green-100',
-    text: 'text-green-800',
-    border: 'border-green-200',
+    color: 'olive-dark',
+    bg: 'bg-[#A6C36F]/50',
+    text: 'text-[#0B0B09]', // High contrast black text on light olive
+    border: 'border-[#A6C36F]/60',
     icon: CheckCircle,
     message: 'Payment sent! Please confirm receipt',
   },
+  // Received: Emerald -> Pure Accent Olive
   Received: {
-    color: 'emerald',
-    bg: 'bg-emerald-100',
-    text: 'text-emerald-800',
-    border: 'border-emerald-200',
+    color: 'olive-full',
+    bg: 'bg-[#A6C36F]',
+    text: 'text-[#0B0B09]', // High contrast black text on light olive
+    border: 'border-[#A6C36F]',
     icon: CheckCircle,
     message: 'Completed',
   },
+  // Rejected: Red -> Dark Panel + Soft Red Text
   Rejected: {
-    color: 'red',
-    bg: 'bg-red-100',
-    text: 'text-red-800',
-    border: 'border-red-200',
+    color: 'red-dark',
+    bg: 'bg-[#1F221C]',
+    text: 'text-[#F07167]',
+    border: 'border-[#F07167]/40',
     icon: XCircle,
     message: 'Request rejected',
   },
@@ -58,8 +63,7 @@ const statusConfig = {
 /**
  * ReimbursementRequestCard Component
  * Displays a single reimbursement request with status, details, and actions
- * 
- * @param {Object} request - Reimbursement request object
+ * * @param {Object} request - Reimbursement request object
  * @param {Function} onViewResponse - Callback to view treasurer's response
  * @param {Function} onConfirmReceipt - Callback to confirm payment receipt
  * @param {Function} onDelete - Callback to delete request
@@ -71,6 +75,7 @@ const ReimbursementRequestCard = ({
   onDelete 
 }) => {
   const [showActions, setShowActions] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const status = statusConfig[request.status];
   const StatusIcon = status.icon;
@@ -85,120 +90,111 @@ const ReimbursementRequestCard = ({
   };
 
   return (
-    <div className={`border-2 ${status.border} rounded-xl p-5 hover:shadow-md transition-all duration-200`}>
-      {/* Header */}
-      <div className="flex justify-between items-start mb-4">
-        <div className={`inline-flex items-center px-3 py-1.5 rounded-full ${status.bg} ${status.text} text-xs font-semibold`}>
-          <StatusIcon className="w-4 h-4 mr-1.5" />
-          <span>{request.status}</span>
+    // Base card styling
+    <div className={`
+      bg-[#1F221C] 
+      border-2 ${status.border} 
+      rounded-xl p-4
+      hover:shadow-[0_0_15px_rgba(166,195,111,0.2)] 
+      transition-all duration-200
+      cursor-pointer
+    `}
+    onClick={() => setIsExpanded(!isExpanded)}
+    >
+      {/* Compact Header - Always visible */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          {/* Amount */}
+          <span className="text-xl font-bold text-[#F5F3E7]">₹ {request.amount.toLocaleString('en-IN')}</span>
+          
+          {/* Status Badge */}
+          <div className={`inline-flex items-center px-2 py-1 rounded-full ${status.bg} ${status.text} text-xs font-semibold`}>
+            <StatusIcon className="w-3 h-3 mr-1" />
+            <span>{request.status}</span>
+          </div>
         </div>
-        <span className="text-xs text-gray-500 font-medium">
-          {formatDate(request.requestDate)}
-        </span>
-      </div>
 
-      {/* Content */}
-      <div className="space-y-3 mb-4">
-        {/* Amount */}
-        <div className="flex justify-between items-center">
-          <span className="text-3xl font-bold text-gray-900">₹ {request.amount.toLocaleString('en-IN')}</span>
-          <span className={`text-xs ${status.text} font-semibold px-2 py-1 rounded ${status.bg}`}>
-            {status.message}
+        <div className="flex items-center space-x-3">
+          {/* Date */}
+          <span className="text-xs text-[#E8E3C5]/70 font-medium">
+            {formatDate(request.requestDate)}
           </span>
-        </div>
 
-        {/* Description */}
-        <div className="bg-gray-50 rounded-lg p-3">
-          <p className="text-sm text-gray-600 font-medium mb-1">Description:</p>
-          <p className="text-sm text-gray-800 leading-relaxed">{request.description}</p>
-        </div>
-
-        {/* Mobile Number */}
-        <div className="flex items-center text-sm">
-          <span className="text-gray-600 font-medium">Contact:</span>
-          <span className="text-gray-800 ml-2">+91 {request.mobileNumber}</span>
+          {/* Delete Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(request._id);
+            }}
+            className="text-[#F07167] hover:text-[#F07167]/80 p-1.5 rounded-lg hover:bg-[#0B0B09] transition"
+            title="Delete Request"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center flex-wrap gap-3 pt-4 border-t border-gray-200">
-        {/* View Bill Button */}
-        <button
-          onClick={() => window.open(request.billProofPhoto, '_blank')}
-          className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center hover:bg-blue-50 px-3 py-1.5 rounded-lg transition"
-        >
-          <FileText className="w-4 h-4 mr-1.5" />
-          View Bill
-        </button>
+      {/* Expandable Content */}
+      {isExpanded && (
+        <div className="mt-4 space-y-4 border-t border-[#3A3E36] pt-4" onClick={(e) => e.stopPropagation()}>
+          {/* Description */}
+          <div className="bg-[#0B0B09] rounded-lg p-3 border border-[#3A3E36]">
+            <p className="text-sm text-[#E8E3C5] font-medium mb-1">Description:</p>
+            <p className="text-sm text-[#F5F3E7] leading-relaxed">{request.description}</p>
+          </div>
 
-        {/* View Treasurer Response - Only if response exists */}
-        {request.treasurerResponse && request.treasurerResponse.message && (
-          <button
-            onClick={() => onViewResponse(request)}
-            className="text-sm text-purple-600 hover:text-purple-800 font-medium flex items-center hover:bg-purple-50 px-3 py-1.5 rounded-lg transition"
-          >
-            <MessageSquare className="w-4 h-4 mr-1.5" />
-            View Response
-          </button>
-        )}
+          {/* Status Message */}
+          <div className={`text-xs ${status.text} font-semibold px-2 py-1 rounded ${status.bg} inline-block`}>
+            {status.message}
+          </div>
 
-        {/* Confirm Receipt Button - Only if status is 'Paid' */}
-        {request.status === 'Paid' && (
-          <button
-            onClick={() => onConfirmReceipt(request._id)}
-            className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-semibold flex items-center shadow-sm hover:shadow transition-all animate-pulse"
-          >
-            <CheckCircle className="w-4 h-4 mr-1.5" />
-            Confirm Receipt
-          </button>
-        )}
+          {/* Contact Info */}
+          <div className="text-xs text-[#E8E3C5]/70">
+            Contact: +91 {request.mobileNumber}
+          </div>
 
-        {/* Delete Button - Only if Pending or Rejected */}
-        {(request.status === 'Pending' || request.status === 'Rejected') && (
-          <div className="ml-auto relative">
+          {/* Actions */}
+          <div className="flex items-center gap-2 pt-2">
+            {/* View Bill Button */}
             <button
-              onClick={() => setShowActions(!showActions)}
-              className="text-gray-600 hover:text-gray-800 p-2 rounded-lg hover:bg-gray-100 transition"
-              title="More actions"
+              onClick={() => window.open(request.billProofPhoto, '_blank')}
+              className="text-xs text-[#A6C36F] hover:text-[#A6C36F] font-medium flex items-center hover:bg-[#3A3E36] px-2 py-1 rounded-lg transition"
             >
-              <MoreVertical className="w-5 h-5" />
+              <FileText className="w-3 h-3 mr-1" />
+              View Bill
             </button>
 
-            {/* Dropdown Menu */}
-            {showActions && (
-              <>
-                {/* Backdrop to close dropdown */}
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowActions(false)}
-                ></div>
+            {/* View Treasurer Response */}
+            {request.treasurerResponse && request.treasurerResponse.message && (
+              <button
+                onClick={() => onViewResponse(request)}
+                className="text-xs text-[#E8E3C5] hover:text-[#F5F3E7] font-medium flex items-center hover:bg-[#3A3E36] px-2 py-1 rounded-lg transition"
+              >
+                <MessageSquare className="w-3 h-3 mr-1" />
+                View Response
+              </button>
+            )}
 
-                {/* Dropdown Content */}
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20 overflow-hidden">
-                  <button
-                    onClick={() => {
-                      onDelete(request._id);
-                      setShowActions(false);
-                    }}
-                    className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center transition font-medium"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Request
-                  </button>
-                </div>
-              </>
+            {/* Confirm Receipt Button */}
+            {request.status === 'Paid' && (
+              <button
+                onClick={() => onConfirmReceipt(request._id)}
+                className="text-xs bg-[#A6C36F] text-[#0B0B09] px-3 py-1 rounded-lg hover:bg-[#8FAE5D] font-semibold flex items-center shadow-sm hover:shadow transition-all animate-pulse ml-auto"
+              >
+                <CheckCircle className="w-3 h-3 mr-1" />
+                Confirm Receipt
+              </button>
             )}
           </div>
-        )}
-      </div>
-
+        </div>
+      )}
       {/* Rejection Reason - If rejected */}
-      {request.status === 'Rejected' && request.rejectionReason && (
-        <div className="mt-4 p-4 bg-red-50 rounded-lg border-l-4 border-red-500">
-          <p className="text-xs font-semibold text-red-800 mb-1 uppercase tracking-wide">
+      {isExpanded && request.status === 'Rejected' && request.rejectionReason && (
+        <div className="mt-4 p-3 bg-[#0B0B09] rounded-lg border-l-4 border-[#F07167]" onClick={(e) => e.stopPropagation()}>
+          <p className="text-xs font-semibold text-[#F07167] mb-1 uppercase tracking-wide">
             Rejection Reason:
           </p>
-          <p className="text-sm text-red-700 leading-relaxed">{request.rejectionReason}</p>
+          <p className="text-sm text-[#F07167] leading-relaxed">{request.rejectionReason}</p>
         </div>
       )}
     </div>

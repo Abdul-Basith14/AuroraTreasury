@@ -253,18 +253,16 @@ export const confirmReceipt = async (req, res) => {
       });
     }
 
-    // Update status to 'Received' after successful deduction
-    reimbursement.status = 'Received';
-    reimbursement.receivedDate = new Date();
-    await reimbursement.save();
+    // After successful wallet deduction, delete the reimbursement request
+    // This will keep the list clean by removing confirmed/received requests
+    await Reimbursement.findByIdAndDelete(id);
 
-    console.log(`ConfirmReceipt: requestId=${id} marked Received and wallet deducted by user=${treasurerId}`);
+    console.log(`ConfirmReceipt: requestId=${id} payment confirmed and request deleted by user=${treasurerId}`);
 
     res.status(200).json({
       success: true,
-      message: 'Payment receipt confirmed successfully! Thank you.',
+      message: 'Payment receipt confirmed successfully! Request removed from list.',
       data: {
-        reimbursement,
         wallet: await Wallet.getWallet()
       },
     });
@@ -304,11 +302,11 @@ export const deleteRequest = async (req, res) => {
       });
     }
 
-    // Check if request can be deleted (only Pending or Rejected)
-    if (!['Pending', 'Rejected'].includes(reimbursement.status)) {
+    // Check if request can be deleted (Pending, Rejected, or Received)
+    if (!['Pending', 'Rejected', 'Received'].includes(reimbursement.status)) {
       return res.status(400).json({
         success: false,
-        message: `Cannot delete ${reimbursement.status} request. Only Pending or Rejected requests can be deleted.`,
+        message: `Cannot delete ${reimbursement.status} request. Only Pending, Rejected, or Received requests can be deleted.`,
       });
     }
 
@@ -360,7 +358,6 @@ export const getStatistics = async (req, res) => {
         pending: reimbursements.filter((r) => r.status === 'Pending').length,
         approved: reimbursements.filter((r) => r.status === 'Approved').length,
         paid: reimbursements.filter((r) => r.status === 'Paid').length,
-        received: reimbursements.filter((r) => r.status === 'Received').length,
         rejected: reimbursements.filter((r) => r.status === 'Rejected').length,
       },
       amounts: {
@@ -373,9 +370,6 @@ export const getStatistics = async (req, res) => {
           .reduce((sum, r) => sum + r.amount, 0),
         paid: reimbursements
           .filter((r) => r.status === 'Paid')
-          .reduce((sum, r) => sum + r.amount, 0),
-        received: reimbursements
-          .filter((r) => r.status === 'Received')
           .reduce((sum, r) => sum + r.amount, 0),
         rejected: reimbursements
           .filter((r) => r.status === 'Rejected')

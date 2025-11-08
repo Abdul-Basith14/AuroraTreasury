@@ -4,6 +4,16 @@ import { getResubmissionRequests } from '../../utils/treasurerAPI';
 import PaymentRequestCard from './PaymentRequestCard';
 import { RotateCw } from 'lucide-react';
 
+// --- Core Color Palette (from Styling System) ---
+const BACKGROUND_PRIMARY = '#0B0B09';
+const BACKGROUND_SECONDARY = '#1F221C';
+const TEXT_PRIMARY = '#F5F3E7';
+const TEXT_SECONDARY = '#E8E3C5';
+const ACCENT_OLIVE = '#A6C36F';
+const BORDER_DIVIDER = '#3A3E36';
+const SHADOW_GLOW = 'shadow-[0_0_25px_rgba(166,195,111,0.08)]';
+// ------------------------------------------------
+
 /**
  * Resubmissions Tab - Displays and manages resubmitted payment requests
  */
@@ -45,34 +55,45 @@ const ResubmissionsTab = ({ refreshTrigger, onActionComplete }) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        {/* Themed Spinner */}
+        <div 
+          className="animate-spin rounded-full h-12 w-12 border-b-4" 
+          style={{ borderColor: ACCENT_OLIVE }}
+        ></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Results Summary */}
-      <div className="bg-white rounded-lg p-4 shadow-sm">
+      
+      {/* Results Summary - Themed Panel */}
+      <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-xl p-4 border border-[${BORDER_DIVIDER}] ${SHADOW_GLOW}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <RotateCw className="w-5 h-5 text-purple-600" />
-            <span className="font-semibold text-gray-900">
-              {requests.length} {requests.length === 1 ? 'Resubmission' : 'Resubmissions'}
+            <RotateCw className={`w-5 h-5 text-[${ACCENT_OLIVE}]`} />
+            <span className={`font-semibold text-[${TEXT_PRIMARY}]`}>
+              {requests.length} {requests.length === 1 ? 'Resubmission' : 'Resubmissions'} to Review
             </span>
           </div>
+          {requests.length > 0 && (
+            <span className={`text-sm font-medium text-yellow-500`}>
+                ⚠️ Awaiting Re-verification
+            </span>
+          )}
         </div>
       </div>
 
       {/* Resubmission Requests List */}
       {requests.length === 0 ? (
-        <div className="bg-white rounded-lg p-12 text-center shadow-sm">
-          <RotateCw className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        // Empty State - Themed Panel
+        <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-xl p-12 text-center border border-[${BORDER_DIVIDER}] ${SHADOW_GLOW}`}>
+          <RotateCw className={`w-16 h-16 text-[${BORDER_DIVIDER}] mx-auto mb-4`} />
+          <h3 className={`text-xl font-semibold text-[${TEXT_PRIMARY}] mb-2`}>
             No Resubmissions
           </h3>
-          <p className="text-gray-600">
-            There are no resubmitted payment proofs to review.
+          <p className={`text-[${TEXT_SECONDARY}]/70`}>
+            There are no payment proofs currently awaiting a re-review.
           </p>
         </div>
       ) : (
@@ -83,6 +104,7 @@ const ResubmissionsTab = ({ refreshTrigger, onActionComplete }) => {
               request={request}
               onActionComplete={handleActionComplete}
               isResubmission={true}
+              // PaymentRequestCard (from previous step) should be themed to match the environment
             />
           ))}
         </div>

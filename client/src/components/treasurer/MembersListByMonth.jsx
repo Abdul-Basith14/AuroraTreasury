@@ -5,6 +5,16 @@ import axios from 'axios';
 import { Download, Trash2, Calendar, Users, IndianRupee, CheckCircle, Clock, AlertCircle, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import ManualPaymentUpdateModal from './ManualPaymentUpdateModal';
 
+// --- Theme Tokens ---
+const TEXT_PRIMARY = '#F5F3E7';
+const TEXT_SECONDARY = '#E8E3C5';
+const ACCENT_OLIVE = '#A6C36F';
+const BACKGROUND_PRIMARY = '#0B0B09';
+const BACKGROUND_SECONDARY = '#1F221C';
+const BORDER_DIVIDER = '#3A3E36';
+const SHADOW_GLOW = 'shadow-[0_0_25px_rgba(166,195,111,0.08)]';
+// --------------------
+
 /**
  * Month-based Member List Component
  * Shows payment status for all members in a specific month (table view)
@@ -37,8 +47,8 @@ const MembersListByMonth = () => {
   }, []);
   
   /**
-   * Fetch club settings
-   */
+    * Fetch club settings
+    */
   const fetchClubSettings = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -79,8 +89,8 @@ const MembersListByMonth = () => {
   }, [searchQuery, memberList]);
   
   /**
-   * Fetch member list for selected month
-   */
+    * Fetch member list for selected month
+    */
   const fetchMemberList = async () => {
     setLoading(true);
     try {
@@ -123,8 +133,8 @@ const MembersListByMonth = () => {
   };
   
   /**
-   * Handle download CSV
-   */
+    * Handle download CSV
+    */
   const handleDownload = () => {
     try {
       const csvData = [
@@ -160,8 +170,8 @@ const MembersListByMonth = () => {
   };
   
   /**
-   * Create monthly records for all members
-   */
+    * Create monthly records for all members
+    */
   const handleCreateMonthlyRecords = async ({ amounts, deadline }) => {
     if (!amounts || !deadline) {
       toast.error('Please provide all required information');
@@ -190,8 +200,8 @@ const MembersListByMonth = () => {
   };
 
   /**
-   * Handle delete monthly records
-   */
+    * Handle delete monthly records
+    */
   const handleDelete = async () => {
     try {
       const result = await deleteMonthlyRecords(selectedMonth, selectedYear);
@@ -205,8 +215,8 @@ const MembersListByMonth = () => {
   };
   
   /**
-   * Handle manual payment update
-   */
+    * Handle manual payment update
+    */
   const handleManualUpdate = (member) => {
     // Determine the default amount based on member's year
     let defaultAmount = 100; // Fallback default
@@ -239,8 +249,8 @@ const MembersListByMonth = () => {
   };
   
   /**
-   * Handle manual update success
-   */
+    * Handle manual update success
+    */
   const handleManualUpdateSuccess = () => {
     setShowManualUpdateModal(false);
     setSelectedMemberForUpdate(null);
@@ -248,8 +258,8 @@ const MembersListByMonth = () => {
   };
   
   /**
-   * Navigate to previous month
-   */
+    * Navigate to previous month
+    */
   const handlePreviousMonth = () => {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const currentIndex = months.indexOf(selectedMonth);
@@ -262,8 +272,8 @@ const MembersListByMonth = () => {
   };
   
   /**
-   * Navigate to next month
-   */
+    * Navigate to next month
+    */
   const handleNextMonth = () => {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const currentIndex = months.indexOf(selectedMonth);
@@ -276,40 +286,78 @@ const MembersListByMonth = () => {
   };
   
   /**
-   * Get status badge color
-   */
+    * Get status badge color (Themed)
+    */
   const getStatusBadge = (status) => {
     const configs = {
-      'Paid': 'bg-green-100 text-green-800 border-green-200',
-      'Pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      'Failed': 'bg-red-100 text-red-800 border-red-200',
-      'Not Created': 'bg-gray-100 text-gray-800 border-gray-200'
+      // Paid: Olive Accent
+      'Paid': `bg-[${ACCENT_OLIVE}]/10 text-[${ACCENT_OLIVE}] border-[${ACCENT_OLIVE}]/40`,
+      // Pending: Yellow/Muted
+      'Pending': 'bg-yellow-800/20 text-yellow-400 border-yellow-700/50',
+      // Failed/Error: Red/Alert
+      'Failed': 'bg-red-800/20 text-red-400 border-red-700/50',
+      // Not Created: Muted Gray
+      'Not Created': `bg-[${BORDER_DIVIDER}]/40 text-[${TEXT_SECONDARY}]/70 border-[${BORDER_DIVIDER}]/70`
     };
     return configs[status] || configs['Not Created'];
   };
+
+  // Inline Summary component (REMOVED)
+  // const InlineSummary = ({ summary }) => (
+  //   <div className={`text-sm text-[${TEXT_SECONDARY}]/70 flex flex-wrap items-center gap-x-6 gap-y-2`}>
+  //     <span>
+  //       **Total Members:** <span className={`font-semibold text-[${TEXT_PRIMARY}]`}>{summary.totalMembers}</span>
+  //     </span>
+  //     <span className="flex items-center">
+  //       <CheckCircle className={`w-4 h-4 mr-1 text-[${ACCENT_OLIVE}]`} />
+  //       **Paid:** <span className={`font-semibold text-[${ACCENT_OLIVE}]`}>{summary.paidCount}</span>
+  //     </span>
+  //     <span className="flex items-center">
+  //       <Clock className="w-4 h-4 mr-1 text-yellow-400" />
+  //       **Pending:** <span className="font-semibold text-yellow-400">{summary.pendingCount}</span>
+  //     </span>
+  //     <span className="flex items-center">
+  //       <IndianRupee className="w-4 h-4 mr-1 text-purple-400" />
+  //       **Collected:** <span className="font-semibold text-purple-400">₹ {summary.totalCollected}</span>
+  //     </span>
+  //     {summary.failedCount > 0 && (
+  //       <span className="flex items-center">
+  //         <AlertCircle className="w-4 h-4 mr-1 text-red-400" />
+  //         **Failed:** <span className="font-semibold text-red-400">{summary.failedCount}</span>
+  //       </span>
+  //     )}
+  //   </div>
+  // );
   
   return (
-    <div className="bg-white rounded-2xl shadow-lg">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-200">
+    // Outer container: Dark Panel style
+    <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-2xl ${SHADOW_GLOW} ring-1 ring-[${BORDER_DIVIDER}]/40`}>
+      
+      {/* Header & Actions */}
+      <div className={`p-6 border-b border-[${BORDER_DIVIDER}]`}>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-gray-900">Members List by Month</h2>
+          <h2 className={`text-2xl font-bold text-[${TEXT_PRIMARY}]`}>Members List by Month</h2>
+          
+          {/* Action Buttons */}
           <div className="flex space-x-3">
+            {/* Create Button (Olive Accent) */}
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors duration-200"
+              className={`flex items-center px-4 py-2 bg-[${ACCENT_OLIVE}] text-[${BACKGROUND_PRIMARY}] rounded-lg hover:bg-[#8FAE5D] font-medium transition-colors duration-200`}
             >
               <CheckCircle className="w-5 h-5 mr-2" />
               Create Monthly Records
             </button>
+            {/* Download Button (Secondary Color) */}
             <button
               onClick={handleDownload}
               disabled={memberList.length === 0}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors duration-200 disabled:opacity-50"
+              className={`flex items-center px-4 py-2 bg-[${BORDER_DIVIDER}]/50 text-[${TEXT_PRIMARY}] rounded-lg hover:bg-[${BORDER_DIVIDER}] font-medium transition-colors duration-200 disabled:opacity-50`}
             >
               <Download className="w-5 h-5 mr-2" />
               Download CSV
             </button>
+            {/* Delete Button (Danger Red) */}
             <button
               onClick={() => setShowDeleteConfirm(true)}
               disabled={memberList.length === 0 || summary?.paidCount === 0}
@@ -325,38 +373,43 @@ const MembersListByMonth = () => {
         <div className="flex items-center justify-center space-x-4 mb-4">
           <button
             onClick={handlePreviousMonth}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className={`p-2 hover:bg-[${BORDER_DIVIDER}]/50 rounded-lg transition-colors duration-200`}
           >
-            <ChevronLeft className="w-6 h-6 text-gray-600" />
+            <ChevronLeft className={`w-6 h-6 text-[${TEXT_SECONDARY}]`} />
           </button>
           <div className="flex items-center space-x-3">
-            <Calendar className="w-6 h-6 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">
+            <Calendar className={`w-6 h-6 text-[${ACCENT_OLIVE}]`} />
+            <span className={`text-xl font-bold text-[${TEXT_PRIMARY}]`}>
               {selectedMonth} {selectedYear}
             </span>
           </div>
           <button
             onClick={handleNextMonth}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            className={`p-2 hover:bg-[${BORDER_DIVIDER}]/50 rounded-lg transition-colors duration-200`}
           >
-            <ChevronRight className="w-6 h-6 text-gray-600" />
+            <ChevronRight className={`w-6 h-6 text-[${TEXT_SECONDARY}]`} />
           </button>
         </div>
         
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[${ACCENT_OLIVE}]/70`} />
           <input
             type="text"
             placeholder="Search by name, USN, or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full pl-10 pr-4 py-2.5 
+              border border-[${BORDER_DIVIDER}] rounded-xl 
+              bg-[${BACKGROUND_PRIMARY}] text-[${TEXT_PRIMARY}] 
+              placeholder:text-[${TEXT_SECONDARY}]/60
+              focus:ring-2 focus:ring-[${ACCENT_OLIVE}] focus:border-transparent outline-none
+            `}
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-[${TEXT_SECONDARY}]/60 hover:text-[${TEXT_SECONDARY}]`}
             >
               ✕
             </button>
@@ -364,41 +417,12 @@ const MembersListByMonth = () => {
         </div>
       </div>
       
-      {/* Summary Cards */}
-      {summary && (
-        <div className="p-6 border-b border-gray-200">
-          {searchQuery && (
-            <div className="mb-4 text-sm text-gray-600">
-              Showing <span className="font-semibold text-blue-600">{filteredMembers.length}</span> of <span className="font-semibold">{summary.totalMembers}</span> members
+      {/* Summary (CLEANED UP SECTION) */}
+      {summary && searchQuery && (
+        <div className={`p-6 border-b border-[${BORDER_DIVIDER}]`}>
+            <div className={`text-sm text-[${TEXT_SECONDARY}]/70`}>
+              Showing <span className={`font-semibold text-[${ACCENT_OLIVE}]`}>{filteredMembers.length}</span> of <span className="font-semibold">{summary.totalMembers}</span> members
             </div>
-          )}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-              <Users className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-blue-900">{summary.totalMembers}</div>
-              <div className="text-xs text-blue-700">Total Members</div>
-            </div>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-              <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-green-900">{summary.paidCount}</div>
-              <div className="text-xs text-green-700">Paid</div>
-            </div>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-              <Clock className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-yellow-900">{summary.pendingCount}</div>
-              <div className="text-xs text-yellow-700">Pending</div>
-            </div>
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-              <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-red-900">{summary.failedCount}</div>
-              <div className="text-xs text-red-700">Failed</div>
-            </div>
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
-              <IndianRupee className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-purple-900">₹ {summary.totalCollected}</div>
-              <div className="text-xs text-purple-700">Collected</div>
-            </div>
-          </div>
         </div>
       )}
       
@@ -406,62 +430,40 @@ const MembersListByMonth = () => {
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className={`animate-spin rounded-full h-12 w-12 border-b-2 border-[${ACCENT_OLIVE}]`}></div>
           </div>
         ) : filteredMembers.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
-            <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <p>{searchQuery ? `No members found matching "${searchQuery}"` : 'No members found'}</p>
+            <Users className={`w-16 h-16 mx-auto mb-4 text-[${BORDER_DIVIDER}]/80`} />
+            <p className={`text-[${TEXT_SECONDARY}]/80`}>{searchQuery ? `No members found matching "${searchQuery}"` : 'No members found'}</p>
           </div>
         ) : (
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className={`bg-[${BACKGROUND_SECONDARY}] border-b border-[${BORDER_DIVIDER}]`}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  #
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  USN
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Year
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Branch
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Payment Date
-                </th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                {['#', 'Name', 'USN', 'Year', 'Branch', 'Status', 'Amount', 'Payment Date', 'Actions'].map(header => (
+                  <th key={header} className={`px-6 py-3 text-left text-xs font-medium text-[${TEXT_SECONDARY}]/70 uppercase tracking-wider ${header === 'Actions' ? 'text-center' : ''}`}>
+                    {header}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className={`divide-y divide-[${BORDER_DIVIDER}]`}>
               {filteredMembers.map((member, index) => (
-                <tr key={member._id} className="hover:bg-gray-50 transition-colors duration-150">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <tr key={member._id} className={`hover:bg-[${BACKGROUND_SECONDARY}]/70 transition-colors duration-150`}>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-[${TEXT_SECONDARY}]/90`}>
                     {index + 1}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{member.name}</div>
+                    <div className={`text-sm font-medium text-[${TEXT_PRIMARY}]`}>{member.name}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-[${TEXT_SECONDARY}]/80`}>
                     {member.usn}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-[${TEXT_SECONDARY}]/80`}>
                     {member.year}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-[${TEXT_SECONDARY}]/80`}>
                     {member.branch}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -469,28 +471,29 @@ const MembersListByMonth = () => {
                       {member.paymentStatus}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold text-[${ACCENT_OLIVE}]`}>
                     {member.amount > 0 ? `₹ ${member.amount}` : '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-[${TEXT_SECONDARY}]/80`}>
                     {member.paymentDate ? new Date(member.paymentDate).toLocaleDateString('en-IN') : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     {member.paymentStatus === 'Pending' && !member.paymentProof ? (
+                      // Olive Accent Button for Manual Update
                       <button
                         onClick={() => handleManualUpdate(member)}
-                        className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors duration-200"
+                        className={`inline-flex items-center px-3 py-1.5 bg-[${ACCENT_OLIVE}] text-[${BACKGROUND_PRIMARY}] text-xs font-medium rounded-lg hover:bg-[#8FAE5D] transition-colors duration-200`}
                         title="Mark as paid (for cash/offline payments)"
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
                         Mark Paid
                       </button>
                     ) : member.paymentStatus === 'Pending' && member.paymentProof ? (
-                      <span className="text-sm text-yellow-700">Pending (awaiting verification)</span>
+                      <span className={`text-sm text-yellow-400`}>Pending (awaiting verification)</span>
                     ) : member.paymentStatus === 'Paid' ? (
-                      <span className="text-green-600 text-xs font-medium">✓ Paid</span>
+                      <span className={`text-[${ACCENT_OLIVE}] text-xs font-medium`}>✓ Paid</span>
                     ) : (
-                      <span className="text-gray-400 text-xs">-</span>
+                      <span className={`text-[${TEXT_SECONDARY}]/50 text-xs`}>-</span>
                     )}
                   </td>
                 </tr>
@@ -500,37 +503,40 @@ const MembersListByMonth = () => {
         )}
       </div>
       
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal (Themed) */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6">
-            <div className="text-center">
-              <Trash2 className="w-16 h-16 text-red-600 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Delete Monthly Records?</h3>
-              <p className="text-gray-600 mb-6">
-                This will permanently delete all payment records for {selectedMonth} {selectedYear}. 
-                This action cannot be undone.
-              </p>
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors duration-200"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
+        <ThemedModal 
+          title="Delete Monthly Records?" 
+          onClose={() => setShowDeleteConfirm(false)}
+          ACCENT_OLIVE={ACCENT_OLIVE}
+          BACKGROUND_SECONDARY={BACKGROUND_SECONDARY}
+          TEXT_PRIMARY={TEXT_PRIMARY}
+          BORDER_DIVIDER={BORDER_DIVIDER}
+          TEXT_SECONDARY={TEXT_SECONDARY}
+        >
+          <Trash2 className="w-16 h-16 text-red-600 mx-auto mb-4" />
+          <p className={`text-[${TEXT_SECONDARY}]/80 mb-6`}>
+            This will permanently delete all payment records for **{selectedMonth} {selectedYear}**. 
+            This action cannot be undone.
+          </p>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className={`flex-1 px-4 py-2 bg-[${BORDER_DIVIDER}]/50 text-[${TEXT_SECONDARY}] rounded-lg hover:bg-[${BORDER_DIVIDER}] font-medium transition-colors duration-200`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors duration-200"
+            >
+              Delete
+            </button>
           </div>
-        </div>
+        </ThemedModal>
       )}
       
-      {/* Manual Payment Update Modal */}
+      {/* Manual Payment Update Modal (Assumes ManualPaymentUpdateModal is themed separately) */}
       {showManualUpdateModal && selectedMemberForUpdate && (
         <ManualPaymentUpdateModal
           isOpen={showManualUpdateModal}
@@ -541,7 +547,7 @@ const MembersListByMonth = () => {
         />
       )}
 
-      {/* Create Monthly Records Modal */}
+      {/* Create Monthly Records Modal (Themed) */}
       {showCreateModal && (
         <CreateMonthlyRecordsModal
           isOpen={showCreateModal}
@@ -551,14 +557,32 @@ const MembersListByMonth = () => {
           month={selectedMonth}
           year={selectedYear}
           loading={creatingRecords}
+          ACCENT_OLIVE={ACCENT_OLIVE}
+          BACKGROUND_PRIMARY={BACKGROUND_PRIMARY}
+          BACKGROUND_SECONDARY={BACKGROUND_SECONDARY}
+          TEXT_PRIMARY={TEXT_PRIMARY}
+          TEXT_SECONDARY={TEXT_SECONDARY}
+          BORDER_DIVIDER={BORDER_DIVIDER}
         />
       )}
     </div>
   );
 };
 
-// Inline modal component
-const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 100, month, year, loading }) => {
+// Themed Generic Modal Wrapper
+const ThemedModal = ({ title, children, onClose, ACCENT_OLIVE, BACKGROUND_SECONDARY, TEXT_PRIMARY, BORDER_DIVIDER, TEXT_SECONDARY }) => (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-2xl max-w-md w-full p-6 text-[${TEXT_PRIMARY}] shadow-xl`}>
+      <div className="text-center">
+        <h3 className={`text-2xl font-bold text-[${TEXT_PRIMARY}] mb-4`}>{title}</h3>
+        {children}
+      </div>
+    </div>
+  </div>
+);
+
+// Inline Create Monthly Records Modal (Themed)
+const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 100, month, year, loading, ACCENT_OLIVE, BACKGROUND_PRIMARY, BACKGROUND_SECONDARY, TEXT_PRIMARY, TEXT_SECONDARY, BORDER_DIVIDER }) => {
   const [yearlyAmounts, setYearlyAmounts] = useState({
     '1': '',
     '2': '',
@@ -569,6 +593,7 @@ const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 
 
   useEffect(() => {
     const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
+    // Set default deadline to 5th of the selected month/year
     const defaultDate = new Date(parseInt(year), monthIndex, 5);
     setDeadline(defaultDate.toISOString().split('T')[0]);
     
@@ -616,21 +641,22 @@ const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6">
+      <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-2xl max-w-md w-full p-6 text-[${TEXT_PRIMARY}] shadow-xl`}>
         <div className="mb-4">
-          <h3 className="text-xl font-bold">Create Monthly Records</h3>
-          <p className="text-sm text-gray-600">This will create Pending records for all members for {month} {year}.</p>
+          <h3 className={`text-xl font-bold text-[${TEXT_PRIMARY}]`}>Create Monthly Records</h3>
+          <p className={`text-sm text-[${TEXT_SECONDARY}]/80`}>This will create Pending records for all members for **{month} {year}**.</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-3">
-            <h4 className="font-medium text-gray-700">Set Amount by Year (₹)</h4>
+            <h4 className={`font-medium text-[${TEXT_SECONDARY}]`}>Set Amount by Year (₹)</h4>
             {[1, 2, 3, 4].map(year => (
               <div key={year} className="flex items-center">
-                <label className="w-16 text-sm font-medium">Year {year}:</label>
+                <label className={`w-16 text-sm font-medium text-[${TEXT_SECONDARY}]/90`}>Year {year}:</label>
                 <input
                   type="number"
                   min="1"
-                  className="flex-1 border rounded-lg px-3 py-2"
+                  // Themed input styling
+                  className={`flex-1 border border-[${BORDER_DIVIDER}] rounded-lg px-3 py-2 bg-[${BACKGROUND_PRIMARY}] text-[${TEXT_PRIMARY}] placeholder:text-[${TEXT_SECONDARY}]/60 focus:ring-2 focus:ring-[${ACCENT_OLIVE}] outline-none`}
                   value={yearlyAmounts[year] || ''}
                   onChange={(e) => handleYearAmountChange(year, e.target.value)}
                   disabled={loading}
@@ -640,10 +666,11 @@ const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 
             ))}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Payment Deadline</label>
+            <label className={`block text-sm font-medium mb-1 text-[${TEXT_SECONDARY}]/90`}>Payment Deadline</label>
             <input 
               type="date" 
-              className="w-full border rounded-lg px-3 py-2" 
+              // Themed input styling
+              className={`w-full border border-[${BORDER_DIVIDER}] rounded-lg px-3 py-2 bg-[${BACKGROUND_PRIMARY}] text-[${TEXT_PRIMARY}] focus:ring-2 focus:ring-[${ACCENT_OLIVE}] outline-none`}
               value={deadline} 
               onChange={(e) => setDeadline(e.target.value)} 
               disabled={loading} 
@@ -653,14 +680,16 @@ const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 
             <button 
               type="button" 
               onClick={onClose} 
-              className="px-4 py-2 border rounded-lg hover:bg-gray-50" 
+              // Secondary button style
+              className={`px-4 py-2 border border-[${BORDER_DIVIDER}] text-[${TEXT_SECONDARY}] rounded-lg hover:bg-[${BORDER_DIVIDER}]/50 disabled:opacity-50 transition-colors duration-200`} 
               disabled={loading}
             >
               Cancel
             </button>
             <button 
               type="submit" 
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50" 
+              // Primary button style (Olive Accent)
+              className={`px-4 py-2 bg-[${ACCENT_OLIVE}] text-[${BACKGROUND_PRIMARY}] rounded-lg hover:bg-[#8FAE5D] disabled:opacity-50 transition-colors duration-200`} 
               disabled={loading}
             >
               {loading ? 'Creating...' : 'Create Records'}

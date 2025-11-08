@@ -6,8 +6,7 @@ import { groupFundAPI } from '../../utils/api';
 /**
  * PayGroupFundModal Component
  * Modal for submitting group fund payment with image upload
- * 
- * @param {boolean} isOpen - Whether modal is open
+ * * @param {boolean} isOpen - Whether modal is open
  * @param {Function} onClose - Callback to close modal
  * @param {Function} onSuccess - Callback after successful payment submission
  */
@@ -182,24 +181,36 @@ const PayGroupFundModal = ({ isOpen, onClose, onSuccess }) => {
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        // Backdrop uses Deep Black base color for background
+        className="fixed inset-0 bg-[#0B0B09] bg-opacity-70 transition-opacity" 
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all">
+        <div 
+            // Modal Card (a) Card Container 
+            // bg-[#1F221C], rounded-2xl, shadow-at-glow, border border-[#3A3E36]/40
+            className="relative bg-[#1F221C] rounded-2xl shadow-[0_0_25px_rgba(166,195,111,0.08)] w-full max-w-2xl transform transition-all border border-[#3A3E36]/40"
+        >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-2xl">
+          <div 
+            // Header with Muted Olive-Gray border-b and Olive-Black bg 
+            className="flex items-center justify-between px-6 py-4 border-b border-[#3A3E36] bg-[#1F221C] rounded-t-2xl"
+          >
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Pay Group Fund</h2>
-              <p className="text-sm text-gray-600">Submit your monthly payment proof</p>
+              {/* text-gray-900 -> text-primary */}
+              <h2 className="text-xl font-bold text-[#F5F3E7]">Pay Group Fund</h2> 
+              {/* text-gray-600 -> text-secondary/80 */}
+              <p className="text-sm text-[#E8E3C5]/80">Submit your monthly payment proof</p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+              // Hover glow effect on close button
+              className="p-2 hover:bg-[#3A3E36]/40 rounded-lg transition-colors" 
             >
-              <X className="w-5 h-5 text-gray-500" />
+              {/* text-gray-500 -> Muted Olive-Gray */}
+              <X className="w-5 h-5 text-[#3A3E36]" /> 
             </button>
           </div>
 
@@ -207,66 +218,91 @@ const PayGroupFundModal = ({ isOpen, onClose, onSuccess }) => {
           <div className="px-6 py-6 max-h-[calc(100vh-200px)] overflow-y-auto">
             {loadingSettings ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                {/* text-blue-600 -> Accent Olive */}
+                <Loader2 className="w-8 h-8 text-[#A6C36F] animate-spin" /> 
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Payment Instructions */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
-                  <h3 className="font-semibold text-blue-900 flex items-center space-x-2">
-                    <AlertCircle className="w-5 h-5" />
+                
+                {/* Payment Instructions (Blue -> Olive/Beige) */}
+                <div 
+                    // bg-blue-50 -> Olive-Black Panel bg (lighter contrast version of main panel, using Accent glow)
+                    className="bg-[#1F221C]/80 border border-[#A6C36F]/40 rounded-lg p-4 space-y-2"
+                >
+                  {/* text-blue-900 -> Text Primary */}
+                  <h3 className="font-semibold text-[#F5F3E7] flex items-center space-x-2"> 
+                    {/* Icon text color */}
+                    <AlertCircle className="w-5 h-5 text-[#A6C36F]" /> 
                     <span>Payment Instructions</span>
                   </h3>
-                  <p className="text-sm text-blue-800">
+                  {/* text-blue-800 -> Text Secondary */}
+                  <p className="text-sm text-[#E8E3C5]"> 
                     {settings?.paymentInstructions || 'Please pay the monthly group fund by the deadline.'}
                   </p>
                   <div className="grid grid-cols-2 gap-2 mt-3">
+                    {/* text-blue-700 -> Accent Olive, text-blue-900 -> Text Primary */}
                     <div className="text-sm">
-                      <span className="text-blue-700">1st Year:</span>
-                      <span className="font-semibold text-blue-900"> ₹ {settings?.fundAmountByYear?.firstYear || 50}</span>
+                      <span className="text-[#A6C36F]">1st Year:</span>
+                      <span className="font-semibold text-[#F5F3E7]"> ₹ {settings?.fundAmountByYear?.firstYear || 50}</span>
                     </div>
                     <div className="text-sm">
-                      <span className="text-blue-700">2nd Year:</span>
-                      <span className="font-semibold text-blue-900"> ₹ {settings?.fundAmountByYear?.secondYear || 100}</span>
+                      <span className="text-[#A6C36F]">2nd Year:</span>
+                      <span className="font-semibold text-[#F5F3E7]"> ₹ {settings?.fundAmountByYear?.secondYear || 100}</span>
                     </div>
                     <div className="text-sm">
-                      <span className="text-blue-700">3rd Year:</span>
-                      <span className="font-semibold text-blue-900"> ₹ {settings?.fundAmountByYear?.thirdYear || 150}</span>
+                      <span className="text-[#A6C36F]">3rd Year:</span>
+                      <span className="font-semibold text-[#F5F3E7]"> ₹ {settings?.fundAmountByYear?.thirdYear || 150}</span>
                     </div>
                     <div className="text-sm">
-                      <span className="text-blue-700">4th Year:</span>
-                      <span className="font-semibold text-blue-900"> ₹ {settings?.fundAmountByYear?.fourthYear || 200}</span>
+                      <span className="text-[#A6C36F]">4th Year:</span>
+                      <span className="font-semibold text-[#F5F3E7]"> ₹ {settings?.fundAmountByYear?.fourthYear || 200}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Your Amount */}
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="text-sm text-green-700">Your Payment Amount:</p>
-                  <p className="text-3xl font-bold text-green-900">₹ {settings?.userAmount || 0}</p>
+                {/* Your Amount (Green -> Accent Olive) */}
+                <div 
+                    // bg-green-50 -> Olive-Black Panel bg 
+                    className="bg-[#1F221C]/80 border border-[#A6C36F]/40 rounded-lg p-4"
+                >
+                  {/* text-green-700 -> Text Secondary */}
+                  <p className="text-sm text-[#E8E3C5]">Your Payment Amount:</p>
+                  {/* text-green-900 -> Accent Olive */}
+                  <p className="text-3xl font-bold text-[#A6C36F]">₹ {settings?.userAmount || 0}</p>
                 </div>
 
                 {/* QR Code */}
                 {settings?.treasurerQRCode && (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
-                    <h3 className="font-semibold text-gray-900 flex items-center space-x-2">
-                      <QrCode className="w-5 h-5" />
+                  <div 
+                    // bg-gray-50 -> Olive-Black Panel bg 
+                    className="bg-[#1F221C]/80 border border-[#3A3E36]/40 rounded-lg p-4 space-y-3"
+                  >
+                    {/* text-gray-900 -> Text Primary */}
+                    <h3 className="font-semibold text-[#F5F3E7] flex items-center space-x-2">
+                      {/* Icon text color */}
+                      <QrCode className="w-5 h-5 text-[#A6C36F]" />
                       <span>Scan to Pay</span>
                     </h3>
                     <div className="flex justify-center">
                       <img
                         src={settings.treasurerQRCode}
                         alt="Payment QR Code"
-                        className="w-48 h-48 object-contain border-2 border-gray-300 rounded-lg"
+                        // border-gray-300 -> Muted Olive-Gray
+                        className="w-48 h-48 object-contain border-2 border-[#3A3E36] rounded-lg"
                       />
                     </div>
                   </div>
                 )}
 
-                {/* Important Note */}
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-2">
-                  <h3 className="font-semibold text-yellow-900">📸 Important Note</h3>
-                  <ul className="text-sm text-yellow-800 space-y-1 list-disc list-inside">
+                {/* Important Note (Yellow -> Olive-Black/Accent) */}
+                <div 
+                    // bg-yellow-50 -> Olive-Black Panel bg 
+                    className="bg-[#1F221C]/80 border border-[#A6C36F]/40 rounded-lg p-4 space-y-2"
+                >
+                  {/* text-yellow-900 -> Text Primary/Accent */}
+                  <h3 className="font-semibold text-[#A6C36F]">📸 Important Note</h3>
+                  {/* text-yellow-800 -> Text Secondary */}
+                  <ul className="text-sm text-[#E8E3C5] space-y-1 list-disc list-inside">
                     <li>Take a clear screenshot of the payment confirmation</li>
                     <li>Upload the payment proof below</li>
                     <li>Ensure the transaction ID is visible</li>
@@ -275,13 +311,15 @@ const PayGroupFundModal = ({ isOpen, onClose, onSuccess }) => {
 
                 {/* Month Selection */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  {/* text-gray-700 -> Text Secondary */}
+                  <label className="block text-sm font-semibold text-[#E8E3C5] mb-2">
                     Select Month *
                   </label>
                   <select
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    // Appearance: Darker background, beige text, olive ring
+                    className="w-full px-4 py-3 border border-[#3A3E36] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A6C36F] focus:border-transparent transition-all bg-[#0B0B09] text-[#F5F3E7]"
                     required
                   >
                     <option value="">Choose a month...</option>
@@ -295,16 +333,23 @@ const PayGroupFundModal = ({ isOpen, onClose, onSuccess }) => {
 
                 {/* Image Upload */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  {/* text-gray-700 -> Text Secondary */}
+                  <label className="block text-sm font-semibold text-[#E8E3C5] mb-2">
                     Upload Payment Proof *
                   </label>
                   
                   {!imagePreview ? (
-                    <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
-                      <div className="flex flex-col items-center justify-center space-y-2 text-gray-600">
-                        <Upload className="w-10 h-10" />
+                    <label 
+                      // border-gray-300 -> Muted Olive-Gray, hover:border-blue-500/hover:bg-blue-50 -> hover:border-Accent/hover:bg-OliveBlack
+                      className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-[#3A3E36] rounded-lg cursor-pointer hover:border-[#A6C36F] hover:bg-[#1F221C]/50 transition-all"
+                    >
+                      {/* text-gray-600 -> Text Secondary */}
+                      <div className="flex flex-col items-center justify-center space-y-2 text-[#E8E3C5]">
+                        {/* Icon color */}
+                        <Upload className="w-10 h-10 text-[#A6C36F]" />
                         <p className="text-sm font-medium">Click to upload image</p>
-                        <p className="text-xs text-gray-500">JPG, PNG, or WEBP (Max 5MB)</p>
+                        {/* text-gray-500 -> Text Secondary/70 */}
+                        <p className="text-xs text-[#E8E3C5]/70">JPG, PNG, or WEBP (Max 5MB)</p>
                       </div>
                       <input
                         type="file"
@@ -318,12 +363,14 @@ const PayGroupFundModal = ({ isOpen, onClose, onSuccess }) => {
                       <img
                         src={imagePreview}
                         alt="Payment proof preview"
-                        className="w-full h-64 object-contain border-2 border-gray-300 rounded-lg bg-gray-50"
+                        // border-gray-300 -> Muted Olive-Gray, bg-gray-50 -> Olive-Black Panel bg 
+                        className="w-full h-64 object-contain border-2 border-[#3A3E36] rounded-lg bg-[#1F221C]/80"
                       />
                       <button
                         type="button"
                         onClick={removeImage}
-                        className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                        // bg-red-500 -> Accent Olive, hover:bg-red-600 -> Darker Olive
+                        className="absolute top-2 right-2 p-2 bg-[#A6C36F] text-[#0B0B09] rounded-full hover:bg-[#8FAE5D] transition-colors shadow-lg"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -333,7 +380,8 @@ const PayGroupFundModal = ({ isOpen, onClose, onSuccess }) => {
 
                 {/* Notes (Optional) */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  {/* text-gray-700 -> Text Secondary */}
+                  <label className="block text-sm font-semibold text-[#E8E3C5] mb-2">
                     Additional Notes (Optional)
                   </label>
                   <textarea
@@ -341,35 +389,42 @@ const PayGroupFundModal = ({ isOpen, onClose, onSuccess }) => {
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Any additional information..."
                     rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                    // Appearance: Darker background, beige text, olive ring
+                    className="w-full px-4 py-3 border border-[#3A3E36] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A6C36F] focus:border-transparent transition-all resize-none bg-[#0B0B09] text-[#F5F3E7]"
                     maxLength={500}
                   />
-                  <p className="text-xs text-gray-500 mt-1">{notes.length}/500 characters</p>
+                  {/* text-gray-500 -> Text Secondary/70 */}
+                  <p className="text-xs text-[#E8E3C5]/70 mt-1">{notes.length}/500 characters</p>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+                {/* border-gray-200 -> Muted Olive-Gray border-t */}
+                <div className="flex items-center justify-end space-x-3 pt-4 border-t border-[#3A3E36]">
                   <button
                     type="button"
                     onClick={onClose}
                     disabled={loading}
-                    className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                    // Cancel button: text-gray-700/bg-gray-100/hover:bg-gray-200 -> Text Secondary/Muted Olive-Gray/hover:Muted Olive-Gray
+                    className="px-6 py-2.5 text-sm font-semibold text-[#E8E3C5] bg-[#3A3E36]/40 hover:bg-[#3A3E36]/60 rounded-lg transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={loading || !selectedMonth || !selectedImage}
-                    className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                    // Submit button: (d) Button (Accent Olive)
+                    className="px-6 py-2.5 text-sm font-semibold text-[#0B0B09] bg-[#A6C36F] hover:bg-[#8FAE5D] rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {/* Loader color is dark when text is dark */}
+                        <Loader2 className="w-4 h-4 animate-spin text-[#0B0B09]" /> 
                         <span>Submitting...</span>
                       </>
                     ) : (
                       <>
-                        <ImageIcon className="w-4 h-4" />
+                        {/* Icon color is dark when text is dark */}
+                        <ImageIcon className="w-4 h-4 text-[#0B0B09]" />
                         <span>Submit Payment</span>
                       </>
                     )}

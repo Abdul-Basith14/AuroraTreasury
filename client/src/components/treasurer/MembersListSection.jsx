@@ -11,6 +11,15 @@ const MembersListSection = ({ members, loading, selectedYear, selectedStatus, re
   const [selectedMember, setSelectedMember] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   
+  // --- Theme Tokens ---
+  const TEXT_PRIMARY = '#F5F3E7';
+  const TEXT_SECONDARY = '#E8E3C5';
+  const ACCENT_OLIVE = '#A6C36F';
+  const BACKGROUND_PRIMARY = '#0B0B09';
+  const BACKGROUND_SECONDARY = '#1F221C';
+  const BORDER_DIVIDER = '#3A3E36';
+  // --------------------
+  
   // Listen for payment verification events
   useEffect(() => {
     const handlePaymentVerified = (event) => {
@@ -29,17 +38,17 @@ const MembersListSection = ({ members, loading, selectedYear, selectedStatus, re
   }, [refreshMembers]);
   
   /**
-   * Handle viewing member details
-   * @param {Object} member - Member object
-   */
+    * Handle viewing member details
+    * @param {Object} member - Member object
+    */
   const handleViewMember = (member) => {
     setSelectedMember(member);
     setShowDetailsModal(true);
   };
   
   /**
-   * Handle closing member details modal
-   */
+    * Handle closing member details modal
+    */
   const handleCloseModal = () => {
     setShowDetailsModal(false);
     setSelectedMember(null);
@@ -50,7 +59,7 @@ const MembersListSection = ({ members, loading, selectedYear, selectedStatus, re
     return (
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map(i => <SkeletonMemberCard key={i} />)}
+          {[1, 2, 3, 4, 5, 6].map(i => <SkeletonMemberCard key={i} BORDER_DIVIDER={BORDER_DIVIDER} BACKGROUND_SECONDARY={BACKGROUND_SECONDARY} />)}
         </div>
       </div>
     );
@@ -60,9 +69,12 @@ const MembersListSection = ({ members, loading, selectedYear, selectedStatus, re
   if (members.length === 0) {
     return (
       <div className="p-12 text-center">
-        <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No Members Found</h3>
-        <p className="text-gray-500">
+        {/* Muted Icon */}
+        <Users className={`w-16 h-16 text-[${BORDER_DIVIDER}]/80 mx-auto mb-4`} />
+        {/* Primary Text */}
+        <h3 className={`text-lg font-medium text-[${TEXT_PRIMARY}] mb-2`}>No Members Found</h3>
+        {/* Secondary Text */}
+        <p className={`text-[${TEXT_SECONDARY}]/80`}>
           {selectedStatus !== 'all' || selectedYear !== 'all'
             ? 'Try adjusting your filters'
             : 'No members registered yet'}
@@ -94,7 +106,8 @@ const MembersListSection = ({ members, loading, selectedYear, selectedStatus, re
   return (
     <>
       <div className="p-6">
-        <div className="mb-4 text-sm text-gray-600">
+        {/* Muted Text for count */}
+        <div className={`mb-4 text-sm text-[${TEXT_SECONDARY}]/60`}>
           Showing {members.length} member{members.length !== 1 ? 's' : ''}
         </div>
         
@@ -103,21 +116,24 @@ const MembersListSection = ({ members, loading, selectedYear, selectedStatus, re
           <div className="space-y-8">
             {sortedYears.map(year => (
               <div key={year}>
-                {/* Year Header */}
-                <div className="flex items-center mb-4">
-                  <div className="flex-1 border-t-2 border-gray-200"></div>
-                  <h3 className="px-4 text-lg font-bold text-gray-900 bg-blue-50 py-2 rounded-full">
+                {/* Year Header (Custom Divider/Pill Style) */}
+                <div className="flex items-center mb-6">
+                  {/* Muted Divider */}
+                  <div className={`flex-1 border-t border-[${BORDER_DIVIDER}]/60`}></div>
+                  <h3 className={`px-4 text-lg font-bold text-[${TEXT_PRIMARY}] bg-[${BACKGROUND_SECONDARY}] py-2 rounded-full border border-[${BORDER_DIVIDER}]`}>
                     {year}
-                    <span className="ml-2 text-sm font-normal text-gray-600">
+                    {/* Muted Count Text */}
+                    <span className={`ml-2 text-sm font-normal text-[${TEXT_SECONDARY}]/80`}>
                       ({groupedMembers[year].length} member{groupedMembers[year].length !== 1 ? 's' : ''})
                     </span>
                   </h3>
-                  <div className="flex-1 border-t-2 border-gray-200"></div>
+                  <div className={`flex-1 border-t border-[${BORDER_DIVIDER}]/60`}></div>
                 </div>
                 
                 {/* Members Grid for this year */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {groupedMembers[year].map(member => (
+                    // MemberCard will need to be themed separately, but the structure is correct
                     <MemberCard
                       key={member._id}
                       member={member}
@@ -154,22 +170,26 @@ const MembersListSection = ({ members, loading, selectedYear, selectedStatus, re
 };
 
 /**
- * Skeleton Member Card for loading state
+ * Skeleton Member Card for loading state (Themed)
  */
-const SkeletonMemberCard = () => (
-  <div className="border border-gray-200 rounded-lg p-4 animate-pulse">
+const SkeletonMemberCard = ({ BORDER_DIVIDER, BACKGROUND_SECONDARY }) => (
+  // Use Muted Background, Border, and Pulse for Skeleton
+  <div className={`bg-[${BACKGROUND_SECONDARY}] border border-[${BORDER_DIVIDER}]/40 rounded-2xl p-4 animate-pulse`}>
     <div className="flex items-start space-x-3 mb-4">
-      <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+      {/* Darker Muted Placeholder for Avatar */}
+      <div className={`w-12 h-12 bg-[${BORDER_DIVIDER}]/50 rounded-full`}></div>
       <div className="flex-1">
-        <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
-        <div className="h-3 bg-gray-200 rounded w-24"></div>
+        {/* Darker Muted Placeholder for Text */}
+        <div className={`h-4 bg-[${BORDER_DIVIDER}]/50 rounded w-32 mb-2`}></div>
+        <div className={`h-3 bg-[${BORDER_DIVIDER}]/50 rounded w-24`}></div>
       </div>
     </div>
     <div className="space-y-2 mb-4">
-      <div className="h-3 bg-gray-200 rounded w-full"></div>
-      <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+      <div className={`h-3 bg-[${BORDER_DIVIDER}]/50 rounded w-full`}></div>
+      <div className={`h-3 bg-[${BORDER_DIVIDER}]/50 rounded w-3/4`}></div>
     </div>
-    <div className="h-10 bg-gray-200 rounded"></div>
+    {/* Darker Muted Placeholder for Button/Action */}
+    <div className={`h-10 bg-[${BORDER_DIVIDER}]/50 rounded-xl`}></div>
   </div>
 );
 

@@ -21,8 +21,8 @@ const WalletManagement = () => {
   }, []);
   
   /**
-   * Fetch wallet data
-   */
+    * Fetch wallet data
+    */
   const fetchWallet = async () => {
     setLoading(true);
     try {
@@ -37,8 +37,8 @@ const WalletManagement = () => {
   };
   
   /**
-   * Handle adding money
-   */
+    * Handle adding money
+    */
   const handleAddMoney = async (e) => {
     e.preventDefault();
     
@@ -68,8 +68,8 @@ const WalletManagement = () => {
   };
   
   /**
-   * Handle removing money
-   */
+    * Handle removing money
+    */
   const handleRemoveMoney = async (e) => {
     e.preventDefault();
     
@@ -103,37 +103,47 @@ const WalletManagement = () => {
     }
   };
   
+  // Custom Loading/Skeleton in theme colors
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-6">
+      <div className="bg-[#1F221C] rounded-2xl p-6 shadow-[0_0_25px_rgba(166,195,111,0.08)] ring-1 ring-[#3A3E36]/40">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-48 mb-4"></div>
-          <div className="h-32 bg-gray-200 rounded mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-[#3A3E36]/50 rounded w-48 mb-4"></div>
+          <div className="h-32 bg-[#3A3E36]/50 rounded-2xl mb-6"></div>
+          <div className="h-6 bg-[#3A3E36]/50 rounded w-full mb-3"></div>
+          <div className="h-10 bg-[#3A3E36]/50 rounded-lg"></div>
         </div>
       </div>
     );
   }
   
+  // Custom Button classes from the theme
+  const accentButtonClasses = "bg-[#A6C36F] text-[#0B0B09] hover:bg-[#8FAE5D] transition-all duration-300 rounded-2xl px-6 py-3 font-semibold disabled:opacity-50";
+  const removeButtonClasses = "bg-red-700 text-[#F5F3E7] hover:bg-red-800 transition-all duration-300 rounded-2xl px-6 py-3 font-semibold disabled:opacity-50";
+  const defaultButtonClasses = "bg-[#3A3E36]/40 text-[#F5F3E7] hover:bg-[#3A3E36] transition-all duration-300 rounded-2xl px-6 py-3 font-semibold";
+
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6">
+    <div className="bg-[#1F221C] rounded-2xl p-6 shadow-[0_0_25px_rgba(166,195,111,0.08)] ring-1 ring-[#3A3E36]/40">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <Wallet className="w-8 h-8 text-blue-600 mr-3" />
-          <h2 className="text-2xl font-bold text-gray-900">Club Wallet</h2>
+          {/* Icon Tone: text-[#A6C36F]/80 */}
+          <Wallet className="w-8 h-8 text-[#A6C36F]/80 mr-3" />
+          {/* Header Text: text-[#F5F3E7] */}
+          <h2 className="text-xl font-bold text-[#F5F3E7]">Club Wallet</h2>
         </div>
         <div className="flex space-x-3">
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors duration-200"
+            className={`flex items-center px-4 py-2 ${accentButtonClasses.replace('px-6 py-3', 'px-4 py-2')}`}
           >
             <Plus className="w-5 h-5 mr-2" />
             Add Money
           </button>
           <button
             onClick={() => setShowRemoveModal(true)}
-            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors duration-200"
+            // Using a distinct color for danger/remove action
+            className={`flex items-center px-4 py-2 bg-red-700 text-[#F5F3E7] hover:bg-red-800 transition-colors duration-200 rounded-2xl font-semibold`}
           >
             <Minus className="w-5 h-5 mr-2" />
             Remove Money
@@ -142,51 +152,64 @@ const WalletManagement = () => {
       </div>
       
       {/* Balance Card */}
-      <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-8 mb-6 text-white">
+      {/* Replicating Card Container style but with the glow effect */}
+      <div className="bg-[#1F221C] border border-[#3A3E36]/40 rounded-2xl p-8 mb-6 shadow-[0_0_25px_rgba(166,195,111,0.08)] hover:shadow-[0_0_20px_rgba(166,195,111,0.2)] transition-shadow duration-300">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm opacity-90 mb-2">Current Balance</p>
+            {/* Soft Text: text-[#E8E3C5] */}
+            <p className="text-sm text-[#E8E3C5] opacity-90 mb-2">Current Balance</p>
             <div className="flex items-center">
-              <IndianRupee className="w-10 h-10 mr-2" />
-              <span className="text-5xl font-bold">
+              {/* Accent Color for Icon and Primary Number Display */}
+              <IndianRupee className="w-10 h-10 mr-2 text-[#A6C36F]" />
+              <span className="text-5xl font-bold text-[#A6C36F]">
                 {wallet?.balance?.toLocaleString('en-IN') || 0}
               </span>
             </div>
             {wallet?.lastUpdatedBy && (
-              <p className="text-xs opacity-75 mt-3">
+              // Softer Beige: text-[#E8E3C5]/70
+              <p className="text-xs text-[#E8E3C5]/70 mt-3">
                 Last updated by {wallet.lastUpdatedBy.name}
               </p>
             )}
           </div>
-          <Wallet className="w-32 h-32 opacity-20" />
+          {/* Icon Tone: text-[#A6C36F]/20 (softer accent for background visual) */}
+          <Wallet className="w-32 h-32 text-[#A6C36F]/20 opacity-20" />
         </div>
       </div>
       
       {/* Transaction History */}
       <div>
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Transactions</h3>
+        {/* Soft Header Text */}
+        <h3 className="text-[#E8E3C5] text-lg font-semibold tracking-wide uppercase mb-4">
+          Recent Transactions
+        </h3>
         {wallet?.transactions && wallet.transactions.length > 0 ? (
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
             {wallet.transactions.map((transaction, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                // Panel/Card style for list item
+                className="flex items-center justify-between p-4 bg-[#0B0B09] border border-[#3A3E36]/40 rounded-lg hover:bg-[#1F221C] transition-colors duration-200 hover-glow"
               >
                 <div className="flex items-center space-x-4">
                   {transaction.type === 'credit' ? (
-                    <div className="p-2 bg-green-100 rounded-full">
-                      <TrendingUp className="w-6 h-6 text-green-600" />
+                    // Accent Olive background with brighter text for credit
+                    <div className="p-2 bg-[#A6C36F]/20 rounded-full">
+                      <TrendingUp className="w-6 h-6 text-[#A6C36F]" />
                     </div>
                   ) : (
-                    <div className="p-2 bg-red-100 rounded-full">
-                      <TrendingDown className="w-6 h-6 text-red-600" />
+                    // Red for debit/remove
+                    <div className="p-2 bg-red-700/20 rounded-full">
+                      <TrendingDown className="w-6 h-6 text-red-500" />
                     </div>
                   )}
                   <div>
-                    <p className="font-semibold text-gray-900">{transaction.description}</p>
-                    <div className="flex items-center space-x-3 text-sm text-gray-600 mt-1">
+                    {/* Primary Text */}
+                    <p className="font-semibold text-[#F5F3E7]">{transaction.description}</p>
+                    {/* Secondary/Muted Text */}
+                    <div className="flex items-center space-x-3 text-sm text-[#E8E3C5]/60 mt-1">
                       <span className="flex items-center">
-                        <Clock className="w-4 h-4 mr-1" />
+                        <Clock className="w-4 h-4 mr-1 text-[#A6C36F]/80" />
                         {new Date(transaction.date).toLocaleString('en-IN')}
                       </span>
                       <span>By {transaction.treasurerId?.name}</span>
@@ -195,11 +218,13 @@ const WalletManagement = () => {
                 </div>
                 <div className="text-right">
                   <p className={`text-lg font-bold ${
-                    transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                    // Accent Olive for credit, Red for debit
+                    transaction.type === 'credit' ? 'text-[#A6C36F]' : 'text-red-500'
                   }`}>
                     {transaction.type === 'credit' ? '+' : '-'}₹ {transaction.amount.toLocaleString('en-IN')}
                   </p>
-                  <p className="text-xs text-gray-600 mt-1">
+                  {/* Softer Beige for balance */}
+                  <p className="text-xs text-[#E8E3C5]/60 mt-1">
                     Balance: ₹ {transaction.newBalance.toLocaleString('en-IN')}
                   </p>
                 </div>
@@ -207,8 +232,8 @@ const WalletManagement = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-500">
-            <Wallet className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+          <div className="text-center py-12 text-[#E8E3C5]/70">
+            <Wallet className="w-16 h-16 mx-auto mb-4 text-[#3A3E36]/40" />
             <p>No transactions yet</p>
           </div>
         )}
@@ -216,12 +241,14 @@ const WalletManagement = () => {
       
       {/* Add Money Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Add Money to Wallet</h3>
+        // Modal Backdrop
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+          {/* Modal Content - Card Container Style */}
+          <div className="bg-[#1F221C] rounded-2xl max-w-md w-full p-6 shadow-[0_0_25px_rgba(166,195,111,0.08)] ring-1 ring-[#3A3E36]/40">
+            <h3 className="text-xl font-bold text-[#F5F3E7] mb-4">Add Money to Wallet</h3>
             <form onSubmit={handleAddMoney}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[#E8E3C5] mb-2">
                   Amount (₹)
                 </label>
                 <input
@@ -229,20 +256,22 @@ const WalletManagement = () => {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Enter amount"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                  // Input Styling
+                  className="w-full px-4 py-2 border border-[#3A3E36] rounded-lg bg-[#0B0B09] text-[#F5F3E7] focus:ring-2 focus:ring-[#A6C36F] focus:border-transparent outline-none"
                   min="1"
                   step="0.01"
                 />
               </div>
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[#E8E3C5] mb-2">
                   Description
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Enter description (e.g., Monthly contribution, Event funds)"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                  // Input Styling
+                  className="w-full px-4 py-2 border border-[#3A3E36] rounded-lg bg-[#0B0B09] text-[#F5F3E7] focus:ring-2 focus:ring-[#A6C36F] focus:border-transparent outline-none"
                   rows="3"
                 />
               </div>
@@ -254,14 +283,14 @@ const WalletManagement = () => {
                     setAmount('');
                     setDescription('');
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors duration-200"
+                  className={`flex-1 ${defaultButtonClasses}`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={processing}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors duration-200 disabled:opacity-50"
+                  className={`flex-1 ${accentButtonClasses}`}
                 >
                   {processing ? 'Adding...' : 'Add Money'}
                 </button>
@@ -273,17 +302,20 @@ const WalletManagement = () => {
       
       {/* Remove Money Modal */}
       {showRemoveModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Remove Money from Wallet</h3>
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800">
-                <strong>Available Balance:</strong> ₹ {wallet?.balance?.toLocaleString('en-IN') || 0}
+        // Modal Backdrop
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+          {/* Modal Content - Card Container Style */}
+          <div className="bg-[#1F221C] rounded-2xl max-w-md w-full p-6 shadow-[0_0_25px_rgba(166,195,111,0.08)] ring-1 ring-[#3A3E36]/40">
+            <h3 className="text-xl font-bold text-[#F5F3E7] mb-4">Remove Money from Wallet</h3>
+            {/* Danger Alert Style */}
+            <div className="mb-4 p-3 bg-red-900/40 border border-red-700/40 rounded-lg">
+              <p className="text-sm text-red-300">
+                <strong className="text-red-200">Available Balance:</strong> ₹ {wallet?.balance?.toLocaleString('en-IN') || 0}
               </p>
             </div>
             <form onSubmit={handleRemoveMoney}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[#E8E3C5] mb-2">
                   Amount (₹)
                 </label>
                 <input
@@ -291,21 +323,23 @@ const WalletManagement = () => {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Enter amount"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
+                  // Input Styling
+                  className="w-full px-4 py-2 border border-[#3A3E36] rounded-lg bg-[#0B0B09] text-[#F5F3E7] focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
                   min="1"
                   step="0.01"
                   max={wallet?.balance}
                 />
               </div>
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[#E8E3C5] mb-2">
                   Description
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Enter description (e.g., Equipment purchase, Event expense)"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
+                  // Input Styling
+                  className="w-full px-4 py-2 border border-[#3A3E36] rounded-lg bg-[#0B0B09] text-[#F5F3E7] focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
                   rows="3"
                 />
               </div>
@@ -317,14 +351,14 @@ const WalletManagement = () => {
                     setAmount('');
                     setDescription('');
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors duration-200"
+                  className={`flex-1 ${defaultButtonClasses}`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={processing}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors duration-200 disabled:opacity-50"
+                  className={`flex-1 ${removeButtonClasses}`}
                 >
                   {processing ? 'Removing...' : 'Remove Money'}
                 </button>

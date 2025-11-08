@@ -15,13 +15,22 @@ const TreasurerDashboardNew = () => {
   const [statistics, setStatistics] = useState(null);
   const [walletBalance, setWalletBalance] = useState(0);
   const [statsLoading, setStatsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'members', 'wallet'
+  const [activeTab, setActiveTab] = useState('members'); // 'overview', 'members', 'wallet'
+  
+  // --- Theme Tokens ---
+  const BACKGROUND_PRIMARY = '#0B0B09';
+  const BACKGROUND_SECONDARY = '#1F221C';
+  const TEXT_PRIMARY = '#F5F3E7';
+  const TEXT_SECONDARY = '#E8E3C5';
+  const ACCENT_OLIVE = '#A6C36F';
+  const BORDER_DIVIDER = '#3A3E36';
+  const SHADOW_GLOW = 'shadow-[0_0_25px_rgba(166,195,111,0.08)]';
+  // --------------------
   
   useEffect(() => {
     fetchStatistics();
     fetchWallet();
     
-    // Refresh stats when page becomes visible again (user navigates back)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         fetchStatistics();
@@ -31,14 +40,21 @@ const TreasurerDashboardNew = () => {
     
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
+    // Listen for wallet updates from child component (WalletManagement)
+    const handleWalletUpdate = () => {
+      fetchWallet();
+    };
+    window.addEventListener('walletUpdated', handleWalletUpdate);
+    
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('walletUpdated', handleWalletUpdate);
     };
   }, []);
   
   /**
-   * Fetch dashboard statistics
-   */
+    * Fetch dashboard statistics
+    */
   const fetchStatistics = async () => {
     setStatsLoading(true);
     try {
@@ -53,8 +69,8 @@ const TreasurerDashboardNew = () => {
   };
   
   /**
-   * Fetch wallet balance
-   */
+    * Fetch wallet balance
+    */
   const fetchWallet = async () => {
     try {
       const data = await getWallet();
@@ -65,26 +81,32 @@ const TreasurerDashboardNew = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    // Global Layout Rule: background/text/min-h-screen
+    <div className={`min-h-screen bg-[${BACKGROUND_PRIMARY}] text-[${TEXT_PRIMARY}] font-inter`}>
+      
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-8 px-6 shadow-lg">
+      {/* Using Background Secondary for the Header area for a slight lift */}
+      <div className={`bg-[${BACKGROUND_SECONDARY}] py-8 px-6 ${SHADOW_GLOW} border-b border-[${BORDER_DIVIDER}]/40`}>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Treasurer Dashboard</h1>
-              <p className="text-blue-100">Manage AuroraTreasury club finances</p>
+              <h1 className={`text-4xl font-bold mb-2 text-[${TEXT_PRIMARY}]`}>Treasurer Dashboard</h1>
+              {/* Softer Text */}
+              <p className={`text-[${TEXT_SECONDARY}]/70`}>Manage AuroraTreasury club finances</p>
             </div>
             
-            {/* Navigation Buttons */}
+            {/* Navigation Buttons (Accent Olive Button Style) */}
             <div className="flex space-x-3">
               <button
                 onClick={() => navigate('/treasurer/payment-requests')}
-                className="px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center shadow-lg"
+                // Button (Accent Olive) style adapted for white text variant
+                className={`px-6 py-3 bg-[${ACCENT_OLIVE}] text-[${BACKGROUND_PRIMARY}] rounded-2xl font-semibold hover:bg-[#8FAE5D] transition flex items-center shadow-lg`}
               >
                 <ClipboardCheck className="w-5 h-5 mr-2" />
                 Payment Requests
                 {statistics?.pendingResubmissions > 0 && (
-                  <span className="ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full">
+                  // Red Alert Badge
+                  <span className="ml-2 px-2 py-1 bg-red-600 text-white text-xs rounded-full">
                     {statistics.pendingResubmissions}
                   </span>
                 )}
@@ -92,12 +114,15 @@ const TreasurerDashboardNew = () => {
               
               <button
                 onClick={() => navigate('/treasurer/reimbursement-requests')}
-                className="px-6 py-3 bg-white text-pink-600 rounded-lg font-semibold hover:bg-pink-50 transition flex items-center shadow-lg border-2 border-pink-200"
+                // Using a secondary color for Reimbursement, but keeping theme contrast
+                className={`px-6 py-3 bg-[${BACKGROUND_SECONDARY}] text-[${TEXT_PRIMARY}] rounded-2xl font-semibold hover:bg-[#3A3E36] transition flex items-center shadow-lg border border-[${BORDER_DIVIDER}]/80`}
               >
-                <ReimburseIcon className="w-5 h-5 mr-2" />
+                {/* Icon Tone: text-[#A6C36F]/80 */}
+                <ReimburseIcon className={`w-5 h-5 mr-2 text-[${ACCENT_OLIVE}]/80`} />
                 Reimbursement Requests
                 {statistics?.reimbursementPending > 0 && (
-                  <span className="ml-2 px-2 py-1 bg-pink-500 text-white text-xs rounded-full">
+                  // Accent Badge (Olive or a distinct secondary color)
+                  <span className={`ml-2 px-2 py-1 bg-[${ACCENT_OLIVE}] text-[${BACKGROUND_PRIMARY}] text-xs rounded-full`}>
                     {statistics.reimbursementPending}
                   </span>
                 )}
@@ -107,8 +132,10 @@ const TreasurerDashboardNew = () => {
         </div>
       </div>
       
+      {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Statistics Cards - simplified: show only Total Members and Wallet as rectangular cards */}
+        
+        {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <RectCard
             title="Total Members"
@@ -116,6 +143,11 @@ const TreasurerDashboardNew = () => {
             subtitle="Registered"
             icon={Users}
             loading={statsLoading}
+            ACCENT_OLIVE={ACCENT_OLIVE}
+            TEXT_PRIMARY={TEXT_PRIMARY}
+            TEXT_SECONDARY={TEXT_SECONDARY}
+            BORDER_DIVIDER={BORDER_DIVIDER}
+            BACKGROUND_SECONDARY={BACKGROUND_SECONDARY}
           />
 
           <RectCard
@@ -124,28 +156,37 @@ const TreasurerDashboardNew = () => {
             subtitle="Club funds"
             icon={Wallet}
             loading={statsLoading}
+            ACCENT_OLIVE={ACCENT_OLIVE}
+            TEXT_PRIMARY={TEXT_PRIMARY}
+            TEXT_SECONDARY={TEXT_SECONDARY}
+            BORDER_DIVIDER={BORDER_DIVIDER}
+            BACKGROUND_SECONDARY={BACKGROUND_SECONDARY}
           />
         </div>
         
         {/* Tab Navigation */}
         <div className="mb-8">
-          <div className="flex space-x-2 border-b border-gray-200">
+          <div className={`flex space-x-2 border-b border-[${BORDER_DIVIDER}]`}>
+            {/* Members Tab */}
             <button
               onClick={() => setActiveTab('members')}
-              className={`px-6 py-3 font-medium text-sm transition-all duration-200 ${
+              className={`px-6 py-3 font-medium text-sm transition-all duration-200 rounded-t-lg ${
                 activeTab === 'members'
-                  ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  // Active Tab: Accent Olive border, Muted Olive background
+                  ? `border-b-2 border-[${ACCENT_OLIVE}] text-[${ACCENT_OLIVE}] bg-[${BACKGROUND_SECONDARY}]/60`
+                  // Inactive Tab: Softer Text, Hover Muted Olive
+                  : `text-[${TEXT_SECONDARY}]/80 hover:text-[${TEXT_PRIMARY}] hover:bg-[${BACKGROUND_SECONDARY}]/30`
               }`}
             >
               📋 Members List by Month
             </button>
+            {/* Wallet Tab */}
             <button
               onClick={() => setActiveTab('wallet')}
-              className={`px-6 py-3 font-medium text-sm transition-all duration-200 ${
+              className={`px-6 py-3 font-medium text-sm transition-all duration-200 rounded-t-lg ${
                 activeTab === 'wallet'
-                  ? 'border-b-2 border-blue-600 text-blue-600 bg-blue-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? `border-b-2 border-[${ACCENT_OLIVE}] text-[${ACCENT_OLIVE}] bg-[${BACKGROUND_SECONDARY}]/60`
+                  : `text-[${TEXT_SECONDARY}]/80 hover:text-[${TEXT_PRIMARY}] hover:bg-[${BACKGROUND_SECONDARY}]/30`
               }`}
             >
               💰 Wallet Management
@@ -162,60 +203,42 @@ const TreasurerDashboardNew = () => {
 };
 
 /**
- * Stat Card Component
+ * Rectangular Card used for simplified Treasurer Dashboard (Themed)
  */
-const StatCard = ({ title, value, subtitle, icon: Icon, gradient, loading }) => {
+const RectCard = ({ title, value, subtitle, icon: Icon, loading, ACCENT_OLIVE, TEXT_PRIMARY, TEXT_SECONDARY, BORDER_DIVIDER, BACKGROUND_SECONDARY }) => {
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow-lg animate-pulse">
-        <div className="h-10 w-10 bg-gray-200 rounded-full mb-4"></div>
-        <div className="h-8 bg-gray-200 rounded w-24 mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-32"></div>
-      </div>
-    );
-  }
-  
-  return (
-    <div className={`bg-gradient-to-br ${gradient} rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}>
-      <div className="flex items-center justify-between mb-4">
-        <Icon className="w-10 h-10 opacity-80" />
-      </div>
-      <div className="text-3xl font-bold mb-1">{value}</div>
-      <div className="text-sm opacity-90">{title}</div>
-      <div className="text-xs opacity-75 mt-2">{subtitle}</div>
-    </div>
-  );
-};
-
-/**
- * Rectangular Card used for simplified Treasurer Dashboard
- */
-const RectCard = ({ title, value, subtitle, icon: Icon, loading }) => {
-  if (loading) {
-    return (
-      <div className="bg-white rounded-md p-6 shadow-sm animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-24 mb-4"></div>
-        <div className="h-8 bg-gray-200 rounded w-32"></div>
+      <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-2xl p-6 shadow-[0_0_20px_rgba(166,195,111,0.08)] ring-1 ring-[${BORDER_DIVIDER}]/40 animate-pulse`}>
+        <div className="h-6 bg-[#3A3E36]/50 rounded w-24 mb-4"></div>
+        <div className="h-8 bg-[#3A3E36]/50 rounded w-32"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-md p-6 shadow-sm hover:shadow-md transition-all duration-150">
+    // Card Container Style
+    <div className={`bg-[${BACKGROUND_SECONDARY}] border border-[${BORDER_DIVIDER}]/40 rounded-2xl p-6 shadow-[0_0_20px_rgba(166,195,111,0.08)] hover:shadow-[0_0_25px_rgba(166,195,111,0.15)] transition-all duration-150`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-gray-100 rounded-md">
-            <Icon className="w-6 h-6 text-gray-700" />
+          {/* Icon Muted Background */}
+          <div className={`p-2 bg-[${BORDER_DIVIDER}]/40 rounded-xl`}>
+            {/* Icon Tone */}
+            <Icon className={`w-6 h-6 text-[${ACCENT_OLIVE}]/80`} />
           </div>
           <div>
-            <div className="text-sm text-gray-500">{title}</div>
-            <div className="text-2xl font-semibold text-gray-900">{value}</div>
+            {/* Soft Header Text */}
+            <div className={`text-sm text-[${TEXT_SECONDARY}]`}>{title}</div>
+            {/* Primary Number Display Style */}
+            <div className={`text-3xl font-bold text-[${ACCENT_OLIVE}]`}>{value}</div>
           </div>
         </div>
       </div>
-      {subtitle && <div className="text-xs text-gray-400">{subtitle}</div>}
+      {/* Muted Subtitle */}
+      {subtitle && <div className={`text-xs text-[${TEXT_SECONDARY}]/60 mt-2`}>{subtitle}</div>}
     </div>
   );
 };
+
+// Removing unused StatCard to clean up, keeping RectCard logic
 
 export default TreasurerDashboardNew;

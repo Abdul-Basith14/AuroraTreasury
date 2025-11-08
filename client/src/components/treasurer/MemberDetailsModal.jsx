@@ -4,6 +4,16 @@ import { getMemberPayments } from '../../utils/treasurerAPI';
 import { X, User, IndianRupee, Calendar, CheckCircle } from 'lucide-react';
 import ManualPaymentUpdateModal from './ManualPaymentUpdateModal';
 
+// --- Core Color Palette (from Styling System) ---
+const BACKGROUND_PRIMARY = '#0B0B09';
+const BACKGROUND_SECONDARY = '#1F221C';
+const TEXT_PRIMARY = '#F5F3E7';
+const TEXT_SECONDARY = '#E8E3C5';
+const ACCENT_OLIVE = '#A6C36F';
+const BORDER_DIVIDER = '#3A3E36';
+const SHADOW_GLOW = 'shadow-[0_0_25px_rgba(166,195,111,0.08)]';
+// ------------------------------------------------
+
 /**
  * Member Details Modal Component
  * Shows detailed payment history for a specific member
@@ -60,15 +70,15 @@ const MemberDetailsModal = ({ isOpen, onClose, member, refreshMembers }) => {
   };
   
   /**
-   * Get status badge classes
+   * Get status badge classes for dark theme
    * @param {string} status - Payment status
    * @returns {string} - CSS classes
    */
   const getStatusBadge = (status) => {
     const configs = {
-      'Paid': 'bg-green-100 text-green-800 border-green-200',
-      'Pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      'Failed': 'bg-red-100 text-red-800 border-red-200'
+      'Paid': 'bg-green-900/40 text-green-400 border-green-700/50',
+      'Pending': 'bg-yellow-900/40 text-yellow-400 border-yellow-700/50',
+      'Failed': 'bg-red-900/40 text-red-400 border-red-700/50'
     };
     return configs[status] || configs['Pending'];
   };
@@ -77,32 +87,39 @@ const MemberDetailsModal = ({ isOpen, onClose, member, refreshMembers }) => {
   if (!isOpen || !member) return null;
   
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl z-10">
+    // Backdrop - Darkened
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+      {/* Modal Container - Themed Panel */}
+      <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto border border-[${BORDER_DIVIDER}] ${SHADOW_GLOW}`}>
+        
+        {/* Header - Olive Accent Gradient */}
+        <div className={`sticky top-0 bg-[${BACKGROUND_SECONDARY}] border-b border-[${BORDER_DIVIDER}] text-[${TEXT_PRIMARY}] p-6 rounded-t-2xl z-10 
+          shadow-[0_4px_10px_rgba(0,0,0,0.4)]`}>
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-4">
+              {/* Profile Photo/Placeholder */}
               {member.profilePhoto ? (
                 <img
                   src={member.profilePhoto}
                   alt={member.name}
-                  className="w-16 h-16 rounded-full border-4 border-white shadow-lg object-cover"
+                  className={`w-16 h-16 rounded-full border-4 border-[${ACCENT_OLIVE}] shadow-lg object-cover`}
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
-                  <User className="w-8 h-8 text-white" />
+                <div className={`w-16 h-16 rounded-full bg-[${BORDER_DIVIDER}] flex items-center justify-center border-2 border-[${ACCENT_OLIVE}]`}>
+                  <User className={`w-8 h-8 text-[${ACCENT_OLIVE}]`} />
                 </div>
               )}
+              {/* Member Info */}
               <div>
                 <h2 className="text-2xl font-bold">{member.name}</h2>
-                <p className="text-blue-100">{member.usn}</p>
-                <p className="text-sm text-blue-100 mt-1">{member.year} • {member.branch}</p>
+                <p className={`text-[${TEXT_SECONDARY}]/80`}>{member.usn}</p>
+                <p className={`text-sm text-[${TEXT_SECONDARY}]/60 mt-1`}>{member.year} • {member.branch}</p>
               </div>
             </div>
+            {/* Close Button */}
             <button
               onClick={onClose}
-              className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-full transition-colors duration-200"
+              className={`text-[${TEXT_SECONDARY}]/70 hover:bg-[${BORDER_DIVIDER}] hover:text-[${TEXT_PRIMARY}] p-2 rounded-full transition-colors duration-200`}
             >
               <X className="w-6 h-6" />
             </button>
@@ -111,74 +128,80 @@ const MemberDetailsModal = ({ isOpen, onClose, member, refreshMembers }) => {
         
         {/* Content */}
         <div className="p-6">
-          {/* Summary Stats */}
+          {/* Summary Stats - Themed Cards */}
           <div className="grid grid-cols-4 gap-4 mb-6">
-            <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-700">{member.stats.paidCount}</div>
-              <div className="text-xs text-green-600 font-medium">Paid</div>
+            <div className="bg-green-900/20 border border-green-800/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-400">{member.stats?.paidCount ?? 0}</div>
+              <div className="text-xs text-green-500 font-medium">Paid</div>
             </div>
-            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-700">{member.stats.pendingCount}</div>
-              <div className="text-xs text-yellow-600 font-medium">Pending</div>
+            <div className="bg-yellow-900/20 border border-yellow-800/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-yellow-400">{member.stats?.pendingCount ?? 0}</div>
+              <div className="text-xs text-yellow-500 font-medium">Pending</div>
             </div>
-            <div className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-red-700">{member.stats.failedCount}</div>
-              <div className="text-xs text-red-600 font-medium">Failed</div>
+            <div className="bg-red-900/20 border border-red-800/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-red-400">{member.stats?.failedCount ?? 0}</div>
+              <div className="text-xs text-red-500 font-medium">Failed</div>
             </div>
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4 text-center">
-              <div className="text-xl font-bold text-blue-700">₹{member.totalPaid}</div>
-              <div className="text-xs text-blue-600 font-medium">Total Paid</div>
+            <div className={`bg-[${ACCENT_OLIVE}]/20 border border-[${ACCENT_OLIVE}]/50 rounded-lg p-4 text-center`}>
+              <div className={`text-xl font-bold text-[${ACCENT_OLIVE}]`}>₹{member.totalPaid ?? 0}</div>
+              <div className={`text-xs text-[${ACCENT_OLIVE}] font-medium`}>Total Paid</div>
             </div>
           </div>
           
           {/* Payment History */}
           <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Payment History</h3>
+            <h3 className={`text-lg font-bold text-[${TEXT_PRIMARY}] mb-4`}>Payment History</h3>
             
             {loading ? (
+              // Themed Loading Spinner
               <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div 
+                  className="animate-spin rounded-full h-12 w-12 border-b-2" 
+                  style={{ borderColor: ACCENT_OLIVE }}
+                ></div>
               </div>
             ) : payments.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <Calendar className="w-12 h-12 mx-auto mb-2 text-gray-400" />
-                <p>No payment records found</p>
+              // Themed Empty State
+              <div className="text-center py-12 text-[${TEXT_SECONDARY}]/50 bg-[${BACKGROUND_PRIMARY}] rounded-lg border border-[${BORDER_DIVIDER}]">
+                <Calendar className={`w-12 h-12 mx-auto mb-2 text-[${BORDER_DIVIDER}]`} />
+                <p>No payment records found for this member.</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {payments.map(payment => (
                   <div 
                     key={payment._id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
+                    className={`border border-[${BORDER_DIVIDER}] rounded-lg p-4 hover:shadow-xl transition-shadow duration-200 bg-[${BACKGROUND_PRIMARY}]`}
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <div className="flex items-center space-x-2 mb-1">
-                          <Calendar className="w-5 h-5 text-gray-400" />
-                          <span className="font-semibold text-gray-900">{payment.month}</span>
+                          <Calendar className={`w-5 h-5 text-[${TEXT_SECONDARY}]/60`} />
+                          <span className={`font-semibold text-[${TEXT_PRIMARY}]`}>{payment.month}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <IndianRupee className="w-5 h-5 text-gray-400" />
-                          <span className="text-lg font-bold text-gray-900">₹{payment.amount}</span>
+                          <IndianRupee className={`w-5 h-5 text-[${TEXT_SECONDARY}]/60`} />
+                          <span className={`text-lg font-bold text-[${TEXT_PRIMARY}]`}>₹{payment.amount}</span>
                         </div>
                       </div>
+                      {/* Status Badge */}
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(payment.status)}`}>
                         {payment.status}
                       </span>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="grid grid-cols-2 gap-4 text-sm text-[${TEXT_SECONDARY}]">
                       <div>
-                        <span className="text-gray-600">Deadline:</span>
-                        <span className="ml-2 text-gray-900 font-medium">
+                        <span className="text-[${TEXT_SECONDARY}]/60">Deadline:</span>
+                        <span className={`ml-2 text-[${TEXT_PRIMARY}] font-medium`}>
                           {new Date(payment.deadline).toLocaleDateString('en-IN')}
                         </span>
                       </div>
                       
                       {payment.paymentDate && (
                         <div>
-                          <span className="text-gray-600">Paid On:</span>
-                          <span className="ml-2 text-gray-900 font-medium">
+                          <span className="text-[${TEXT_SECONDARY}]/60">Paid On:</span>
+                          <span className={`ml-2 text-[${TEXT_PRIMARY}] font-medium`}>
                             {new Date(payment.paymentDate).toLocaleDateString('en-IN')}
                           </span>
                         </div>
@@ -186,11 +209,11 @@ const MemberDetailsModal = ({ isOpen, onClose, member, refreshMembers }) => {
                       
                       {payment.paymentMethod && (
                         <div>
-                          <span className="text-gray-600">Method:</span>
+                          <span className="text-[${TEXT_SECONDARY}]/60">Method:</span>
                           <span className={`ml-2 font-medium ${
-                            payment.paymentMethod === 'Cash' ? 'text-green-700' : 
-                            payment.paymentMethod === 'Bank Transfer' ? 'text-blue-700' :
-                            payment.paymentMethod === 'Online' ? 'text-purple-700' : 'text-gray-900'
+                            payment.paymentMethod === 'Cash' ? 'text-green-500' : 
+                            payment.paymentMethod === 'Bank Transfer' ? 'text-blue-500' :
+                            payment.paymentMethod === 'Online' ? 'text-purple-500' : 'text-[${TEXT_PRIMARY}]'
                           }`}>
                             {payment.paymentMethod}
                           </span>
@@ -199,8 +222,8 @@ const MemberDetailsModal = ({ isOpen, onClose, member, refreshMembers }) => {
                       
                       {payment.verifiedBy && (
                         <div>
-                          <span className="text-gray-600">Verified By:</span>
-                          <span className="ml-2 text-gray-900 font-medium">
+                          <span className="text-[${TEXT_SECONDARY}]/60">Verified By:</span>
+                          <span className={`ml-2 text-[${TEXT_PRIMARY}] font-medium`}>
                             {payment.verifiedBy.name}
                           </span>
                         </div>
@@ -208,51 +231,51 @@ const MemberDetailsModal = ({ isOpen, onClose, member, refreshMembers }) => {
                     </div>
                     
                     {/* Action Buttons */}
-                    <div className="flex space-x-2 mt-4">
-                      {/* Payment Proof */}
+                    <div className="flex space-x-2 mt-4 border-t border-[${BORDER_DIVIDER}]/70 pt-3">
+                      {/* Payment Proof Button (Themed) */}
                       {payment.paymentProof && (
                         <button
                           onClick={() => window.open(payment.paymentProof, '_blank')}
-                          className="flex-1 text-sm text-blue-600 hover:text-blue-800 font-medium py-2 px-3 border border-blue-200 rounded hover:bg-blue-50 transition-colors duration-200"
+                          className={`flex-1 text-sm text-[${ACCENT_OLIVE}] hover:text-white font-medium py-2 px-3 border border-[${ACCENT_OLIVE}]/50 rounded hover:bg-[${ACCENT_OLIVE}]/20 transition-colors duration-200`}
                         >
                           View Proof
                         </button>
                       )}
                       
-                      {/* Manual Update Button - Only for Pending status and when there's no payment proof */}
+                      {/* Manual Update Button (Themed) - Only for Pending status and when there's no payment proof */}
                       {payment.status === 'Pending' && !payment.paymentProof && (
                         <button
                           onClick={() => handleManualUpdate(payment)}
-                          className="flex-1 text-sm text-green-600 hover:text-green-800 font-medium py-2 px-3 border border-green-200 rounded hover:bg-green-50 flex items-center justify-center transition-colors duration-200"
+                          className="flex-1 text-sm text-green-400 hover:text-white font-medium py-2 px-3 border border-green-600/50 rounded hover:bg-green-700/50 flex items-center justify-center transition-colors duration-200"
                         >
                           <CheckCircle className="w-4 h-4 mr-1" />
                           Mark as Paid
                         </button>
                       )}
                       {payment.status === 'Pending' && payment.paymentProof && (
-                        <span className="flex-1 text-sm text-yellow-700 font-medium py-2 px-3 text-center">Pending (awaiting verification)</span>
+                        <span className="flex-1 text-sm text-yellow-500 font-medium py-2 px-3 text-center border border-yellow-800/50 rounded bg-yellow-900/20">Awaiting Verification</span>
                       )}
                     </div>
                     
-                    {/* Resubmission Info */}
+                    {/* Resubmission Info (Themed) */}
                     {payment.failedPaymentSubmission?.resubmittedPhoto && (
-                      <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded">
+                      <div className="mt-3 p-3 bg-orange-900/20 border border-orange-700/50 rounded">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-xs font-semibold text-orange-800">Payment Resubmitted</p>
-                            <p className="text-xs text-orange-700">
+                            <p className="text-xs font-semibold text-orange-400">Payment Resubmitted</p>
+                            <p className="text-xs text-orange-500">
                               {new Date(payment.failedPaymentSubmission.resubmittedDate).toLocaleDateString('en-IN')}
                             </p>
                           </div>
                           <button
                             onClick={() => window.open(payment.failedPaymentSubmission.resubmittedPhoto, '_blank')}
-                            className="text-xs text-orange-700 hover:text-orange-900 font-medium px-3 py-1 bg-white rounded border border-orange-300 transition-colors duration-200"
+                            className="text-xs text-orange-500 hover:text-white font-medium px-3 py-1 bg-transparent rounded border border-orange-700/50 hover:bg-orange-700/50 transition-colors duration-200"
                           >
-                            View Proof
+                            View New Proof
                           </button>
                         </div>
                         {payment.failedPaymentSubmission.resubmissionNote && (
-                          <p className="text-xs text-orange-700 mt-2">
+                          <p className="text-xs text-orange-500 mt-2">
                             <span className="font-medium">Note:</span> {payment.failedPaymentSubmission.resubmissionNote}
                           </p>
                         )}
@@ -265,21 +288,22 @@ const MemberDetailsModal = ({ isOpen, onClose, member, refreshMembers }) => {
           </div>
         </div>
         
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center rounded-b-2xl">
-          <div className="text-sm text-gray-600">
+        {/* Footer - Themed */}
+        <div className={`sticky bottom-0 bg-[${BACKGROUND_PRIMARY}] px-6 py-4 border-t border-[${BORDER_DIVIDER}] flex justify-between items-center rounded-b-2xl`}>
+          <div className={`text-sm text-[${TEXT_SECONDARY}]/70`}>
             Joined: {new Date(member.joinedDate).toLocaleDateString('en-IN')}
           </div>
+          {/* Close Button - Themed */}
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors duration-200"
+            className={`px-6 py-2 bg-[${ACCENT_OLIVE}] text-black rounded-lg hover:bg-opacity-80 font-bold transition-colors duration-200`}
           >
             Close
           </button>
         </div>
       </div>
       
-      {/* Manual Payment Update Modal */}
+      {/* Manual Payment Update Modal (Assuming it is themed separately) */}
       <ManualPaymentUpdateModal
         isOpen={showManualUpdateModal}
         onClose={() => setShowManualUpdateModal(false)}
