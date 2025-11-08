@@ -201,6 +201,48 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Request password reset
+   * @param {string} email - User's email
+   */
+  const requestPasswordReset = async (email) => {
+    try {
+      setIsLoading(true);
+      const response = await authAPI.requestPasswordReset(email);
+      if (response.success) {
+        toast.success('OTP sent to your email');
+        return { success: true };
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to send OTP');
+      return { success: false, error: error.message };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Reset password with OTP
+   * @param {string} email - User's email
+   * @param {string} otp - OTP code
+   * @param {string} newPassword - New password
+   */
+  const resetPassword = async (email, otp, newPassword) => {
+    try {
+      setIsLoading(true);
+      const response = await authAPI.resetPassword(email, otp, newPassword);
+      if (response.success) {
+        toast.success('Password reset successful');
+        return { success: true };
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to reset password');
+      return { success: false, error: error.message };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value = {
     user,
     isAuthenticated,
@@ -211,6 +253,8 @@ export const AuthProvider = ({ children }) => {
     updateUser,
     verifyOTP,
     resendOTP,
+    requestPasswordReset,
+    resetPassword
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

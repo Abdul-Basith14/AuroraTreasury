@@ -4,6 +4,8 @@ import { useAuth } from './context/AuthContext';
 // Pages
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './components/auth/ForgotPassword';
+import ResetPassword from './components/auth/ResetPassword';
 import MemberDashboard from './pages/MemberDashboard';
 import TreasurerDashboard from './pages/TreasurerDashboard';
 import PaymentRequestsPage from './components/treasurer/PaymentRequestsPage';
@@ -48,6 +50,8 @@ function App() {
             )
           }
         />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Protected Routes - Member Dashboard */}
         <Route

@@ -96,6 +96,8 @@ export const authAPI = {
   sendOTP: (data) => api.post('/auth/send-otp', data),
   verifyOTP: (data) => api.post('/auth/verify-otp', data),
   resendOTP: (data) => api.post('/auth/resend-otp', data),
+  requestPasswordReset: (email) => api.post('/auth/request-reset', { email }),
+  resetPassword: (email, otp, newPassword) => api.post('/auth/reset', { email, otp, newPassword }),
 };
 
 // Group Fund API calls
