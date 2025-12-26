@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { LogIn, Mail, Lock, Key } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authAPI } from '../utils/api';
+import Background3D from '../components/Background3D';
+import { motion } from 'framer-motion';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -139,155 +141,187 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0B0B09] text-[#F5F3E7] px-4 font-inter">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-inter">
+      <Background3D />
+      
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md bg-[#1F221C]/60 backdrop-blur-xl rounded-2xl shadow-2xl border border-[#A6C36F]/30 overflow-hidden z-10 relative"
+      >
+        {/* Decorative glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-[#A6C36F] to-transparent opacity-80" />
+
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#A6C36F]/10 rounded-full ring-1 ring-[#3A3E36]/40 shadow-[0_0_25px_rgba(166,195,111,0.08)] mb-4">
-            <LogIn className="w-8 h-8 text-[#A6C36F]" />
-          </div>
-          <h1 className="text-3xl font-bold text-[#F5F3E7] mb-1">AuroraTreasury</h1>
-          <p className="text-[#E8E3C5]/70 text-sm">Sign in to manage your club finances</p>
+        <div className="p-8 pb-6 text-center">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
+            className="w-20 h-20 bg-gradient-to-tr from-[#A6C36F] to-[#8FAE5D] rounded-full mx-auto flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(166,195,111,0.4)]"
+          >
+            <LogIn className="w-10 h-10 text-[#0B0B09]" />
+          </motion.div>
+          <h1 className="text-3xl font-bold text-[#F5F3E7] mb-2 tracking-tight">AuroraTreasury</h1>
+          <p className="text-[#E8E3C5]/80">Sign in to manage your club finances</p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-[#1F221C] rounded-2xl border border-[#3A3E36]/40 shadow-[0_0_25px_rgba(166,195,111,0.08)] p-8 ring-1 ring-[#3A3E36]/40 hover-glow transition-all duration-300">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="p-8 pt-0">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-[#E8E3C5] mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-[#E8E3C5] mb-2 ml-1">
                 Email Address
               </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#A6C36F]/80 w-5 h-5" />
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-[#A6C36F]/80 group-focus-within:text-[#A6C36F] transition-colors" />
+                </div>
                 <input
                   id="email"
                   name="email"
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-4 py-2 bg-[#0B0B09] text-[#F5F3E7] border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A6C36F] transition-all duration-300 ${
-                    errors.email ? 'border-red-500' : 'border-[#3A3E36]/40'
+                  className={`block w-full pl-10 pr-3 py-2.5 bg-[#0B0B09]/50 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/30 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/50 focus:border-[#A6C36F] transition-all duration-300 ${
+                    errors.email ? 'border-red-500' : 'border-[#3A3E36]/60 hover:border-[#A6C36F]/50'
                   }`}
                   placeholder="Enter your email"
                 />
               </div>
-              {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+              {errors.email && <p className="mt-1 text-sm text-red-400 ml-1">{errors.email}</p>}
             </div>
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[#E8E3C5] mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-[#E8E3C5] mb-2 ml-1">
                 Password
               </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#A6C36F]/80 w-5 h-5" />
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-[#A6C36F]/80 group-focus-within:text-[#A6C36F] transition-colors" />
+                </div>
                 <input
                   id="password"
                   name="password"
                   type="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-4 py-2 bg-[#0B0B09] text-[#F5F3E7] border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A6C36F] transition-all duration-300 ${
-                    errors.password ? 'border-red-500' : 'border-[#3A3E36]/40'
+                  className={`block w-full pl-10 pr-3 py-2.5 bg-[#0B0B09]/50 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/30 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/50 focus:border-[#A6C36F] transition-all duration-300 ${
+                    errors.password ? 'border-red-500' : 'border-[#3A3E36]/60 hover:border-[#A6C36F]/50'
                   }`}
                   placeholder="Enter your password"
                 />
               </div>
-              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+              {errors.password && <p className="mt-1 text-sm text-red-400 ml-1">{errors.password}</p>}
             </div>
 
             {/* Login Type */}
             <div>
-              <label className="block text-sm font-medium text-[#E8E3C5] mb-2">Login As</label>
-              <div className="flex items-center space-x-4">
+              <label className="block text-sm font-medium text-[#E8E3C5] mb-2 ml-1">Login As</label>
+              <div className="grid grid-cols-2 gap-4">
                 <label
-                  className={`px-3 py-2 rounded-lg cursor-pointer transition-all duration-300 ${
+                  className={`relative flex items-center justify-center px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300 border ${
                     loginAs === 'member'
-                      ? 'bg-[#A6C36F]/20 text-[#A6C36F]'
-                      : 'bg-[#0B0B09] text-[#E8E3C5]/70 border border-[#3A3E36]/40'
+                      ? 'bg-[#A6C36F]/20 border-[#A6C36F] text-[#A6C36F] shadow-[0_0_15px_rgba(166,195,111,0.1)]'
+                      : 'bg-[#0B0B09]/30 border-[#3A3E36]/60 text-[#E8E3C5]/60 hover:bg-[#0B0B09]/50 hover:border-[#A6C36F]/30'
                   }`}
                 >
                   <input type="radio" name="loginAs" value="member" checked={loginAs === 'member'} onChange={() => handleLoginAsChange('member')} className="hidden" />
-                  Member
+                  <span className="font-medium">Member</span>
                 </label>
                 <label
-                  className={`px-3 py-2 rounded-lg cursor-pointer transition-all duration-300 ${
+                  className={`relative flex items-center justify-center px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300 border ${
                     loginAs === 'treasurer'
-                      ? 'bg-[#A6C36F]/20 text-[#A6C36F]'
-                      : 'bg-[#0B0B09] text-[#E8E3C5]/70 border border-[#3A3E36]/40'
+                      ? 'bg-[#A6C36F]/20 border-[#A6C36F] text-[#A6C36F] shadow-[0_0_15px_rgba(166,195,111,0.1)]'
+                      : 'bg-[#0B0B09]/30 border-[#3A3E36]/60 text-[#E8E3C5]/60 hover:bg-[#0B0B09]/50 hover:border-[#A6C36F]/30'
                   }`}
                 >
                   <input type="radio" name="loginAs" value="treasurer" checked={loginAs === 'treasurer'} onChange={() => handleLoginAsChange('treasurer')} className="hidden" />
-                  Treasurer
+                  <span className="font-medium">Treasurer</span>
                 </label>
               </div>
             </div>
 
             {/* Treasurer Key */}
             {loginAs === 'treasurer' && (
-              <div>
-                <label htmlFor="treasurerKey" className="block text-sm font-medium text-[#E8E3C5] mb-2">
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <label htmlFor="treasurerKey" className="block text-sm font-medium text-[#E8E3C5] mb-2 ml-1">
                   Treasurer Key
                 </label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#A6C36F]/80 w-5 h-5" />
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Key className="h-5 w-5 text-[#A6C36F]/80 group-focus-within:text-[#A6C36F] transition-colors" />
+                  </div>
                   <input
                     id="treasurerKey"
                     name="treasurerKey"
                     type="text"
                     value={formData.treasurerKey}
                     onChange={handleChange}
-                    className={`w-full pl-10 pr-4 py-2 bg-[#0B0B09] text-[#F5F3E7] border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A6C36F] transition-all duration-300 ${
-                      errors.treasurerKey ? 'border-red-500' : 'border-[#3A3E36]/40'
+                    className={`block w-full pl-10 pr-3 py-2.5 bg-[#0B0B09]/50 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/30 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/50 focus:border-[#A6C36F] transition-all duration-300 ${
+                      errors.treasurerKey ? 'border-red-500' : 'border-[#3A3E36]/60 hover:border-[#A6C36F]/50'
                     }`}
                     placeholder="Enter treasurer key"
                   />
                 </div>
-                {errors.treasurerKey && <p className="mt-1 text-sm text-red-500">{errors.treasurerKey}</p>}
-              </div>
+                {errors.treasurerKey && <p className="mt-1 text-sm text-red-400 ml-1">{errors.treasurerKey}</p>}
+              </motion.div>
             )}
 
             {/* OTP Input */}
             {showOTPInput && (
-              <div>
-                <label htmlFor="otp" className="block text-sm font-medium text-[#E8E3C5] mb-2">
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+              >
+                <label htmlFor="otp" className="block text-sm font-medium text-[#E8E3C5] mb-2 ml-1">
                   Enter OTP
                 </label>
-                <div className="relative">
+                <div className="relative group">
                   <input
                     id="otp"
                     name="otp"
                     type="text"
                     value={formData.otp}
                     onChange={handleChange}
-                    className={`w-full pl-4 pr-20 py-2 bg-[#0B0B09] text-[#F5F3E7] border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A6C36F] transition-all duration-300 ${
-                      errors.otp ? 'border-red-500' : 'border-[#3A3E36]/40'
+                    className={`block w-full pl-4 pr-24 py-2.5 bg-[#0B0B09]/50 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/30 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/50 focus:border-[#A6C36F] transition-all duration-300 ${
+                      errors.otp ? 'border-red-500' : 'border-[#3A3E36]/60 hover:border-[#A6C36F]/50'
                     }`}
-                    placeholder="Enter 6-digit OTP"
+                    placeholder="6-digit OTP"
                     maxLength="6"
                   />
-                  {countdown > 0 ? (
-                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-[#E8E3C5]/60">{countdown}s</span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleSendOTP}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-[#A6C36F] hover:text-[#8FAE5D] transition-all"
-                    >
-                      Resend OTP
-                    </button>
-                  )}
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                    {countdown > 0 ? (
+                      <span className="text-sm text-[#E8E3C5]/60 font-mono bg-[#0B0B09] px-2 py-1 rounded">{countdown}s</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleSendOTP}
+                        className="text-xs text-[#0B0B09] bg-[#A6C36F] hover:bg-[#8FAE5D] px-2 py-1 rounded transition-colors font-medium"
+                      >
+                        Resend
+                      </button>
+                    )}
+                  </div>
                 </div>
-                {errors.otp && <p className="mt-1 text-sm text-red-500">{errors.otp}</p>}
-              </div>
+                {errors.otp && <p className="mt-1 text-sm text-red-400 ml-1">{errors.otp}</p>}
+              </motion.div>
             )}
 
             {/* Submit */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#A6C36F] text-[#0B0B09] py-2 px-4 rounded-2xl hover:bg-[#8FAE5D] focus:outline-none focus:ring-2 focus:ring-[#A6C36F] focus:ring-offset-2 focus:ring-offset-[#0B0B09] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-semibold shadow-[0_0_25px_rgba(166,195,111,0.08)]"
+              className="w-full bg-gradient-to-r from-[#A6C36F] to-[#8FAE5D] text-[#0B0B09] py-3 px-4 rounded-xl hover:shadow-[0_0_20px_rgba(166,195,111,0.3)] focus:outline-none focus:ring-2 focus:ring-[#A6C36F] focus:ring-offset-2 focus:ring-offset-[#0B0B09] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold text-lg mt-2"
             >
               {isLoading || isVerifying ? (
                 <>
@@ -303,19 +337,19 @@ const Login = () => {
                   {showOTPInput ? 'Verify & Sign In' : 'Continue with Email'}
                 </>
               )}
-            </button>
+            </motion.button>
           </form>
 
           {/* Sign Up + Forgot Password */}
-          <div className="mt-6 text-center space-y-2">
-            <p className="text-sm text-[#E8E3C5]/70">
+          <div className="mt-8 text-center space-y-3">
+            <p className="text-sm text-[#E8E3C5]/60">
               Don't have an account?{' '}
-              <Link to="/signup" className="text-[#A6C36F] hover:text-[#8FAE5D] font-medium">
+              <Link to="/signup" className="text-[#A6C36F] hover:text-[#E8E3C5] font-semibold transition-colors underline decoration-transparent hover:decoration-[#A6C36F] underline-offset-4">
                 Sign up here
               </Link>
             </p>
-            <p className="text-sm text-[#E8E3C5]/70">
-              <Link to="/forgot-password" className="text-[#A6C36F] hover:text-[#8FAE5D] font-medium">
+            <p className="text-sm text-[#E8E3C5]/60">
+              <Link to="/forgot-password" className="text-[#A6C36F] hover:text-[#E8E3C5] font-semibold transition-colors">
                 Forgot your password?
               </Link>
             </p>
@@ -323,10 +357,10 @@ const Login = () => {
         </div>
 
         {/* Footer */}
-        <div className="mt-6 text-center text-[#E8E3C5]/60 text-sm italic">
+        <div className="py-4 bg-[#0B0B09]/30 text-center text-[#E8E3C5]/40 text-xs border-t border-[#3A3E36]/30">
           Contact your club treasurer for access or assistance
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

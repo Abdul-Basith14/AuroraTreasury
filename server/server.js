@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.js';
 import groupFundRoutes from './routes/groupFund.js';
 import reimbursementRoutes from './routes/reimbursement.js';
 import treasurerRoutes from './routes/treasurer.js';
+import partyAmountRoutes from './routes/partyAmount.js';
 
 // Load environment variables
 dotenv.config();
@@ -49,6 +50,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/groupfund', groupFundRoutes);
 app.use('/api/reimbursement', reimbursementRoutes);
 app.use('/api/treasurer', treasurerRoutes);
+app.use('/api/party-amount', partyAmountRoutes);
 
 // Root Route
 app.get('/', (req, res) => {

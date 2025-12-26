@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { AlertCircle, RefreshCw, Download, Calendar, Search, Loader2, DollarSign, Users, X, Clock } from 'lucide-react';
 
@@ -18,9 +19,7 @@ const ALERT_ORANGE = '#F97316'; // Orange for quick action button
 
 // --- Mock Hooks & API (For Single File Execution) ---
 
-// Mocking useNavigate from react-router-dom
-const mockNavigate = (path) => console.log(`MOCK NAVIGATION: Attempted to navigate to: ${path}`);
-const useNavigate = () => mockNavigate;
+// useNavigate from react-router-dom will be used for navigation
 
 // Mock Data
 const mockStatistics = {
@@ -303,7 +302,7 @@ const FailedPaymentsQuickView = ({ isOpen, onClose }) => {
  * Main dashboard for treasurers to manage and view all members (Dark Olive Theme)
  */
 const TreasurerDashboard = () => {
-  const navigate = useNavigate(); // Mocked
+  const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -456,6 +455,16 @@ const TreasurerDashboard = () => {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold mb-2">Treasurer Dashboard</h1>
           <p className="text-white/80">Manage AuroraTreasury club finances and member statuses</p>
+          {/* Prominent CTA for Party Amounts - high-contrast explicit classes so it's always visible */}
+          <div className="mt-6">
+            <button
+              onClick={() => navigate('/treasurer/party-amounts')}
+              className="flex items-center space-x-2 px-6 py-3 text-lg font-semibold text-[#0B0B09] bg-[#A6C36F] hover:bg-[#99B864] rounded-xl shadow-md transition transform hover:scale-[1.02]"
+            >
+              <DollarSign className="w-5 h-5" />
+              <span>Manage Party Amounts</span>
+            </button>
+          </div>
         </div>
       </div>
       
@@ -475,6 +484,14 @@ const TreasurerDashboard = () => {
           >
             <Calendar className="w-5 h-5 mr-2" />
             Members by Month
+          </button>
+
+          <button
+            onClick={() => navigate('/treasurer/party-amounts')}
+            className={`px-6 py-3 bg-[${ACCENT_OLIVE}] text-[${PRIMARY_BG}] rounded-lg hover:bg-[${ACCENT_HOVER}] font-semibold shadow-md transition-all duration-200 flex items-center`}
+          >
+            <DollarSign className="w-5 h-5 mr-2" />
+            Party Amounts
           </button>
           
           <button

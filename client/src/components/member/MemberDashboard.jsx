@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LogOut, Wallet, Plus, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { groupFundAPI } from '../../utils/api';
@@ -16,6 +17,7 @@ import FailedPaymentsSection from './FailedPaymentsSection';
  */
 const MemberDashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -126,6 +128,13 @@ const MemberDashboard = () => {
                 <LogOut className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Logout</span>
               </button>
+                
+                <button
+                  onClick={() => navigate('/party-amounts')}
+                  className="flex items-center px-3 py-2 text-sm font-medium text-[#E8E3C5] hover:text-[#A6C36F] hover:bg-[#1F221C] rounded-lg border border-transparent hover:border-[#3A3E36] transition-all"
+                >
+                  <span className="hidden sm:inline">Party Contributions</span>
+                </button>
             </div>
           </div>
         </div>

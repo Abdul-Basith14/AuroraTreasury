@@ -177,6 +177,31 @@ const reimbursementPaymentUpload = multer({
 export const uploadReimbursementPaymentProof = reimbursementPaymentUpload.single('paymentProof');
 
 /**
+ * Configure Cloudinary storage for Party Payment Proofs
+ * Supports images and PDFs and larger sizes if needed
+ */
+const partyPaymentStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'aurora-treasury/party-payment-proofs',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'pdf'],
+    transformation: [{ width: 1200, height: 1600, crop: 'limit' }],
+    resource_type: 'auto',
+  },
+});
+
+const partyPaymentUpload = multer({
+  storage: partyPaymentStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
+  fileFilter: reimbursementFileFilter,
+});
+
+// Export middleware to handle multiple paymentProofs files (max 5)
+export const uploadPartyPaymentProof = partyPaymentUpload.array('paymentProofs', 5);
+
+/**
  * Error handling middleware for Multer
  * Usage: Add this after routes that use upload middleware
  */

@@ -11,6 +11,8 @@ import TreasurerDashboard from './pages/TreasurerDashboard';
 import PaymentRequestsPage from './components/treasurer/PaymentRequestsPage';
 import MembersByMonthPage from './components/treasurer/MembersByMonthPage';
 import ReimbursementRequestsPage from './components/treasurer/ReimbursementRequestsPage';
+import PartyAmountsPage from './pages/PartyAmountsPage';
+import PartyAdminPage from './pages/PartyAdminPage';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
@@ -85,6 +87,26 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['treasurer']}>
               <PaymentRequestsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Party amounts - Member */}
+        <Route
+          path="/party-amounts"
+          element={
+            <ProtectedRoute allowedRoles={["member"]}>
+              <PartyAmountsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Party amounts - Treasurer admin */}
+        <Route
+          path="/treasurer/party-amounts"
+          element={
+            <ProtectedRoute allowedRoles={["treasurer"]}>
+              <PartyAdminPage />
             </ProtectedRoute>
           }
         />

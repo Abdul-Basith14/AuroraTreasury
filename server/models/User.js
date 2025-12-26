@@ -63,6 +63,15 @@ const userSchema = new mongoose.Schema(
       default: 0,
       min: [0, 'Total paid cannot be negative'],
     },
+    // Party-specific wallet and totals
+    partyContributionsWallet: {
+      type: Number,
+      default: 0
+    },
+    totalPartyPaid: {
+      type: Number,
+      default: 0
+    },
     isActive: {
       type: Boolean,
       default: true,
