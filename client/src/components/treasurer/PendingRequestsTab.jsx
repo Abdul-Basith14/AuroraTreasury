@@ -5,16 +5,6 @@ import PaymentRequestCard from './PaymentRequestCard';
 import RequestFilters from './RequestFilters';
 import { Clock } from 'lucide-react';
 
-// --- Core Color Palette (from Styling System) ---
-const BACKGROUND_PRIMARY = '#0B0B09';
-const BACKGROUND_SECONDARY = '#1F221C';
-const TEXT_PRIMARY = '#F5F3E7';
-const TEXT_SECONDARY = '#E8E3C5';
-const ACCENT_OLIVE = '#A6C36F';
-const BORDER_DIVIDER = '#3A3E36';
-const SHADOW_GLOW = 'shadow-[0_0_25px_rgba(166,195,111,0.08)]';
-// ------------------------------------------------
-
 /**
  * Pending Requests Tab - Displays and manages pending payment requests
  */
@@ -71,30 +61,26 @@ const PendingRequestsTab = ({ refreshTrigger, onActionComplete }) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
-        {/* Themed Spinner */}
-        <div className={`animate-spin rounded-full h-12 w-12 border-b-2 border-[${ACCENT_OLIVE}]`}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A6C36F]"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Filters (Assumes RequestFilters is themed separately, or will be provided next) */}
+      {/* Filters */}
       <RequestFilters 
         filters={filters} 
         onFilterChange={handleFilterChange}
         showStatusFilter={false}
       />
 
-      {/* Results Summary - Styled as a Subsection Card */}
-      <div 
-        className={`bg-[${BACKGROUND_SECONDARY}] rounded-xl p-4 shadow-sm border border-[${BORDER_DIVIDER}]/40`}
-      >
+      {/* Results Summary */}
+      <div className="bg-black/40 rounded-xl p-4 shadow-sm border border-[#A6C36F]/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            {/* Icon Tone */}
-            <Clock className={`w-5 h-5 text-[${ACCENT_OLIVE}]`} />
-            <span className={`font-semibold text-[${TEXT_PRIMARY}]`}>
+            <Clock className="w-5 h-5 text-[#A6C36F]" />
+            <span className="font-semibold text-[#F5F3E7]">
               {requests.length} Pending {requests.length === 1 ? 'Request' : 'Requests'}
             </span>
           </div>
@@ -103,20 +89,18 @@ const PendingRequestsTab = ({ refreshTrigger, onActionComplete }) => {
 
       {/* Payment Requests List */}
       {requests.length === 0 ? (
-        // Empty State - Styled as a Card Container
-        <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-2xl p-12 text-center border border-[${BORDER_DIVIDER}]/40 ${SHADOW_GLOW}`}>
-          <Clock className={`w-16 h-16 text-[${BORDER_DIVIDER}]/50 mx-auto mb-4`} />
-          <h3 className={`text-lg font-semibold text-[${TEXT_PRIMARY}] mb-2`}>
+        <div className="bg-black/40 rounded-2xl p-12 text-center border border-[#A6C36F]/20 shadow-[0_0_25px_rgba(166,195,111,0.08)]">
+          <Clock className="w-16 h-16 text-[#A6C36F]/20 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-[#F5F3E7] mb-2">
             No Pending Requests
           </h3>
-          <p className={`text-[${TEXT_SECONDARY}]/80`}>
+          <p className="text-[#E8E3C5]/80">
             All payment requests have been processed for the current filters.
           </p>
         </div>
       ) : (
         <div className="grid gap-6">
           {requests.map((request) => (
-            // PaymentRequestCard is already themed
             <PaymentRequestCard
               key={request._id}
               request={request}

@@ -64,30 +64,21 @@ const PaymentHistoryModal = ({ isOpen, onClose, payment }) => {
   if (!isOpen || !payment) return null;
 
   return (
-    // Backdrop: Deep black base with opacity
-    <div className="fixed inset-0 bg-[#0B0B09] bg-opacity-70 flex items-center justify-center z-50 p-4">
-      {/* Modal Card: (a) Card Container */}
-      <div 
-        className="bg-[#1F221C] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto 
-          shadow-[0_0_25px_rgba(166,195,111,0.08)] border border-[#3A3E36]/40 text-[#F5F3E7]"
-      >
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="bg-black/90 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto border border-[#A6C36F]/20 shadow-[0_0_25px_rgba(166,195,111,0.1)] backdrop-blur-xl">
+        
         {/* Header */}
-        {/* border-gray-200 -> border-[#3A3E36], bg-white -> bg-[#1F221C] (Sticky Header) */}
-        <div className="flex justify-between items-center p-6 border-b border-[#3A3E36] sticky top-0 bg-[#1F221C] z-10">
+        <div className="flex justify-between items-center p-6 border-b border-[#A6C36F]/20 bg-black/40 sticky top-0 z-10 backdrop-blur-md">
           <div>
-            {/* text-gray-900 -> text-primary */}
             <h2 className="text-2xl font-bold text-[#F5F3E7]">Payment History</h2>
-            {/* text-gray-600 -> text-secondary */}
-            <p className="text-sm text-[#E8E3C5] mt-1">
+            <p className="text-sm text-[#E8E3C5]/80 mt-1">
               {payment.month} - ₹ {payment.amount}
             </p>
           </div>
           <button
             onClick={onClose}
-            // text-gray-500/hover:text-gray-700/hover:bg-gray-100 -> text-[#E8E3C5]/hover:text-[#A6C36F]/hover:bg-[#3A3E36]/40
-            className="text-[#E8E3C5] hover:text-[#A6C36F] p-2 rounded-full hover:bg-[#3A3E36]/40 transition"
+            className="text-[#E8E3C5] hover:text-[#A6C36F] p-2 rounded-full hover:bg-[#A6C36F]/10 transition"
           >
-            {/* Icon color inherits from button text */}
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -96,7 +87,6 @@ const PaymentHistoryModal = ({ isOpen, onClose, payment }) => {
         <div className="p-6">
           {/* Current Status */}
           <div className="mb-6">
-            {/* text-gray-600 -> text-secondary */}
             <p className="text-sm text-[#E8E3C5] mb-2">Current Status:</p>
             <span
               className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold border ${getStatusColor(
@@ -108,20 +98,17 @@ const PaymentHistoryModal = ({ isOpen, onClose, payment }) => {
           </div>
 
           {/* Timeline Section */}
-          <div className="border-t border-[#3A3E36] pt-6">
-            {/* text-gray-900 -> text-primary */}
+          <div className="border-t border-[#A6C36F]/20 pt-6">
             <h3 className="text-lg font-semibold text-[#F5F3E7] mb-4">
               Status Timeline
             </h3>
 
             {loading ? (
               <div className="flex justify-center py-8">
-                {/* Loader: border-blue-200/border-t-blue-600 -> border-Accent-Olive/border-t-Accent-Olive */}
                 <div className="w-8 h-8 border-4 border-[#A6C36F]/20 border-t-[#A6C36F] rounded-full animate-spin"></div>
               </div>
             ) : history.length === 0 ? (
               <div className="text-center py-8 text-[#E8E3C5]/70">
-                {/* text-gray-500/text-gray-400 -> text-secondary/accent */}
                 <AlertCircle className="w-12 h-12 mx-auto mb-2 text-[#A6C36F]" />
                 <p>No history available</p>
               </div>
@@ -130,10 +117,9 @@ const PaymentHistoryModal = ({ isOpen, onClose, payment }) => {
                 {history.map((entry, index) => (
                   <div
                     key={index}
-                    // Timeline Item: bg-gray-50/border-gray-200 -> bg-[#1F221C]/80/border-[#3A3E36]
-                    className="bg-[#1F221C]/80 rounded-lg p-4 border border-[#3A3E36]"
+                    className="bg-black/40 rounded-xl p-4 border border-[#A6C36F]/20 hover:border-[#A6C36F]/40 transition"
                   >
-                    {/* Status Badge - uses getStatusColor() dynamically */}
+                    {/* Status Badge */}
                     <div className="flex items-start mb-2">
                       <div
                         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
@@ -145,9 +131,8 @@ const PaymentHistoryModal = ({ isOpen, onClose, payment }) => {
                     </div>
 
                     {/* Date */}
-                    {/* text-gray-600 -> text-secondary, Icon color inherits */}
                     <div className="flex items-center text-sm text-[#E8E3C5]/80 mb-2">
-                      <Clock className="w-4 h-4 mr-1 text-[#A6C36F]" />
+                      <Clock className="w-4 h-4 mr-2 text-[#A6C36F]" />
                       <span>
                         {new Date(entry.changedDate).toLocaleString('en-IN', {
                           dateStyle: 'medium',
@@ -158,13 +143,11 @@ const PaymentHistoryModal = ({ isOpen, onClose, payment }) => {
 
                     {/* Changed By */}
                     {entry.changedBy && (
-                      // text-gray-700 -> text-primary, Icon color inherits
                       <div className="flex items-center text-sm text-[#F5F3E7] mb-2">
-                        <User className="w-4 h-4 mr-1 text-[#A6C36F]" />
+                        <User className="w-4 h-4 mr-2 text-[#A6C36F]" />
                         <span className="font-medium">{entry.changedBy.name}</span>
                         {entry.changedBy.role && (
-                          // Role Badge: bg-blue-100/text-blue-700 -> Accent Olive/Text Primary
-                          <span className="ml-2 text-xs bg-[#A6C36F]/20 text-[#A6C36F] px-2 py-0.5 rounded">
+                          <span className="ml-2 text-xs bg-[#A6C36F]/20 text-[#A6C36F] px-2 py-0.5 rounded border border-[#A6C36F]/20">
                             {entry.changedBy.role}
                           </span>
                         )}
@@ -173,8 +156,7 @@ const PaymentHistoryModal = ({ isOpen, onClose, payment }) => {
 
                     {/* Reason */}
                     {entry.reason && (
-                      // text-gray-600 -> text-secondary
-                      <div className="text-sm text-[#E8E3C5]/80 mt-2 italic">
+                      <div className="text-sm text-[#E8E3C5]/60 mt-2 italic pl-6 border-l-2 border-[#A6C36F]/20">
                         "{entry.reason}"
                       </div>
                     )}
@@ -188,8 +170,7 @@ const PaymentHistoryModal = ({ isOpen, onClose, payment }) => {
           <div className="mt-6 flex justify-end">
             <button
               onClick={onClose}
-              // Close Button: bg-gray-600/text-white/hover:bg-gray-700 -> (d) Button (Accent Olive) style for primary action
-              className="px-6 py-2 bg-[#A6C36F] text-[#0B0B09] rounded-2xl hover:bg-[#8FAE5D] transition font-semibold"
+              className="px-6 py-2 bg-[#A6C36F] text-black rounded-xl hover:bg-[#8FAE5D] transition font-semibold shadow-lg hover:shadow-[#A6C36F]/20"
             >
               Close
             </button>

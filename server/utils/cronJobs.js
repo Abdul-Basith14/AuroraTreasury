@@ -9,6 +9,18 @@ import GroupFund from '../models/GroupFund.js';
  * Fields: second minute hour day month dayOfWeek
  */
 export const startCronJobs = () => {
+  // Run immediately on startup to catch any missed updates while server was down
+  console.log('🔄 Running initial check for overdue payments...');
+  GroupFund.markOverdueAsFailed()
+    .then(result => {
+      if (result.modifiedCount > 0) {
+        console.log(`✅ Initial check: Marked ${result.modifiedCount} overdue payment(s) as Failed`);
+      } else {
+        console.log('✅ Initial check: No overdue payments found');
+      }
+    })
+    .catch(err => console.error('❌ Error in initial overdue check:', err));
+
   // Run daily at midnight
   cron.schedule('0 0 * * *', async () => {
     try {

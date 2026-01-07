@@ -148,10 +148,10 @@ const Login = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md bg-[#1F221C]/60 backdrop-blur-xl rounded-2xl shadow-2xl border border-[#A6C36F]/30 overflow-hidden z-10 relative"
+        className="w-full max-w-md bg-black/60 backdrop-blur-xl rounded-2xl shadow-2xl border border-[#A6C36F]/20 overflow-hidden z-10 relative"
       >
         {/* Decorative glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-[#A6C36F] to-transparent opacity-80" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-[#A6C36F] to-transparent opacity-60" />
 
         {/* Header */}
         <div className="p-8 pb-6 text-center">
@@ -159,12 +159,12 @@ const Login = () => {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
-            className="w-20 h-20 bg-gradient-to-tr from-[#A6C36F] to-[#8FAE5D] rounded-full mx-auto flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(166,195,111,0.4)]"
+            className="w-20 h-20 bg-gradient-to-tr from-[#A6C36F] to-[#5F7A30] rounded-full mx-auto flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(166,195,111,0.2)]"
           >
-            <LogIn className="w-10 h-10 text-[#0B0B09]" />
+            <LogIn className="w-10 h-10 text-black" />
           </motion.div>
           <h1 className="text-3xl font-bold text-[#F5F3E7] mb-2 tracking-tight">AuroraTreasury</h1>
-          <p className="text-[#E8E3C5]/80">Sign in to manage your club finances</p>
+          <p className="text-[#E8E3C5]/60">Sign in to manage your club finances</p>
         </div>
 
         {/* Login Form */}
@@ -177,7 +177,7 @@ const Login = () => {
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-[#A6C36F]/80 group-focus-within:text-[#A6C36F] transition-colors" />
+                  <Mail className="h-5 w-5 text-[#A6C36F]/70 group-focus-within:text-[#A6C36F] transition-colors" />
                 </div>
                 <input
                   id="email"
@@ -185,8 +185,8 @@ const Login = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-2.5 bg-[#0B0B09]/50 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/30 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/50 focus:border-[#A6C36F] transition-all duration-300 ${
-                    errors.email ? 'border-red-500' : 'border-[#3A3E36]/60 hover:border-[#A6C36F]/50'
+                  className={`block w-full pl-10 pr-3 py-2.5 bg-black/40 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/20 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/40 focus:border-[#A6C36F] transition-all duration-300 ${
+                    errors.email ? 'border-red-500' : 'border-[#3A3E36]/40 hover:border-[#A6C36F]/30'
                   }`}
                   placeholder="Enter your email"
                 />
@@ -201,7 +201,7 @@ const Login = () => {
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-[#A6C36F]/80 group-focus-within:text-[#A6C36F] transition-colors" />
+                  <Lock className="h-5 w-5 text-[#A6C36F]/70 group-focus-within:text-[#A6C36F] transition-colors" />
                 </div>
                 <input
                   id="password"
@@ -209,8 +209,8 @@ const Login = () => {
                   type="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-2.5 bg-[#0B0B09]/50 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/30 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/50 focus:border-[#A6C36F] transition-all duration-300 ${
-                    errors.password ? 'border-red-500' : 'border-[#3A3E36]/60 hover:border-[#A6C36F]/50'
+                  className={`block w-full pl-10 pr-3 py-2.5 bg-black/40 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/20 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/40 focus:border-[#A6C36F] transition-all duration-300 ${
+                    errors.password ? 'border-red-500' : 'border-[#3A3E36]/40 hover:border-[#A6C36F]/30'
                   }`}
                   placeholder="Enter your password"
                 />
@@ -225,8 +225,8 @@ const Login = () => {
                 <label
                   className={`relative flex items-center justify-center px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300 border ${
                     loginAs === 'member'
-                      ? 'bg-[#A6C36F]/20 border-[#A6C36F] text-[#A6C36F] shadow-[0_0_15px_rgba(166,195,111,0.1)]'
-                      : 'bg-[#0B0B09]/30 border-[#3A3E36]/60 text-[#E8E3C5]/60 hover:bg-[#0B0B09]/50 hover:border-[#A6C36F]/30'
+                      ? 'bg-[#A6C36F]/10 border-[#A6C36F] text-[#A6C36F] shadow-[0_0_15px_rgba(166,195,111,0.05)]'
+                      : 'bg-black/20 border-[#3A3E36]/40 text-[#E8E3C5]/40 hover:bg-black/40 hover:border-[#A6C36F]/20'
                   }`}
                 >
                   <input type="radio" name="loginAs" value="member" checked={loginAs === 'member'} onChange={() => handleLoginAsChange('member')} className="hidden" />
@@ -235,8 +235,8 @@ const Login = () => {
                 <label
                   className={`relative flex items-center justify-center px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300 border ${
                     loginAs === 'treasurer'
-                      ? 'bg-[#A6C36F]/20 border-[#A6C36F] text-[#A6C36F] shadow-[0_0_15px_rgba(166,195,111,0.1)]'
-                      : 'bg-[#0B0B09]/30 border-[#3A3E36]/60 text-[#E8E3C5]/60 hover:bg-[#0B0B09]/50 hover:border-[#A6C36F]/30'
+                      ? 'bg-[#A6C36F]/10 border-[#A6C36F] text-[#A6C36F] shadow-[0_0_15px_rgba(166,195,111,0.05)]'
+                      : 'bg-black/20 border-[#3A3E36]/40 text-[#E8E3C5]/40 hover:bg-black/40 hover:border-[#A6C36F]/20'
                   }`}
                 >
                   <input type="radio" name="loginAs" value="treasurer" checked={loginAs === 'treasurer'} onChange={() => handleLoginAsChange('treasurer')} className="hidden" />
@@ -257,7 +257,7 @@ const Login = () => {
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Key className="h-5 w-5 text-[#A6C36F]/80 group-focus-within:text-[#A6C36F] transition-colors" />
+                    <Key className="h-5 w-5 text-[#A6C36F]/70 group-focus-within:text-[#A6C36F] transition-colors" />
                   </div>
                   <input
                     id="treasurerKey"
@@ -265,8 +265,8 @@ const Login = () => {
                     type="text"
                     value={formData.treasurerKey}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-2.5 bg-[#0B0B09]/50 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/30 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/50 focus:border-[#A6C36F] transition-all duration-300 ${
-                      errors.treasurerKey ? 'border-red-500' : 'border-[#3A3E36]/60 hover:border-[#A6C36F]/50'
+                    className={`block w-full pl-10 pr-3 py-2.5 bg-black/40 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/20 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/40 focus:border-[#A6C36F] transition-all duration-300 ${
+                      errors.treasurerKey ? 'border-red-500' : 'border-[#3A3E36]/40 hover:border-[#A6C36F]/30'
                     }`}
                     placeholder="Enter treasurer key"
                   />
@@ -291,20 +291,20 @@ const Login = () => {
                     type="text"
                     value={formData.otp}
                     onChange={handleChange}
-                    className={`block w-full pl-4 pr-24 py-2.5 bg-[#0B0B09]/50 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/30 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/50 focus:border-[#A6C36F] transition-all duration-300 ${
-                      errors.otp ? 'border-red-500' : 'border-[#3A3E36]/60 hover:border-[#A6C36F]/50'
+                    className={`block w-full pl-4 pr-24 py-2.5 bg-black/40 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/20 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/40 focus:border-[#A6C36F] transition-all duration-300 ${
+                      errors.otp ? 'border-red-500' : 'border-[#3A3E36]/40 hover:border-[#A6C36F]/30'
                     }`}
                     placeholder="6-digit OTP"
                     maxLength="6"
                   />
                   <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
                     {countdown > 0 ? (
-                      <span className="text-sm text-[#E8E3C5]/60 font-mono bg-[#0B0B09] px-2 py-1 rounded">{countdown}s</span>
+                      <span className="text-sm text-[#E8E3C5]/60 font-mono bg-black/40 px-2 py-1 rounded">{countdown}s</span>
                     ) : (
                       <button
                         type="button"
                         onClick={handleSendOTP}
-                        className="text-xs text-[#0B0B09] bg-[#A6C36F] hover:bg-[#8FAE5D] px-2 py-1 rounded transition-colors font-medium"
+                        className="text-xs text-black bg-[#A6C36F] hover:bg-[#8FAE5D] px-2 py-1 rounded transition-colors font-medium"
                       >
                         Resend
                       </button>
@@ -321,11 +321,11 @@ const Login = () => {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-[#A6C36F] to-[#8FAE5D] text-[#0B0B09] py-3 px-4 rounded-xl hover:shadow-[0_0_20px_rgba(166,195,111,0.3)] focus:outline-none focus:ring-2 focus:ring-[#A6C36F] focus:ring-offset-2 focus:ring-offset-[#0B0B09] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold text-lg mt-2"
+              className="w-full bg-gradient-to-r from-[#A6C36F] to-[#8FAE5D] text-black py-3 px-4 rounded-xl hover:shadow-[0_0_20px_rgba(166,195,111,0.2)] focus:outline-none focus:ring-2 focus:ring-[#A6C36F] focus:ring-offset-2 focus:ring-offset-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold text-lg mt-2"
             >
               {isLoading || isVerifying ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-[#0B0B09]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -342,13 +342,13 @@ const Login = () => {
 
           {/* Sign Up + Forgot Password */}
           <div className="mt-8 text-center space-y-3">
-            <p className="text-sm text-[#E8E3C5]/60">
+            <p className="text-sm text-[#E8E3C5]/40">
               Don't have an account?{' '}
               <Link to="/signup" className="text-[#A6C36F] hover:text-[#E8E3C5] font-semibold transition-colors underline decoration-transparent hover:decoration-[#A6C36F] underline-offset-4">
                 Sign up here
               </Link>
             </p>
-            <p className="text-sm text-[#E8E3C5]/60">
+            <p className="text-sm text-[#E8E3C5]/40">
               <Link to="/forgot-password" className="text-[#A6C36F] hover:text-[#E8E3C5] font-semibold transition-colors">
                 Forgot your password?
               </Link>
@@ -357,7 +357,7 @@ const Login = () => {
         </div>
 
         {/* Footer */}
-        <div className="py-4 bg-[#0B0B09]/30 text-center text-[#E8E3C5]/40 text-xs border-t border-[#3A3E36]/30">
+        <div className="py-4 bg-black/20 text-center text-[#E8E3C5]/20 text-xs border-t border-[#3A3E36]/20">
           Contact your club treasurer for access or assistance
         </div>
       </motion.div>

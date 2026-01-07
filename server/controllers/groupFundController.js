@@ -461,12 +461,21 @@ export const resubmitPayment = async (req, res) => {
       });
     }
 
+    console.log(`📝 User ${userId} resubmitting payment ${id}`);
+    console.log(`   Proof URL: ${req.file.path}`);
+
     // Update payment record with resubmission
-    payment.failedPaymentSubmission = {
-      resubmittedPhoto: req.file.path, // Cloudinary URL
-      resubmittedDate: new Date(),
-      resubmissionNote: note || '',
-    };
+    // Directly modify the nested object properties to ensure change tracking
+    if (!payment.failedPaymentSubmission) {
+      payment.failedPaymentSubmission = {};
+    }
+    
+    payment.failedPaymentSubmission.resubmittedPhoto = req.file.path;
+    payment.failedPaymentSubmission.resubmittedDate = new Date();
+    payment.failedPaymentSubmission.resubmissionNote = note || '';
+    
+    // Explicitly mark as modified to ensure Mongoose saves it
+    payment.markModified('failedPaymentSubmission');
 
     // Add to status history
     payment.statusHistory.push({
@@ -476,13 +485,15 @@ export const resubmitPayment = async (req, res) => {
       reason: 'Member resubmitted payment proof for failed payment',
     });
 
-    await payment.save();
+    const savedPayment = await payment.save();
+    console.log('✅ Payment resubmission saved successfully');
+    console.log('   New Resubmission Data:', savedPayment.failedPaymentSubmission);
 
     res.status(200).json({
       success: true,
       message:
         'Payment proof resubmitted successfully. Awaiting treasurer verification.',
-      payment: payment,
+      payment: savedPayment,
     });
   } catch (error) {
     console.error('Error resubmitting payment:', error);
@@ -580,19 +591,14 @@ export const verifyResubmittedPayment = async (req, res) => {
     }
 
     if (approve) {
+      console.log(`✅ Treasurer ${userId} verifying resubmitted payment ${id}`);
+      
       // Approve: Change status from Failed to Paid
       payment.status = 'Paid';
       payment.paymentProof = payment.failedPaymentSubmission.resubmittedPhoto;
       payment.paymentDate = payment.failedPaymentSubmission.resubmittedDate;
       payment.verifiedBy = userId;
       payment.verifiedDate = new Date();
-
-      // Update user's total paid
-      const user = await User.findById(payment.userId);
-      if (user) {
-        user.totalPaid += payment.amount;
-        await user.save();
-      }
 
       // Add to status history
       payment.statusHistory.push({
@@ -601,13 +607,31 @@ export const verifyResubmittedPayment = async (req, res) => {
         changedDate: new Date(),
         reason: 'Treasurer approved resubmitted payment',
       });
+      
+      // Save payment FIRST before updating user/wallet to prevent data inconsistency
+      await payment.save();
+      console.log(`✅ Payment ${id} marked as Paid in DB`);
+
+      // Update user's total paid
+      const user = await User.findById(payment.userId);
+      if (user) {
+        user.totalPaid += payment.amount;
+        await user.save();
+        console.log(`✅ User ${user.email} totalPaid updated`);
+      }
+      
+      // Note: Wallet update should ideally happen here too if not handled elsewhere
     } else {
+      console.log(`❌ Treasurer ${userId} rejecting resubmitted payment ${id}`);
+      
       // Reject: Keep as Failed, clear resubmission
       payment.failedPaymentSubmission = {
         resubmittedPhoto: null,
         resubmittedDate: null,
         resubmissionNote: '',
       };
+      
+      payment.markModified('failedPaymentSubmission');
 
       payment.statusHistory.push({
         status: 'Failed',
@@ -615,9 +639,9 @@ export const verifyResubmittedPayment = async (req, res) => {
         changedDate: new Date(),
         reason: 'Treasurer rejected resubmitted payment',
       });
+      
+      await payment.save();
     }
-
-    await payment.save();
 
     res.status(200).json({
       success: true,

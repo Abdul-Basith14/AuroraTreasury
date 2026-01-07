@@ -234,6 +234,7 @@ groupFundSchema.statics.markOverdueAsFailed = async function () {
     {
       status: 'Pending',
       deadline: { $lt: new Date() },
+      paymentProof: null // Only mark as failed if no proof has been submitted
     },
     {
       $set: { status: 'Failed' },

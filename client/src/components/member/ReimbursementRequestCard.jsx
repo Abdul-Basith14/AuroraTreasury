@@ -13,48 +13,43 @@ import {
  * Status configuration for different reimbursement states
  */
 const statusConfig = {
-  // Pending: Yellow -> Muted Olive-Gray
+  // Pending: Yellow
   Pending: {
-    color: 'gray',
-    bg: 'bg-[#3A3E36]',
-    text: 'text-[#E8E3C5]',
-    border: 'border-[#3A3E36]',
+    bg: 'bg-yellow-500/10',
+    text: 'text-yellow-500',
+    border: 'border-yellow-500/20',
     icon: Clock,
     message: 'Awaiting treasurer review',
   },
-  // Approved: Blue -> Accent Olive Muted
+  // Approved: Blue
   Approved: {
-    color: 'olive-light',
-    bg: 'bg-[#A6C36F]/30',
-    text: 'text-[#A6C36F]',
-    border: 'border-[#A6C36F]/40',
+    bg: 'bg-blue-500/10',
+    text: 'text-blue-400',
+    border: 'border-blue-500/20',
     icon: CheckCircle,
     message: 'Approved! Payment in progress',
   },
-  // Paid: Green -> Strong Accent Olive
+  // Paid: Olive
   Paid: {
-    color: 'olive-dark',
-    bg: 'bg-[#A6C36F]/50',
-    text: 'text-[#0B0B09]', // High contrast black text on light olive
-    border: 'border-[#A6C36F]/60',
+    bg: 'bg-[#A6C36F]/10',
+    text: 'text-[#A6C36F]',
+    border: 'border-[#A6C36F]/20',
     icon: CheckCircle,
     message: 'Payment sent! Please confirm receipt',
   },
-  // Received: Emerald -> Pure Accent Olive
+  // Received: Green
   Received: {
-    color: 'olive-full',
-    bg: 'bg-[#A6C36F]',
-    text: 'text-[#0B0B09]', // High contrast black text on light olive
-    border: 'border-[#A6C36F]',
+    bg: 'bg-green-500/10',
+    text: 'text-green-500',
+    border: 'border-green-500/20',
     icon: CheckCircle,
     message: 'Completed',
   },
-  // Rejected: Red -> Dark Panel + Soft Red Text
+  // Rejected: Red
   Rejected: {
-    color: 'red-dark',
-    bg: 'bg-[#1F221C]',
-    text: 'text-[#F07167]',
-    border: 'border-[#F07167]/40',
+    bg: 'bg-red-500/10',
+    text: 'text-red-500',
+    border: 'border-red-500/20',
     icon: XCircle,
     message: 'Request rejected',
   },
@@ -77,7 +72,7 @@ const ReimbursementRequestCard = ({
   const [showActions, setShowActions] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   
-  const status = statusConfig[request.status];
+  const status = statusConfig[request.status] || statusConfig.Pending;
   const StatusIcon = status.icon;
 
   // Format date to Indian locale
@@ -92,109 +87,131 @@ const ReimbursementRequestCard = ({
   return (
     // Base card styling
     <div className={`
-      bg-[#1F221C] 
-      border-2 ${status.border} 
+      bg-black/40 backdrop-blur-sm
+      border ${status.border} 
       rounded-xl p-4
-      hover:shadow-[0_0_15px_rgba(166,195,111,0.2)] 
+      hover:shadow-[0_0_15px_rgba(166,195,111,0.1)] 
       transition-all duration-200
       cursor-pointer
+      relative
+      group
     `}
     onClick={() => setIsExpanded(!isExpanded)}
     >
-      {/* Compact Header - Always visible */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          {/* Amount */}
-          <span className="text-xl font-bold text-[#F5F3E7]">₹ {request.amount.toLocaleString('en-IN')}</span>
-          
-          {/* Status Badge */}
-          <div className={`inline-flex items-center px-2 py-1 rounded-full ${status.bg} ${status.text} text-xs font-semibold`}>
-            <StatusIcon className="w-3 h-3 mr-1" />
-            <span>{request.status}</span>
+      <div className="flex justify-between items-start">
+        {/* Left Section: Icon & Basic Info */}
+        <div className="flex items-start space-x-4">
+          {/* Status Icon */}
+          <div className={`p-3 rounded-lg ${status.bg} ${status.text}`}>
+            <StatusIcon className="w-6 h-6" />
+          </div>
+
+          <div>
+            <h4 className="text-[#F5F3E7] font-semibold text-lg">
+              {request.description}
+            </h4>
+            <div className="flex items-center space-x-3 mt-1 text-sm text-[#E8E3C5]/60">
+              <span>{formatDate(request.createdAt)}</span>
+              <span>•</span>
+              <span className={status.text}>{request.status}</span>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
-          {/* Date */}
-          <span className="text-xs text-[#E8E3C5]/70 font-medium">
-            {formatDate(request.requestDate)}
-          </span>
+        {/* Right Section: Amount & Actions */}
+        <div className="flex items-start space-x-4">
+          <div className="text-right">
+            <p className="text-xl font-bold text-[#A6C36F]">
+              ₹{request.amount.toLocaleString('en-IN')}
+            </p>
+            {request.billProofPhoto && (
+              <a 
+                href={request.billProofPhoto} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs text-[#A6C36F] hover:underline flex items-center justify-end mt-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FileText className="w-3 h-3 mr-1" />
+                View Bill
+              </a>
+            )}
+          </div>
 
-          {/* Delete Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(request._id);
-            }}
-            className="text-[#F07167] hover:text-[#F07167]/80 p-1.5 rounded-lg hover:bg-[#0B0B09] transition"
-            title="Delete Request"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {/* Actions Menu */}
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowActions(!showActions);
+              }}
+              className="p-1 hover:bg-[#A6C36F]/10 rounded-full text-[#E8E3C5]/60 hover:text-[#A6C36F] transition"
+            >
+              <MoreVertical className="w-5 h-5" />
+            </button>
+
+            {showActions && (
+              <div className="absolute right-0 mt-2 w-48 bg-black border border-[#A6C36F]/20 rounded-lg shadow-xl z-10 py-1 backdrop-blur-xl">
+                {request.treasurerResponse && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowActions(false);
+                      onViewResponse(request);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-[#E8E3C5] hover:bg-[#A6C36F]/10 flex items-center"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    View Response
+                  </button>
+                )}
+                
+                {request.status === 'Paid' && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowActions(false);
+                      onConfirmReceipt(request._id);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-[#A6C36F] hover:bg-[#A6C36F]/10 flex items-center"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Confirm Receipt
+                  </button>
+                )}
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowActions(false);
+                    onDelete(request._id);
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 flex items-center"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Request
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Expandable Content */}
+      {/* Expanded Details */}
       {isExpanded && (
-        <div className="mt-4 space-y-4 border-t border-[#3A3E36] pt-4" onClick={(e) => e.stopPropagation()}>
-          {/* Description */}
-          <div className="bg-[#0B0B09] rounded-lg p-3 border border-[#3A3E36]">
-            <p className="text-sm text-[#E8E3C5] font-medium mb-1">Description:</p>
-            <p className="text-sm text-[#F5F3E7] leading-relaxed">{request.description}</p>
-          </div>
-
-          {/* Status Message */}
-          <div className={`text-xs ${status.text} font-semibold px-2 py-1 rounded ${status.bg} inline-block`}>
-            {status.message}
-          </div>
-
-          {/* Contact Info */}
-          <div className="text-xs text-[#E8E3C5]/70">
-            Contact: +91 {request.mobileNumber}
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2 pt-2">
-            {/* View Bill Button */}
-            <button
-              onClick={() => window.open(request.billProofPhoto, '_blank')}
-              className="text-xs text-[#A6C36F] hover:text-[#A6C36F] font-medium flex items-center hover:bg-[#3A3E36] px-2 py-1 rounded-lg transition"
-            >
-              <FileText className="w-3 h-3 mr-1" />
-              View Bill
-            </button>
-
-            {/* View Treasurer Response */}
-            {request.treasurerResponse && request.treasurerResponse.message && (
-              <button
-                onClick={() => onViewResponse(request)}
-                className="text-xs text-[#E8E3C5] hover:text-[#F5F3E7] font-medium flex items-center hover:bg-[#3A3E36] px-2 py-1 rounded-lg transition"
-              >
-                <MessageSquare className="w-3 h-3 mr-1" />
-                View Response
-              </button>
-            )}
-
-            {/* Confirm Receipt Button */}
-            {request.status === 'Paid' && (
-              <button
-                onClick={() => onConfirmReceipt(request._id)}
-                className="text-xs bg-[#A6C36F] text-[#0B0B09] px-3 py-1 rounded-lg hover:bg-[#8FAE5D] font-semibold flex items-center shadow-sm hover:shadow transition-all animate-pulse ml-auto"
-              >
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Confirm Receipt
-              </button>
+        <div className="mt-4 pt-4 border-t border-[#A6C36F]/10 animate-fadeIn">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-[#E8E3C5]/60 mb-1">Status Message</p>
+              <p className="text-[#F5F3E7]">{status.message}</p>
+            </div>
+            {request.treasurerResponse?.message && (
+              <div>
+                <p className="text-[#E8E3C5]/60 mb-1">Treasurer Note</p>
+                <p className="text-[#F5F3E7] italic">"{request.treasurerResponse.message}"</p>
+              </div>
             )}
           </div>
-        </div>
-      )}
-      {/* Rejection Reason - If rejected */}
-      {isExpanded && request.status === 'Rejected' && request.rejectionReason && (
-        <div className="mt-4 p-3 bg-[#0B0B09] rounded-lg border-l-4 border-[#F07167]" onClick={(e) => e.stopPropagation()}>
-          <p className="text-xs font-semibold text-[#F07167] mb-1 uppercase tracking-wide">
-            Rejection Reason:
-          </p>
-          <p className="text-sm text-[#F07167] leading-relaxed">{request.rejectionReason}</p>
         </div>
       )}
     </div>

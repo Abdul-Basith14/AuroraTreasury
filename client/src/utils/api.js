@@ -37,9 +37,13 @@ api.interceptors.response.use(
   },
   (error) => {
     // Handle different error scenarios
+    console.log('API Error Interceptor triggered:', error);
+    
     if (error.response) {
       // Server responded with error status
       const { status, data } = error.response;
+      
+      console.error('API Error Response:', { status, data, url: error.config?.url });
 
       switch (status) {
         case 401:
@@ -70,7 +74,7 @@ api.interceptors.response.use(
       return Promise.reject(data);
     } else if (error.request) {
       // Request made but no response received
-      console.error('Network error: No response from server');
+      console.error('Network error: No response from server', error.request);
       return Promise.reject({
         success: false,
         message: 'Network error. Please check your internet connection.',

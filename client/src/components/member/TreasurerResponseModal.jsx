@@ -1,13 +1,5 @@
 import { X, MessageSquare, Download, CheckCircle } from 'lucide-react';
 
-// --- Theme Colors ---
-const MODAL_BG = '#1F221C'; // Primary Dark BG for the modal body
-const ACCENT_OLIVE = '#A6C36F'; // Primary accent color
-const ACCENT_HOVER = '#8FAE5D';
-const TEXT_LIGHT = '#E8E3C5'; // Light text for dark background
-const TEXT_MUTED = '#9CA3AF'; // Muted gray text
-const BORDER_DARK = '#3A3E36'; // Dark border/divider
-
 /**
  * TreasurerResponseModal Component
  * Displays treasurer's response to a reimbursement request
@@ -36,35 +28,35 @@ const TreasurerResponseModal = ({ isOpen, onClose, request, onConfirmReceipt }) 
   // Get status badge styling (Themed)
   const getStatusBadge = (status) => {
     const badges = {
-      Approved: `bg-blue-900 text-blue-300`, // Blue for Approval
-      Paid: `bg-yellow-900 text-yellow-300`, // Yellow for Paid/Pending receipt
-      Received: `bg-[${ACCENT_OLIVE}] bg-opacity-30 text-[${ACCENT_OLIVE}]`, // Olive for success/completion
-      Rejected: `bg-red-900 text-red-300`, // Added Rejected for completeness
+      Approved: `bg-blue-500/10 text-blue-400 border border-blue-500/20`,
+      Paid: `bg-yellow-500/10 text-yellow-500 border border-yellow-500/20`,
+      Received: `bg-[#A6C36F]/10 text-[#A6C36F] border border-[#A6C36F]/20`,
+      Rejected: `bg-red-500/10 text-red-500 border border-red-500/20`,
     };
-    return badges[status] || `bg-[${BORDER_DARK}] text-[${TEXT_LIGHT}]`;
+    return badges[status] || `bg-white/5 text-white/60 border border-white/10`;
   };
 
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-70 z-40 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/80 z-40 backdrop-blur-sm"
         onClick={onClose}
       ></div>
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className={`bg-[${MODAL_BG}] rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-[${BORDER_DARK}]`}>
+        <div className="bg-black/90 border border-[#A6C36F]/20 rounded-2xl shadow-[0_0_25px_rgba(166,195,111,0.1)] max-w-2xl w-full max-h-[90vh] overflow-y-auto backdrop-blur-xl">
           
           {/* Header */}
-          <div className={`sticky top-0 bg-[${BORDER_DARK}] text-[${TEXT_LIGHT}] px-6 py-4 rounded-t-2xl flex justify-between items-center border-b border-[#4E524A]`}>
+          <div className="sticky top-0 bg-black/40 border-b border-[#A6C36F]/20 px-6 py-4 rounded-t-2xl flex justify-between items-center z-10 backdrop-blur-md">
             <div className="flex items-center">
-              <MessageSquare className={`w-6 h-6 mr-2 text-[${ACCENT_OLIVE}]`} />
-              <h2 className="text-xl font-bold">Treasurer Response</h2>
+              <MessageSquare className="w-6 h-6 mr-2 text-[#A6C36F]" />
+              <h2 className="text-xl font-bold text-[#F5F3E7]">Treasurer Response</h2>
             </div>
             <button
               onClick={onClose}
-              className={`text-[${TEXT_LIGHT}] hover:bg-white hover:bg-opacity-10 rounded-lg p-2 transition`}
+              className="text-[#E8E3C5] hover:text-[#A6C36F] hover:bg-[#A6C36F]/10 rounded-full p-2 transition"
             >
               <X className="w-5 h-5" />
             </button>
@@ -74,67 +66,67 @@ const TreasurerResponseModal = ({ isOpen, onClose, request, onConfirmReceipt }) 
           <div className="p-6 space-y-6">
             
             {/* Success Message */}
-            <div className={`bg-[${ACCENT_OLIVE}] bg-opacity-10 border-l-4 border-[${ACCENT_OLIVE}] p-4 rounded-lg`}>
-              <p className={`text-[${TEXT_LIGHT}] font-medium`}>
+            <div className="bg-[#A6C36F]/10 border-l-4 border-[#A6C36F] p-4 rounded-lg">
+              <p className="text-[#F5F3E7] font-medium">
                 Your reimbursement request has been processed!
               </p>
             </div>
 
             {/* Request Details */}
-            <div className={`bg-[${BORDER_DARK}] rounded-lg p-4 border border-[#4E524A]`}>
-              <h3 className={`text-sm font-semibold text-[${TEXT_MUTED}] mb-3 uppercase tracking-wide`}>
+            <div className="bg-black/40 rounded-xl p-4 border border-[#A6C36F]/20">
+              <h3 className="text-sm font-semibold text-[#E8E3C5]/60 mb-3 uppercase tracking-wide">
                 Request Details
               </h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className={`text-[${TEXT_MUTED}]`}>Amount:</span>
-                  <span className={`font-bold text-[${TEXT_LIGHT}]`}>₹ {request.amount.toLocaleString('en-IN')}</span>
+                  <span className="text-[#E8E3C5]/60">Amount:</span>
+                  <span className="font-bold text-[#A6C36F]">₹ {request.amount.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className={`text-[${TEXT_MUTED}]`}>Description:</span>
-                  <span className={`text-[${TEXT_LIGHT}] text-right max-w-xs`}>{request.description}</span>
+                  <span className="text-[#E8E3C5]/60">Description:</span>
+                  <span className="text-[#F5F3E7] text-right max-w-xs">{request.description}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className={`text-[${TEXT_MUTED}]`}>Requested on:</span>
-                  <span className={`text-[${TEXT_LIGHT}]`}>{formatDate(request.requestDate)}</span>
+                  <span className="text-[#E8E3C5]/60">Requested on:</span>
+                  <span className="text-[#F5F3E7]">{formatDate(request.requestDate)}</span>
                 </div>
               </div>
             </div>
 
-            <div className={`border-t border-[${BORDER_DARK}]`}></div>
+            <div className="border-t border-[#A6C36F]/20"></div>
 
             {/* Treasurer's Message */}
             {treasurerResponse && treasurerResponse.message && (
               <div>
                 <div className="flex items-center mb-3">
-                  <MessageSquare className={`w-5 h-5 text-[${ACCENT_OLIVE}] mr-2`} />
-                  <h3 className={`text-sm font-semibold text-[${TEXT_MUTED}] uppercase tracking-wide`}>
+                  <MessageSquare className="w-5 h-5 text-[#A6C36F] mr-2" />
+                  <h3 className="text-sm font-semibold text-[#E8E3C5]/60 uppercase tracking-wide">
                     Treasurer's Message
                   </h3>
                 </div>
                 {/* Message Box Themed */}
-                <div className={`bg-gray-700 bg-opacity-30 border-l-4 border-gray-600 p-4 rounded-lg`}>
-                  <p className={`text-[${TEXT_LIGHT}] leading-relaxed`}>{treasurerResponse.message}</p>
+                <div className="bg-black/40 border-l-4 border-[#A6C36F]/50 p-4 rounded-lg">
+                  <p className="text-[#F5F3E7] leading-relaxed">{treasurerResponse.message}</p>
                 </div>
               </div>
             )}
 
             {/* Respondent Details */}
             {treasurerResponse && treasurerResponse.respondedBy && (
-              <div className={`bg-[${BORDER_DARK}] rounded-lg p-4 border border-[#4E524A]`}>
+              <div className="bg-black/40 rounded-xl p-4 border border-[#A6C36F]/20">
                 <div className="flex items-center justify-between text-sm">
                   <div>
-                    <p className={`text-[${TEXT_MUTED}]`}>Responded by:</p>
-                    <p className={`font-semibold text-[${TEXT_LIGHT}]`}>
+                    <p className="text-[#E8E3C5]/60">Responded by:</p>
+                    <p className="font-semibold text-[#F5F3E7]">
                       {treasurerResponse.respondedBy.name}
                     </p>
-                    <p className={`text-xs text-[${TEXT_MUTED}]`}>
+                    <p className="text-xs text-[#E8E3C5]/60">
                       {treasurerResponse.respondedBy.email}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className={`text-[${TEXT_MUTED}]`}>Response Date:</p>
-                    <p className={`font-medium text-[${TEXT_LIGHT}]`}>
+                    <p className="text-[#E8E3C5]/60">Response Date:</p>
+                    <p className="font-medium text-[#F5F3E7]">
                       {formatDate(treasurerResponse.respondedDate)}
                     </p>
                   </div>
@@ -142,18 +134,18 @@ const TreasurerResponseModal = ({ isOpen, onClose, request, onConfirmReceipt }) 
               </div>
             )}
 
-            <div className={`border-t border-[${BORDER_DARK}]`}></div>
+            <div className="border-t border-[#A6C36F]/20"></div>
 
             {/* Payment Proof Photo */}
             {treasurerResponse && treasurerResponse.paymentProofPhoto && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className={`text-sm font-semibold text-[${TEXT_MUTED}] uppercase tracking-wide`}>
+                  <h3 className="text-sm font-semibold text-[#E8E3C5]/60 uppercase tracking-wide">
                     📸 Payment Proof from Treasurer
                   </h3>
                   <button
                     onClick={() => window.open(treasurerResponse.paymentProofPhoto, '_blank')}
-                    className={`text-sm text-[${ACCENT_OLIVE}] hover:text-[${ACCENT_HOVER}] font-medium flex items-center transition`}
+                    className="text-sm text-[#A6C36F] hover:text-[#8FAE5D] font-medium flex items-center transition"
                   >
                     <Download className="w-4 h-4 mr-1" />
                     Download
@@ -161,19 +153,19 @@ const TreasurerResponseModal = ({ isOpen, onClose, request, onConfirmReceipt }) 
                 </div>
 
                 {/* Image Preview */}
-                <div className={`border-2 border-[${BORDER_DARK}] rounded-lg overflow-hidden`}>
+                <div className="border border-[#A6C36F]/20 rounded-xl overflow-hidden bg-black/40">
                   <img
                     src={treasurerResponse.paymentProofPhoto}
                     alt="Payment Proof"
-                    className={`w-full h-auto object-contain max-h-96 bg-[${BORDER_DARK}]`}
+                    className="w-full h-auto object-contain max-h-96"
                   />
                 </div>
               </div>
             )}
 
             {/* Current Status */}
-            <div className={`bg-[${BORDER_DARK}] rounded-lg p-4 border border-[#4E524A]`}>
-              <p className={`text-sm text-[${TEXT_MUTED}] mb-2`}>Current Status:</p>
+            <div className="bg-black/40 rounded-xl p-4 border border-[#A6C36F]/20 flex justify-between items-center">
+              <p className="text-sm text-[#E8E3C5]/60">Current Status:</p>
               <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold ${getStatusBadge(request.status)}`}>
                 {request.status}
               </span>
@@ -183,7 +175,7 @@ const TreasurerResponseModal = ({ isOpen, onClose, request, onConfirmReceipt }) 
             <div className="flex justify-end space-x-3 pt-4">
               <button
                 onClick={onClose}
-                className={`px-6 py-2.5 border-2 border-[${BORDER_DARK}] text-[${TEXT_LIGHT}] rounded-lg hover:bg-[#3A3E36] font-semibold transition`}
+                className="px-6 py-2.5 border border-[#A6C36F]/20 text-[#E8E3C5] rounded-xl hover:bg-[#A6C36F]/10 font-semibold transition"
               >
                 Close
               </button>
@@ -195,7 +187,7 @@ const TreasurerResponseModal = ({ isOpen, onClose, request, onConfirmReceipt }) 
                     onConfirmReceipt(request._id);
                     onClose();
                   }}
-                  className={`px-6 py-2.5 bg-[${ACCENT_OLIVE}] text-black rounded-lg hover:bg-[${ACCENT_HOVER}] font-semibold flex items-center transition shadow-md hover:shadow-lg`}
+                  className="px-6 py-2.5 bg-[#A6C36F] text-black rounded-xl hover:bg-[#8FAE5D] font-semibold flex items-center transition shadow-lg hover:shadow-[#A6C36F]/20"
                 >
                   <CheckCircle className="w-5 h-5 mr-2" />
                   Confirm Receipt

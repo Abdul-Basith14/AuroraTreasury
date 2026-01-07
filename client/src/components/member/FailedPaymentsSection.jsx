@@ -7,7 +7,7 @@ import PayFailedPaymentModal from './PayFailedPaymentModal';
 import PaymentHistoryModal from './PaymentHistoryModal';
 
 /**
- * FailedPaymentsSection Component (Bright Olive Elegance Themed)
+ * FailedPaymentsSection Component (Dark Black & Olive Green Theme)
  * Displays all failed payments with option to resubmit payment proof
  */
 const FailedPaymentsSection = () => {
@@ -54,19 +54,19 @@ const FailedPaymentsSection = () => {
     <>
       <div className="mt-10 mb-10">
         {/* Header */}
-        <div className="bg-[#1F221C] border border-[#3A3E36] rounded-t-2xl p-6 text-[#F5F3E7] shadow-md">
+        <div className="bg-black/60 backdrop-blur-xl border border-[#A6C36F]/20 rounded-t-2xl p-6 text-[#F5F3E7] shadow-md">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold mb-1 flex items-center">
                 <AlertTriangle className="w-7 h-7 mr-2 text-[#A6C36F]" />
                 Failed Payments
               </h2>
-              <p className="text-sm text-[#E8E3C5] opacity-80">
+              <p className="text-sm text-[#E8E3C5]/80">
                 Pay your missed monthly contributions
               </p>
             </div>
             {failedPayments.length > 0 && (
-              <div className="bg-[#2A2D25] border border-[#3A3E36] px-4 py-2 rounded-xl">
+              <div className="bg-[#A6C36F]/10 border border-[#A6C36F]/20 px-4 py-2 rounded-xl">
                 <p className="text-sm font-semibold text-[#A6C36F]">
                   {failedPayments.length} Failed Payment
                   {failedPayments.length !== 1 ? 's' : ''}
@@ -77,7 +77,7 @@ const FailedPaymentsSection = () => {
         </div>
 
         {/* Failed Payments Grid */}
-        <div className="bg-[#0B0B09] border border-t-0 border-[#3A3E36] rounded-b-2xl p-6 shadow-lg">
+        <div className="bg-black/40 backdrop-blur-md border border-t-0 border-[#A6C36F]/20 rounded-b-2xl p-6 shadow-lg">
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
@@ -87,15 +87,15 @@ const FailedPaymentsSection = () => {
           ) : (
             <>
               {/* Alert Banner */}
-              <div className="mb-6 p-4 bg-[#2B2F26] border-l-4 border-[#A6C36F] rounded-lg shadow-sm">
+              <div className="mb-6 p-4 bg-red-500/10 border-l-4 border-red-500 rounded-lg shadow-sm">
                 <div className="flex items-start">
-                  <AlertCircle className="w-5 h-5 text-[#A6C36F] mr-2 mt-0.5 flex-shrink-0" />
+                  <AlertCircle className="w-5 h-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-[#E8E3C5]">
+                    <p className="text-sm font-medium text-red-400">
                       You have {failedPayments.length} failed payment
                       {failedPayments.length !== 1 ? 's' : ''}
                     </p>
-                    <p className="text-xs text-[#C9C6A8] mt-1">
+                    <p className="text-xs text-[#E8E3C5]/60 mt-1">
                       Please pay these amounts as soon as possible to avoid any issues.
                     </p>
                   </div>
@@ -139,11 +139,11 @@ const FailedPaymentsSection = () => {
  * Skeleton Card for loading
  */
 const SkeletonCard = () => (
-  <div className="border border-[#3A3E36] rounded-2xl p-4 animate-pulse bg-[#1F221C]">
-    <div className="h-6 bg-[#3A3E36] rounded w-32 mb-3"></div>
-    <div className="h-8 bg-[#3A3E36] rounded w-20 mb-3"></div>
-    <div className="h-4 bg-[#3A3E36] rounded w-full mb-2"></div>
-    <div className="h-10 bg-[#3A3E36] rounded w-full mt-4"></div>
+  <div className="border border-[#A6C36F]/10 rounded-2xl p-4 animate-pulse bg-black/20">
+    <div className="h-6 bg-[#A6C36F]/10 rounded w-32 mb-3"></div>
+    <div className="h-8 bg-[#A6C36F]/10 rounded w-20 mb-3"></div>
+    <div className="h-4 bg-[#A6C36F]/10 rounded w-full mb-2"></div>
+    <div className="h-10 bg-[#A6C36F]/10 rounded w-full mt-4"></div>
   </div>
 );
 

@@ -944,7 +944,14 @@ export const rejectResubmission = async (req, res) => {
       });
     }
     
-    payment.failedPaymentSubmission = null;
+    // Reset submission fields
+    payment.failedPaymentSubmission = {
+       resubmittedPhoto: null,
+       resubmittedDate: null,
+       resubmissionNote: ''
+    };
+    payment.markModified('failedPaymentSubmission');
+
     payment.rejectionReason = reason;
     
     payment.statusHistory.push({

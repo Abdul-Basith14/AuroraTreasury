@@ -8,6 +8,7 @@ import groupFundRoutes from './routes/groupFund.js';
 import reimbursementRoutes from './routes/reimbursement.js';
 import treasurerRoutes from './routes/treasurer.js';
 import partyAmountRoutes from './routes/partyAmount.js';
+import { startCronJobs } from './utils/cronJobs.js';
 
 // Load environment variables
 dotenv.config();
@@ -17,6 +18,9 @@ const app = express();
 
 // Connect to MongoDB
 connectDB();
+
+// Start Cron Jobs
+startCronJobs();
 
 // Verify Cloudinary configuration
 verifyCloudinaryConfig();

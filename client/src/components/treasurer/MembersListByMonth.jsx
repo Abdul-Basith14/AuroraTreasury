@@ -5,16 +5,6 @@ import axios from 'axios';
 import { Download, Trash2, Calendar, Users, IndianRupee, CheckCircle, Clock, AlertCircle, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import ManualPaymentUpdateModal from './ManualPaymentUpdateModal';
 
-// --- Theme Tokens ---
-const TEXT_PRIMARY = '#F5F3E7';
-const TEXT_SECONDARY = '#E8E3C5';
-const ACCENT_OLIVE = '#A6C36F';
-const BACKGROUND_PRIMARY = '#0B0B09';
-const BACKGROUND_SECONDARY = '#1F221C';
-const BORDER_DIVIDER = '#3A3E36';
-const SHADOW_GLOW = 'shadow-[0_0_25px_rgba(166,195,111,0.08)]';
-// --------------------
-
 /**
  * Month-based Member List Component
  * Shows payment status for all members in a specific month (table view)
@@ -291,59 +281,32 @@ const MembersListByMonth = () => {
   const getStatusBadge = (status) => {
     const configs = {
       // Paid: Olive Accent
-      'Paid': `bg-[${ACCENT_OLIVE}]/10 text-[${ACCENT_OLIVE}] border-[${ACCENT_OLIVE}]/40`,
+      'Paid': 'bg-[#A6C36F]/10 text-[#A6C36F] border-[#A6C36F]/40',
       // Pending: Yellow/Muted
       'Pending': 'bg-yellow-800/20 text-yellow-400 border-yellow-700/50',
       // Failed/Error: Red/Alert
       'Failed': 'bg-red-800/20 text-red-400 border-red-700/50',
       // Not Created: Muted Gray
-      'Not Created': `bg-[${BORDER_DIVIDER}]/40 text-[${TEXT_SECONDARY}]/70 border-[${BORDER_DIVIDER}]/70`
+      'Not Created': 'bg-[#3A3E36]/40 text-[#E8E3C5]/70 border-[#3A3E36]/70'
     };
     return configs[status] || configs['Not Created'];
   };
-
-  // Inline Summary component (REMOVED)
-  // const InlineSummary = ({ summary }) => (
-  //   <div className={`text-sm text-[${TEXT_SECONDARY}]/70 flex flex-wrap items-center gap-x-6 gap-y-2`}>
-  //     <span>
-  //       **Total Members:** <span className={`font-semibold text-[${TEXT_PRIMARY}]`}>{summary.totalMembers}</span>
-  //     </span>
-  //     <span className="flex items-center">
-  //       <CheckCircle className={`w-4 h-4 mr-1 text-[${ACCENT_OLIVE}]`} />
-  //       **Paid:** <span className={`font-semibold text-[${ACCENT_OLIVE}]`}>{summary.paidCount}</span>
-  //     </span>
-  //     <span className="flex items-center">
-  //       <Clock className="w-4 h-4 mr-1 text-yellow-400" />
-  //       **Pending:** <span className="font-semibold text-yellow-400">{summary.pendingCount}</span>
-  //     </span>
-  //     <span className="flex items-center">
-  //       <IndianRupee className="w-4 h-4 mr-1 text-purple-400" />
-  //       **Collected:** <span className="font-semibold text-purple-400">₹ {summary.totalCollected}</span>
-  //     </span>
-  //     {summary.failedCount > 0 && (
-  //       <span className="flex items-center">
-  //         <AlertCircle className="w-4 h-4 mr-1 text-red-400" />
-  //         **Failed:** <span className="font-semibold text-red-400">{summary.failedCount}</span>
-  //       </span>
-  //     )}
-  //   </div>
-  // );
   
   return (
     // Outer container: Dark Panel style
-    <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-2xl ${SHADOW_GLOW} ring-1 ring-[${BORDER_DIVIDER}]/40`}>
+    <div className="bg-black/60 backdrop-blur-xl rounded-2xl shadow-[0_0_25px_rgba(166,195,111,0.08)] border border-[#A6C36F]/20">
       
       {/* Header & Actions */}
-      <div className={`p-6 border-b border-[${BORDER_DIVIDER}]`}>
+      <div className="p-6 border-b border-[#A6C36F]/20">
         <div className="flex justify-between items-center mb-4">
-          <h2 className={`text-2xl font-bold text-[${TEXT_PRIMARY}]`}>Members List by Month</h2>
+          <h2 className="text-2xl font-bold text-[#F5F3E7]">Members List by Month</h2>
           
           {/* Action Buttons */}
           <div className="flex space-x-3">
             {/* Create Button (Olive Accent) */}
             <button
               onClick={() => setShowCreateModal(true)}
-              className={`flex items-center px-4 py-2 bg-[${ACCENT_OLIVE}] text-[${BACKGROUND_PRIMARY}] rounded-lg hover:bg-[#8FAE5D] font-medium transition-colors duration-200`}
+              className="flex items-center px-4 py-2 bg-[#A6C36F] text-black rounded-lg hover:bg-[#8FAE5D] font-medium transition-colors duration-200"
             >
               <CheckCircle className="w-5 h-5 mr-2" />
               Create Monthly Records
@@ -352,7 +315,7 @@ const MembersListByMonth = () => {
             <button
               onClick={handleDownload}
               disabled={memberList.length === 0}
-              className={`flex items-center px-4 py-2 bg-[${BORDER_DIVIDER}]/50 text-[${TEXT_PRIMARY}] rounded-lg hover:bg-[${BORDER_DIVIDER}] font-medium transition-colors duration-200 disabled:opacity-50`}
+              className="flex items-center px-4 py-2 bg-black/40 text-[#F5F3E7] rounded-lg hover:bg-[#A6C36F]/10 font-medium transition-colors duration-200 disabled:opacity-50 border border-[#A6C36F]/20"
             >
               <Download className="w-5 h-5 mr-2" />
               Download CSV
@@ -373,43 +336,42 @@ const MembersListByMonth = () => {
         <div className="flex items-center justify-center space-x-4 mb-4">
           <button
             onClick={handlePreviousMonth}
-            className={`p-2 hover:bg-[${BORDER_DIVIDER}]/50 rounded-lg transition-colors duration-200`}
+            className="p-2 hover:bg-[#A6C36F]/10 rounded-lg transition-colors duration-200"
           >
-            <ChevronLeft className={`w-6 h-6 text-[${TEXT_SECONDARY}]`} />
+            <ChevronLeft className="w-6 h-6 text-[#E8E3C5]" />
           </button>
           <div className="flex items-center space-x-3">
-            <Calendar className={`w-6 h-6 text-[${ACCENT_OLIVE}]`} />
-            <span className={`text-xl font-bold text-[${TEXT_PRIMARY}]`}>
+            <Calendar className="w-6 h-6 text-[#A6C36F]" />
+            <span className="text-xl font-bold text-[#F5F3E7]">
               {selectedMonth} {selectedYear}
             </span>
           </div>
           <button
             onClick={handleNextMonth}
-            className={`p-2 hover:bg-[${BORDER_DIVIDER}]/50 rounded-lg transition-colors duration-200`}
+            className="p-2 hover:bg-[#A6C36F]/10 rounded-lg transition-colors duration-200"
           >
-            <ChevronRight className={`w-6 h-6 text-[${TEXT_SECONDARY}]`} />
+            <ChevronRight className="w-6 h-6 text-[#E8E3C5]" />
           </button>
         </div>
         
         {/* Search Bar */}
         <div className="relative">
-          <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[${ACCENT_OLIVE}]/70`} />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A6C36F]/70" />
           <input
             type="text"
             placeholder="Search by name, USN, or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full pl-10 pr-4 py-2.5 
-              border border-[${BORDER_DIVIDER}] rounded-xl 
-              bg-[${BACKGROUND_PRIMARY}] text-[${TEXT_PRIMARY}] 
-              placeholder:text-[${TEXT_SECONDARY}]/60
-              focus:ring-2 focus:ring-[${ACCENT_OLIVE}] focus:border-transparent outline-none
-            `}
+            className="w-full pl-10 pr-4 py-2.5 
+              border border-[#A6C36F]/20 rounded-xl 
+              bg-black/40 text-[#F5F3E7] 
+              placeholder:text-[#E8E3C5]/60
+              focus:ring-2 focus:ring-[#A6C36F] focus:border-transparent outline-none"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-[${TEXT_SECONDARY}]/60 hover:text-[${TEXT_SECONDARY}]`}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#E8E3C5]/60 hover:text-[#E8E3C5]"
             >
               ✕
             </button>
@@ -419,9 +381,9 @@ const MembersListByMonth = () => {
       
       {/* Summary (CLEANED UP SECTION) */}
       {summary && searchQuery && (
-        <div className={`p-6 border-b border-[${BORDER_DIVIDER}]`}>
-            <div className={`text-sm text-[${TEXT_SECONDARY}]/70`}>
-              Showing <span className={`font-semibold text-[${ACCENT_OLIVE}]`}>{filteredMembers.length}</span> of <span className="font-semibold">{summary.totalMembers}</span> members
+        <div className="p-6 border-b border-[#A6C36F]/20">
+            <div className="text-sm text-[#E8E3C5]/70">
+              Showing <span className="font-semibold text-[#A6C36F]">{filteredMembers.length}</span> of <span className="font-semibold">{summary.totalMembers}</span> members
             </div>
         </div>
       )}
@@ -430,40 +392,40 @@ const MembersListByMonth = () => {
       <div className="overflow-x-auto">
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className={`animate-spin rounded-full h-12 w-12 border-b-2 border-[${ACCENT_OLIVE}]`}></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A6C36F]"></div>
           </div>
         ) : filteredMembers.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
-            <Users className={`w-16 h-16 mx-auto mb-4 text-[${BORDER_DIVIDER}]/80`} />
-            <p className={`text-[${TEXT_SECONDARY}]/80`}>{searchQuery ? `No members found matching "${searchQuery}"` : 'No members found'}</p>
+            <Users className="w-16 h-16 mx-auto mb-4 text-[#A6C36F]/20" />
+            <p className="text-[#E8E3C5]/80">{searchQuery ? `No members found matching "${searchQuery}"` : 'No members found'}</p>
           </div>
         ) : (
           <table className="w-full">
-            <thead className={`bg-[${BACKGROUND_SECONDARY}] border-b border-[${BORDER_DIVIDER}]`}>
+            <thead className="bg-black/40 border-b border-[#A6C36F]/20">
               <tr>
                 {['#', 'Name', 'USN', 'Year', 'Branch', 'Status', 'Amount', 'Payment Date', 'Actions'].map(header => (
-                  <th key={header} className={`px-6 py-3 text-left text-xs font-medium text-[${TEXT_SECONDARY}]/70 uppercase tracking-wider ${header === 'Actions' ? 'text-center' : ''}`}>
+                  <th key={header} className={`px-6 py-3 text-left text-xs font-medium text-[#E8E3C5]/70 uppercase tracking-wider ${header === 'Actions' ? 'text-center' : ''}`}>
                     {header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className={`divide-y divide-[${BORDER_DIVIDER}]`}>
+            <tbody className="divide-y divide-[#A6C36F]/10">
               {filteredMembers.map((member, index) => (
-                <tr key={member._id} className={`hover:bg-[${BACKGROUND_SECONDARY}]/70 transition-colors duration-150`}>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-[${TEXT_SECONDARY}]/90`}>
+                <tr key={member._id} className="hover:bg-[#A6C36F]/5 transition-colors duration-150">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/90">
                     {index + 1}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className={`text-sm font-medium text-[${TEXT_PRIMARY}]`}>{member.name}</div>
+                    <div className="text-sm font-medium text-[#F5F3E7]">{member.name}</div>
                   </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-[${TEXT_SECONDARY}]/80`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/80">
                     {member.usn}
                   </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-[${TEXT_SECONDARY}]/80`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/80">
                     {member.year}
                   </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-[${TEXT_SECONDARY}]/80`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/80">
                     {member.branch}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -471,10 +433,10 @@ const MembersListByMonth = () => {
                       {member.paymentStatus}
                     </span>
                   </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold text-[${ACCENT_OLIVE}]`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-[#A6C36F]">
                     {member.amount > 0 ? `₹ ${member.amount}` : '-'}
                   </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-[${TEXT_SECONDARY}]/80`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/80">
                     {member.paymentDate ? new Date(member.paymentDate).toLocaleDateString('en-IN') : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -482,18 +444,18 @@ const MembersListByMonth = () => {
                       // Olive Accent Button for Manual Update
                       <button
                         onClick={() => handleManualUpdate(member)}
-                        className={`inline-flex items-center px-3 py-1.5 bg-[${ACCENT_OLIVE}] text-[${BACKGROUND_PRIMARY}] text-xs font-medium rounded-lg hover:bg-[#8FAE5D] transition-colors duration-200`}
+                        className="inline-flex items-center px-3 py-1.5 bg-[#A6C36F] text-black text-xs font-medium rounded-lg hover:bg-[#8FAE5D] transition-colors duration-200"
                         title="Mark as paid (for cash/offline payments)"
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
                         Mark Paid
                       </button>
                     ) : member.paymentStatus === 'Pending' && member.paymentProof ? (
-                      <span className={`text-sm text-yellow-400`}>Pending (awaiting verification)</span>
+                      <span className="text-sm text-yellow-400">Pending (awaiting verification)</span>
                     ) : member.paymentStatus === 'Paid' ? (
-                      <span className={`text-[${ACCENT_OLIVE}] text-xs font-medium`}>✓ Paid</span>
+                      <span className="text-[#A6C36F] text-xs font-medium">✓ Paid</span>
                     ) : (
-                      <span className={`text-[${TEXT_SECONDARY}]/50 text-xs`}>-</span>
+                      <span className="text-[#E8E3C5]/50 text-xs">-</span>
                     )}
                   </td>
                 </tr>
@@ -508,21 +470,16 @@ const MembersListByMonth = () => {
         <ThemedModal 
           title="Delete Monthly Records?" 
           onClose={() => setShowDeleteConfirm(false)}
-          ACCENT_OLIVE={ACCENT_OLIVE}
-          BACKGROUND_SECONDARY={BACKGROUND_SECONDARY}
-          TEXT_PRIMARY={TEXT_PRIMARY}
-          BORDER_DIVIDER={BORDER_DIVIDER}
-          TEXT_SECONDARY={TEXT_SECONDARY}
         >
           <Trash2 className="w-16 h-16 text-red-600 mx-auto mb-4" />
-          <p className={`text-[${TEXT_SECONDARY}]/80 mb-6`}>
+          <p className="text-[#E8E3C5]/80 mb-6">
             This will permanently delete all payment records for **{selectedMonth} {selectedYear}**. 
             This action cannot be undone.
           </p>
           <div className="flex space-x-3">
             <button
               onClick={() => setShowDeleteConfirm(false)}
-              className={`flex-1 px-4 py-2 bg-[${BORDER_DIVIDER}]/50 text-[${TEXT_SECONDARY}] rounded-lg hover:bg-[${BORDER_DIVIDER}] font-medium transition-colors duration-200`}
+              className="flex-1 px-4 py-2 bg-black/40 text-[#E8E3C5] rounded-lg hover:bg-[#A6C36F]/10 font-medium transition-colors duration-200 border border-[#A6C36F]/20"
             >
               Cancel
             </button>
@@ -557,12 +514,6 @@ const MembersListByMonth = () => {
           month={selectedMonth}
           year={selectedYear}
           loading={creatingRecords}
-          ACCENT_OLIVE={ACCENT_OLIVE}
-          BACKGROUND_PRIMARY={BACKGROUND_PRIMARY}
-          BACKGROUND_SECONDARY={BACKGROUND_SECONDARY}
-          TEXT_PRIMARY={TEXT_PRIMARY}
-          TEXT_SECONDARY={TEXT_SECONDARY}
-          BORDER_DIVIDER={BORDER_DIVIDER}
         />
       )}
     </div>
@@ -570,11 +521,11 @@ const MembersListByMonth = () => {
 };
 
 // Themed Generic Modal Wrapper
-const ThemedModal = ({ title, children, onClose, ACCENT_OLIVE, BACKGROUND_SECONDARY, TEXT_PRIMARY, BORDER_DIVIDER, TEXT_SECONDARY }) => (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-2xl max-w-md w-full p-6 text-[${TEXT_PRIMARY}] shadow-xl`}>
+const ThemedModal = ({ title, children, onClose }) => (
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="bg-black/90 rounded-2xl max-w-md w-full p-6 text-[#F5F3E7] shadow-xl border border-[#A6C36F]/20">
       <div className="text-center">
-        <h3 className={`text-2xl font-bold text-[${TEXT_PRIMARY}] mb-4`}>{title}</h3>
+        <h3 className="text-2xl font-bold text-[#F5F3E7] mb-4">{title}</h3>
         {children}
       </div>
     </div>
@@ -582,7 +533,7 @@ const ThemedModal = ({ title, children, onClose, ACCENT_OLIVE, BACKGROUND_SECOND
 );
 
 // Inline Create Monthly Records Modal (Themed)
-const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 100, month, year, loading, ACCENT_OLIVE, BACKGROUND_PRIMARY, BACKGROUND_SECONDARY, TEXT_PRIMARY, TEXT_SECONDARY, BORDER_DIVIDER }) => {
+const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 100, month, year, loading }) => {
   const [yearlyAmounts, setYearlyAmounts] = useState({
     '1': '',
     '2': '',
@@ -640,23 +591,23 @@ const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-2xl max-w-md w-full p-6 text-[${TEXT_PRIMARY}] shadow-xl`}>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-black/90 rounded-2xl max-w-md w-full p-6 text-[#F5F3E7] shadow-xl border border-[#A6C36F]/20">
         <div className="mb-4">
-          <h3 className={`text-xl font-bold text-[${TEXT_PRIMARY}]`}>Create Monthly Records</h3>
-          <p className={`text-sm text-[${TEXT_SECONDARY}]/80`}>This will create Pending records for all members for **{month} {year}**.</p>
+          <h3 className="text-xl font-bold text-[#F5F3E7]">Create Monthly Records</h3>
+          <p className="text-sm text-[#E8E3C5]/80">This will create Pending records for all members for **{month} {year}**.</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-3">
-            <h4 className={`font-medium text-[${TEXT_SECONDARY}]`}>Set Amount by Year (₹)</h4>
+            <h4 className="font-medium text-[#E8E3C5]">Set Amount by Year (₹)</h4>
             {[1, 2, 3, 4].map(year => (
               <div key={year} className="flex items-center">
-                <label className={`w-16 text-sm font-medium text-[${TEXT_SECONDARY}]/90`}>Year {year}:</label>
+                <label className="w-16 text-sm font-medium text-[#E8E3C5]/90">Year {year}:</label>
                 <input
                   type="number"
                   min="1"
                   // Themed input styling
-                  className={`flex-1 border border-[${BORDER_DIVIDER}] rounded-lg px-3 py-2 bg-[${BACKGROUND_PRIMARY}] text-[${TEXT_PRIMARY}] placeholder:text-[${TEXT_SECONDARY}]/60 focus:ring-2 focus:ring-[${ACCENT_OLIVE}] outline-none`}
+                  className="flex-1 border border-[#A6C36F]/20 rounded-lg px-3 py-2 bg-black/40 text-[#F5F3E7] placeholder:text-[#E8E3C5]/60 focus:ring-2 focus:ring-[#A6C36F] outline-none"
                   value={yearlyAmounts[year] || ''}
                   onChange={(e) => handleYearAmountChange(year, e.target.value)}
                   disabled={loading}
@@ -666,11 +617,11 @@ const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 
             ))}
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-1 text-[${TEXT_SECONDARY}]/90`}>Payment Deadline</label>
+            <label className="block text-sm font-medium mb-1 text-[#E8E3C5]/90">Payment Deadline</label>
             <input 
               type="date" 
               // Themed input styling
-              className={`w-full border border-[${BORDER_DIVIDER}] rounded-lg px-3 py-2 bg-[${BACKGROUND_PRIMARY}] text-[${TEXT_PRIMARY}] focus:ring-2 focus:ring-[${ACCENT_OLIVE}] outline-none`}
+              className="w-full border border-[#A6C36F]/20 rounded-lg px-3 py-2 bg-black/40 text-[#F5F3E7] focus:ring-2 focus:ring-[#A6C36F] outline-none"
               value={deadline} 
               onChange={(e) => setDeadline(e.target.value)} 
               disabled={loading} 
@@ -681,7 +632,7 @@ const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 
               type="button" 
               onClick={onClose} 
               // Secondary button style
-              className={`px-4 py-2 border border-[${BORDER_DIVIDER}] text-[${TEXT_SECONDARY}] rounded-lg hover:bg-[${BORDER_DIVIDER}]/50 disabled:opacity-50 transition-colors duration-200`} 
+              className="px-4 py-2 border border-[#A6C36F]/20 text-[#E8E3C5] rounded-lg hover:bg-[#A6C36F]/10 disabled:opacity-50 transition-colors duration-200" 
               disabled={loading}
             >
               Cancel
@@ -689,7 +640,7 @@ const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 
             <button 
               type="submit" 
               // Primary button style (Olive Accent)
-              className={`px-4 py-2 bg-[${ACCENT_OLIVE}] text-[${BACKGROUND_PRIMARY}] rounded-lg hover:bg-[#8FAE5D] disabled:opacity-50 transition-colors duration-200`} 
+              className="px-4 py-2 bg-[#A6C36F] text-black rounded-lg hover:bg-[#8FAE5D] disabled:opacity-50 transition-colors duration-200" 
               disabled={loading}
             >
               {loading ? 'Creating...' : 'Create Records'}

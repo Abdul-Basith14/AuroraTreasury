@@ -10,16 +10,6 @@ import {
   Phone as PhoneIcon
 } from 'lucide-react';
 
-// --- Core Color Palette (from Styling System) ---
-const BACKGROUND_PRIMARY = '#0B0B09';
-const BACKGROUND_SECONDARY = '#1F221C';
-const TEXT_PRIMARY = '#F5F3E7';
-const TEXT_SECONDARY = '#E8E3C5';
-const ACCENT_OLIVE = '#A6C36F';
-const BORDER_DIVIDER = '#3A3E36';
-const SHADOW_GLOW = 'shadow-[0_0_25px_rgba(166,195,111,0.08)]';
-// ------------------------------------------------
-
 const PayReimbursementModal = ({ isOpen, onClose, request, onSuccess, currentBalance }) => {
   const [message, setMessage] = useState('');
   const [paymentProof, setPaymentProof] = useState(null);
@@ -91,185 +81,151 @@ const PayReimbursementModal = ({ isOpen, onClose, request, onSuccess, currentBal
   };
   
   return (
-    // Backdrop
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div 
-        // Modal Container - Themed Card
-        className={`bg-[${BACKGROUND_SECONDARY}] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto border border-[${BORDER_DIVIDER}]/50 ${SHADOW_GLOW}`}
-      >
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-[#0B0B09] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto border border-[#A6C36F]/20 shadow-[0_0_50px_rgba(166,195,111,0.1)]">
         {/* Header */}
-        <div className={`flex justify-between items-center p-6 border-b border-[${BORDER_DIVIDER}]`}>
+        <div className="flex justify-between items-center p-6 border-b border-[#A6C36F]/20 bg-black/40">
           <div>
-            <h2 className={`text-2xl font-bold text-[${ACCENT_OLIVE}]`}>
+            <h2 className="text-2xl font-bold text-[#F5F3E7]">
               Pay Reimbursement
             </h2>
-            <p className={`text-sm text-[${TEXT_SECONDARY}]/80 mt-1`}>
+            <p className="text-sm text-[#E8E3C5]/70 mt-1">
               Upload payment proof after sending money
             </p>
           </div>
           <button
             onClick={handleClose}
-            className={`text-[${TEXT_SECONDARY}]/50 hover:text-[${TEXT_PRIMARY}] p-2 rounded-full hover:bg-[${BORDER_DIVIDER}]/50 transition`}
+            className="text-[#E8E3C5]/50 hover:text-[#F5F3E7] p-2 rounded-full hover:bg-[#A6C36F]/10 transition"
           >
             <XIcon className="w-6 h-6" />
           </button>
         </div>
         
         {/* Content */}
-        <div className="p-6 space-y-5">
-          {/* Member & Request Info - Styled as an inner Panel */}
-          <div className={`bg-[${BORDER_DIVIDER}]/30 rounded-lg p-4`}>
-            <div className="grid grid-cols-2 gap-4">
+        <div className="p-6 space-y-6">
+          {/* Member & Request Info */}
+          <div className="bg-[#A6C36F]/5 rounded-xl p-5 border border-[#A6C36F]/10">
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <p className={`text-xs text-[${TEXT_SECONDARY}]/70 mb-1`}>Member</p>
-                <p className={`font-semibold text-[${TEXT_PRIMARY}]`}>{request.userId.name}</p>
-                <p className={`text-xs text-[${TEXT_SECONDARY}]/70`}>{request.userId.usn}</p>
+                <p className="text-xs text-[#E8E3C5]/60 mb-1 uppercase tracking-wider">Member</p>
+                <p className="font-bold text-[#F5F3E7] text-lg">{request.userId.name}</p>
+                <p className="text-sm text-[#E8E3C5]/70">{request.userId.usn}</p>
               </div>
               <div>
-                <p className={`text-xs text-[${TEXT_SECONDARY}]/70 mb-1`}>Amount to Pay</p>
-                <div className={`flex items-center text-2xl font-bold text-[${ACCENT_OLIVE}]`}>
+                <p className="text-xs text-[#E8E3C5]/60 mb-1 uppercase tracking-wider">Amount to Pay</p>
+                <div className="flex items-center text-2xl font-bold text-[#A6C36F]">
                   <CurrencyRupeeIcon className="w-6 h-6 mr-1" />
                   {request.amount}
                 </div>
               </div>
-              <div className="col-span-2">
-                <p className={`text-xs text-[${TEXT_SECONDARY}]/70 mb-1`}>Description</p>
-                <p className={`text-sm text-[${TEXT_PRIMARY}]`}>{request.description}</p>
+              <div className="col-span-2 pt-2 border-t border-[#A6C36F]/10">
+                <p className="text-xs text-[#E8E3C5]/60 mb-1 uppercase tracking-wider">Description</p>
+                <p className="text-sm text-[#F5F3E7]">{request.description}</p>
               </div>
               {request.userId.mobileNumber && (
-                <div className="col-span-2">
-                  <p className={`text-xs text-[${TEXT_SECONDARY}]/70 mb-1`}>Mobile Number</p>
-                  <p className={`text-sm text-[${TEXT_PRIMARY}] flex items-center`}>
-                    <PhoneIcon className="w-4 h-4 mr-1 text-blue-400" /> {request.userId.mobileNumber}
+                <div className="col-span-2 pt-2 border-t border-[#A6C36F]/10">
+                  <p className="text-xs text-[#E8E3C5]/60 mb-1 uppercase tracking-wider">Mobile Number</p>
+                  <p className="text-sm text-[#F5F3E7] flex items-center">
+                    <PhoneIcon className="w-4 h-4 mr-2 text-[#A6C36F]" /> {request.userId.mobileNumber}
                   </p>
                 </div>
               )}
             </div>
           </div>
           
-          {/* Instructions - Themed as an info box (Blue is acceptable for non-themed info) */}
-          <div className="bg-blue-900/30 border-l-4 border-blue-500 p-4 rounded">
-            <div className="flex">
-              <ExclamationIcon className="w-5 h-5 text-blue-400 mr-3 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="font-medium text-blue-300 mb-2">Payment Instructions:</p>
-                <ol className="text-blue-200 space-y-1 list-decimal list-inside">
-                  <li>Send <strong className='text-white'>₹{request.amount}</strong> to the member via UPI/Bank Transfer</li>
-                  <li>Take a **CLEAR screenshot** of the payment confirmation</li>
-                  <li>Upload the screenshot below</li>
-                  <li>Member will verify and confirm receipt</li>
-                </ol>
-              </div>
+          {/* Instructions */}
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 flex items-start">
+            <ExclamationIcon className="w-5 h-5 text-blue-400 mr-3 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-blue-200/90">
+              <p className="font-semibold mb-1 text-blue-200">Important:</p>
+              <p>Please make the payment to the member using your preferred UPI app or bank transfer. Once done, take a screenshot of the payment success screen and upload it below.</p>
             </div>
           </div>
           
-          {/* Upload Payment Proof */}
+          {/* Upload Proof */}
           <div>
-            <label className={`block text-sm font-medium text-[${TEXT_SECONDARY}] mb-2`}>
-              Upload Payment Proof <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-[#E8E3C5] mb-2">
+              Upload Payment Proof <span className="text-red-400">*</span>
             </label>
-            <div 
-              className={`border-2 border-dashed border-[${BORDER_DIVIDER}]/50 rounded-lg p-6 text-center hover:border-[${ACCENT_OLIVE}]/80 transition cursor-pointer`}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoChange}
-                className="hidden"
-                id="payment-proof-upload"
-              />
-              <label htmlFor="payment-proof-upload" className="cursor-pointer">
-                <UploadIcon className={`w-12 h-12 text-[${ACCENT_OLIVE}]/60 mx-auto mb-2`} />
-                <p className={`text-sm text-[${TEXT_SECONDARY}]/80 mb-1`}>Click to upload payment screenshot</p>
-                <p className={`text-xs text-[${TEXT_SECONDARY}]/60`}>JPG, PNG, HEIC (Max 5MB)</p>
-              </label>
-            </div>
             
-            {photoPreview && (
-              <div className={`mt-4 p-4 bg-[${BORDER_DIVIDER}]/40 rounded-lg flex items-center justify-between`}>
-                <div className="flex items-center">
-                  <img src={photoPreview} alt="Preview" className="w-16 h-16 object-cover rounded mr-3 border border-[${BORDER_DIVIDER}]" />
-                  <div>
-                    <p className={`text-sm font-medium text-[${TEXT_PRIMARY}]`}>{paymentProof.name}</p>
-                    <p className={`text-xs text-[${TEXT_SECONDARY}]/70`}>{(paymentProof.size / 1024 / 1024).toFixed(2)} MB</p>
-                  </div>
+            {!photoPreview ? (
+              <div className="border-2 border-dashed border-[#A6C36F]/30 rounded-xl p-8 text-center hover:bg-[#A6C36F]/5 hover:border-[#A6C36F]/50 transition cursor-pointer relative group">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div className="w-16 h-16 bg-[#A6C36F]/10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition">
+                  <UploadIcon className="w-8 h-8 text-[#A6C36F]" />
                 </div>
+                <p className="text-[#F5F3E7] font-medium">Click to upload screenshot</p>
+                <p className="text-xs text-[#E8E3C5]/50 mt-1">JPG, PNG, HEIC up to 5MB</p>
+              </div>
+            ) : (
+              <div className="relative rounded-xl overflow-hidden border border-[#A6C36F]/30 group">
+                <img 
+                  src={photoPreview} 
+                  alt="Preview" 
+                  className="w-full h-64 object-contain bg-black/60" 
+                />
                 <button
-                  type="button"
                   onClick={() => {
                     setPaymentProof(null);
                     setPhotoPreview(null);
                   }}
-                  className="text-red-400 hover:text-red-300"
+                  className="absolute top-2 right-2 p-2 bg-red-500/80 text-white rounded-full hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
                 >
-                  <XIcon className="w-5 h-5" />
+                  <XIcon className="w-4 h-4" />
                 </button>
+                <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm p-2 text-center text-xs text-[#A6C36F]">
+                  Click X to remove and upload different image
+                </div>
               </div>
             )}
-            
-            {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+            {error && <p className="text-red-400 text-sm mt-2 flex items-center"><ExclamationIcon className="w-3 h-3 mr-1" /> {error}</p>}
           </div>
           
-          {/* Optional Message */}
+          {/* Message */}
           <div>
-            <label className={`block text-sm font-medium text-[${TEXT_SECONDARY}] mb-2`}>
+            <label className="block text-sm font-medium text-[#E8E3C5] mb-2">
               Message to Member (Optional)
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              rows="3"
-              maxLength="200"
-              // Themed Input Field
-              className={`w-full px-4 py-2 border border-[${BORDER_DIVIDER}] bg-transparent text-[${TEXT_PRIMARY}] rounded-lg focus:ring-2 focus:ring-[${ACCENT_OLIVE}]/50 focus:border-[${ACCENT_OLIVE}]/50 resize-none placeholder-[${TEXT_SECONDARY}]/40`}
-              placeholder="e.g., Payment sent to your UPI. Please check and confirm."
+              placeholder="e.g., Sent via GPay to your number..."
+              className="w-full px-4 py-3 bg-black/40 border border-[#A6C36F]/20 rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/30 focus:ring-2 focus:ring-[#A6C36F]/50 focus:border-transparent outline-none transition resize-none h-24"
             />
-            <p className={`text-xs text-[${TEXT_SECONDARY}]/60 mt-1 text-right`}>{message.length}/200</p>
           </div>
           
-          {/* Warning - Themed as a warning box (Yellow is acceptable for warning) */}
-          <div className="bg-yellow-900/30 border-l-4 border-yellow-500 p-4 rounded">
-            <div className="flex">
-              <ExclamationIcon className="w-5 h-5 text-yellow-400 mr-3 flex-shrink-0" />
-              <div className="text-sm text-yellow-300">
-                <p className="font-medium mb-1">Important:</p>
-                <p>Make sure you have actually sent the payment before uploading proof. <strong className='text-white'>₹{request.amount}</strong> will be deducted from your wallet once member confirms receipt.</p>
-              </div>
-            </div>
+          {/* Actions */}
+          <div className="flex gap-4 pt-4 border-t border-[#A6C36F]/20">
+            <button
+              onClick={handleClose}
+              className="flex-1 px-4 py-3 rounded-xl font-semibold text-[#E8E3C5] bg-black/40 border border-[#A6C36F]/20 hover:bg-[#A6C36F]/10 transition"
+              disabled={paying}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handlePay}
+              disabled={paying}
+              className="flex-1 px-4 py-3 rounded-xl font-bold text-black bg-[#A6C36F] hover:bg-[#95B064] transition shadow-[0_0_20px_rgba(166,195,111,0.3)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            >
+              {paying ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin mr-2"></div>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CheckCircleIcon className="w-5 h-5 mr-2" />
+                  Confirm Payment
+                </>
+              )}
+            </button>
           </div>
-        </div>
-        
-        {/* Footer */}
-        <div className={`flex justify-end space-x-3 p-6 border-t border-[${BORDER_DIVIDER}] bg-[${BORDER_DIVIDER}]/30 rounded-b-2xl`}>
-          <button
-            onClick={handleClose}
-            className={`px-6 py-2 border border-[${BORDER_DIVIDER}]/50 text-[${TEXT_SECONDARY}] rounded-lg hover:bg-[${BORDER_DIVIDER}]/70 font-medium transition`}
-            disabled={paying}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handlePay}
-            // Themed Accent Olive Button
-            className={`px-6 py-2 bg-[${ACCENT_OLIVE}] text-[${BACKGROUND_PRIMARY}] rounded-lg hover:bg-[#8FAE5D] font-medium flex items-center transition disabled:opacity-50 disabled:cursor-not-allowed`}
-            disabled={paying || !paymentProof}
-          >
-            {paying ? (
-              <>
-                {/* Themed Spinner (using accent color) */}
-                <svg className={`animate-spin h-5 w-5 mr-2 text-[${BACKGROUND_PRIMARY}]`} viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Processing...
-              </>
-            ) : (
-              <>
-                <CheckCircleIcon className="w-5 h-5 mr-2" />
-                Confirm Payment
-              </>
-            )}
-          </button>
         </div>
       </div>
     </div>

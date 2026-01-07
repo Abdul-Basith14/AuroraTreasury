@@ -1,7 +1,7 @@
 import { Calendar, DollarSign, Clock, FileText } from 'lucide-react';
 
 /**
- * FailedPaymentCard Component (Bright Olive Elegance Themed)
+ * FailedPaymentCard Component (Dark Black & Olive Green Theme)
  * Displays individual failed payment with option to resubmit payment proof
  */
 const FailedPaymentCard = ({ payment, onPayClick, onViewHistory }) => {
@@ -10,9 +10,9 @@ const FailedPaymentCard = ({ payment, onPayClick, onViewHistory }) => {
     payment.failedPaymentSubmission.resubmittedPhoto;
 
   return (
-    <div className="border border-[#3A3E36] rounded-2xl p-5 bg-[#1F221C] hover:bg-[#2A2D25] transition-all duration-300 shadow-md hover:shadow-lg">
+    <div className="border border-[#A6C36F]/20 rounded-2xl p-5 bg-black/40 hover:bg-black/60 transition-all duration-300 shadow-md hover:shadow-lg backdrop-blur-sm group">
       {/* Month */}
-      <div className="flex items-center text-[#E8E3C5] mb-3">
+      <div className="flex items-center text-[#F5F3E7] mb-3">
         <Calendar className="w-5 h-5 mr-2 text-[#A6C36F]" />
         <span className="font-semibold text-lg">{payment.month}</span>
       </div>
@@ -26,15 +26,15 @@ const FailedPaymentCard = ({ payment, onPayClick, onViewHistory }) => {
       </div>
 
       {/* Deadline */}
-      <div className="flex items-center text-sm text-[#C9C6A8] mb-4">
+      <div className="flex items-center text-sm text-[#E8E3C5]/60 mb-4">
         <Clock className="w-4 h-4 mr-2 text-[#A6C36F]" />
         <span>Deadline: {new Date(payment.deadline).toLocaleDateString('en-IN')}</span>
-        <span className="ml-2 text-[#C36F6F] font-medium">(Passed)</span>
+        <span className="ml-2 text-red-400 font-medium">(Passed)</span>
       </div>
 
       {/* Resubmission Status */}
       {hasResubmission && (
-        <div className="mb-4 p-3 bg-[#2B2F26] border border-[#3A3E36] rounded-lg">
+        <div className="mb-4 p-3 bg-[#A6C36F]/10 border border-[#A6C36F]/20 rounded-lg">
           <div className="flex items-center text-[#E8E3C5]">
             <Clock className="w-4 h-4 mr-2 text-[#A6C36F]" />
             <span className="font-medium">
@@ -44,7 +44,7 @@ const FailedPaymentCard = ({ payment, onPayClick, onViewHistory }) => {
               ).toLocaleDateString('en-IN')}
             </span>
           </div>
-          <p className="text-sm text-[#C9C6A8] mt-1">Awaiting treasurer verification</p>
+          <p className="text-sm text-[#E8E3C5]/60 mt-1">Awaiting treasurer verification</p>
         </div>
       )}
 
@@ -56,8 +56,8 @@ const FailedPaymentCard = ({ payment, onPayClick, onViewHistory }) => {
           disabled={hasResubmission}
           className={`w-full py-2.5 rounded-xl font-semibold flex items-center justify-center transition-all ${
             hasResubmission
-              ? 'bg-[#2A2D25] text-[#8B8B7B] cursor-not-allowed'
-              : 'bg-[#A6C36F] text-[#0B0B09] hover:bg-[#B9D47F] hover:shadow-md'
+              ? 'bg-black/40 text-[#E8E3C5]/40 cursor-not-allowed border border-[#A6C36F]/10'
+              : 'bg-[#A6C36F] text-black hover:bg-[#8FAE5D] hover:shadow-md'
           }`}
         >
           {hasResubmission ? (
@@ -76,7 +76,7 @@ const FailedPaymentCard = ({ payment, onPayClick, onViewHistory }) => {
         {/* View History */}
         <button
           onClick={() => onViewHistory(payment)}
-          className="w-full py-2.5 border border-[#3A3E36] text-[#E8E3C5] rounded-xl font-medium hover:bg-[#2A2D25] transition-all flex items-center justify-center"
+          className="w-full py-2.5 border border-[#A6C36F]/20 text-[#E8E3C5] rounded-xl font-medium hover:bg-[#A6C36F]/10 transition-all flex items-center justify-center"
         >
           <FileText className="w-5 h-5 mr-2 text-[#A6C36F]" />
           View History

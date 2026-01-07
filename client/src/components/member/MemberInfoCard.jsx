@@ -45,7 +45,7 @@ const MemberInfoCard = ({ user }) => {
   };
 
   return (
-    <div className="bg-[#2A2E28] rounded-2xl border border-[#4E524A] shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+    <div className="bg-black/60 backdrop-blur-xl rounded-2xl border border-[#A6C36F]/20 shadow-lg hover:shadow-[0_0_20px_rgba(166,195,111,0.15)] transition-all duration-300 transform hover:-translate-y-1">
       <div className="p-6 space-y-4">
         
         {/* Profile Photo */}
@@ -55,24 +55,24 @@ const MemberInfoCard = ({ user }) => {
               <img
                 src={user.profilePhoto}
                 alt={user.name}
-                className="w-24 h-24 rounded-full object-cover border-4 border-[#3A3E36]"
+                className="w-24 h-24 rounded-full object-cover border-4 border-[#A6C36F]/30"
               />
             ) : (
-              // Initial Display (uses lighter dark gray BG)
-              <div className="w-24 h-24 rounded-full bg-[#3A3E36] flex items-center justify-center border-4 border-[#4E524A]">
-                <span className="text-3xl font-bold text-[#F5F3E7]">
+              // Initial Display
+              <div className="w-24 h-24 rounded-full bg-black/40 flex items-center justify-center border-4 border-[#A6C36F]/30 shadow-inner">
+                <span className="text-3xl font-bold text-[#A6C36F]">
                   {getInitials(user?.name)}
                 </span>
               </div>
             )}
             {/* Status Indicator */}
-            <div className="absolute bottom-1 right-1 w-5 h-5 bg-[#A6C36F] rounded-full border-4 border-[#2A2E28]"></div>
+            <div className="absolute bottom-1 right-1 w-5 h-5 bg-[#A6C36F] rounded-full border-4 border-black"></div>
           </div>
         </div>
 
         {/* Aurora Member Badge */}
         <div className="flex justify-center">
-          <div className="flex items-center space-x-2 bg-[#3A3E36] px-4 py-2 rounded-full border border-[#4E524A]">
+          <div className="flex items-center space-x-2 bg-[#A6C36F]/10 px-4 py-2 rounded-full border border-[#A6C36F]/30">
             <Award className="w-4 h-4 text-[#A6C36F]" />
             <span className="text-sm font-semibold text-[#E8E3C5]">Aurora Member</span>
           </div>
@@ -84,17 +84,17 @@ const MemberInfoCard = ({ user }) => {
             {user?.name || 'Member'}
           </h3>
 
-          <div className="flex items-center justify-center space-x-2 text-[#E8E3C5]">
+          <div className="flex items-center justify-center space-x-2 text-[#E8E3C5]/80">
             <User className="w-4 h-4 text-[#A6C36F]" />
             <p className="text-sm font-mono font-semibold">{user?.usn || 'N/A'}</p>
           </div>
 
-          <div className="flex items-center justify-center space-x-4 text-[#E8E3C5]">
+          <div className="flex items-center justify-center space-x-4 text-[#E8E3C5]/80">
             <div className="flex items-center space-x-1">
               <BookOpen className="w-4 h-4 text-[#A6C36F]" />
               <span className="text-sm font-medium">{user?.branch || 'N/A'}</span>
             </div>
-            <span className="text-[#4E524A]">•</span>
+            <span className="text-[#A6C36F]/40">•</span>
             <div className="flex items-center space-x-1">
               <Calendar className="w-4 h-4 text-[#A6C36F]" />
               <span className="text-sm font-medium">{user?.year || 'N/A'} Year</span>
@@ -103,8 +103,8 @@ const MemberInfoCard = ({ user }) => {
         </div>
 
         {/* Decorative Bottom Border and Member Since */}
-        <div className="pt-4 border-t border-[#4E524A]">
-          <p className="text-xs text-center text-[#E8E3C5] opacity-70">
+        <div className="pt-4 border-t border-[#A6C36F]/20">
+          <p className="text-xs text-center text-[#E8E3C5]/60">
             Member since {getMemberSinceYear()}
           </p>
         </div>

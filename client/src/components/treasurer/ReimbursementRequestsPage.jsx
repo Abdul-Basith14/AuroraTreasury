@@ -10,21 +10,14 @@ import {
   IndianRupee as CurrencyRupeeIcon,
   Search as SearchIcon,
   RefreshCw as RefreshIcon,
-  Wallet as WalletIcon
+  Wallet as WalletIcon,
+  TrendingUp,
+  Filter,
+  Sparkles
 } from 'lucide-react';
 import ReimbursementRequestCard from './ReimbursementRequestCard';
 import PayReimbursementModal from './PayReimbursementModal';
 import RejectReimbursementModal from './RejectReimbursementModal';
-
-// --- Core Color Palette (from Styling System) ---
-const BACKGROUND_PRIMARY = '#0B0B09';
-const BACKGROUND_SECONDARY = '#1F221C';
-const TEXT_PRIMARY = '#F5F3E7';
-const TEXT_SECONDARY = '#E8E3C5';
-const ACCENT_OLIVE = '#A6C36F';
-const BORDER_DIVIDER = '#3A3E36';
-const SHADOW_GLOW = 'shadow-[0_0_25px_rgba(166,195,111,0.08)]';
-// ------------------------------------------------
 
 const ReimbursementRequestsPage = () => {
   const navigate = useNavigate();
@@ -37,6 +30,7 @@ const ReimbursementRequestsPage = () => {
   // Filters
   const [statusFilter, setStatusFilter] = useState('pending');
   const [yearFilter, setYearFilter] = useState('all');
+  const [monthFilter, setMonthFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   
   // Modals
@@ -111,166 +105,199 @@ const ReimbursementRequestsPage = () => {
   
   // Group requests by status for counts
   const pendingCount = requests.filter(r => r.status === 'Pending').length;
-  const paidCount = requests.filter(r => r.status === 'Paid').length;
-  const receivedCount = requests.filter(r => r.status === 'Received').length;
-  const rejectedCount = requests.filter(r => r.status === 'Rejected').length;
+
+  // Derive available months from requests for the dropdown
+  const availableMonths = React.useMemo(() => {
+    const months = new Set();
+    requests.forEach(req => {
+      const date = new Date(req.requestDate || req.createdAt);
+      months.add(date.toLocaleString('default', { month: 'long', year: 'numeric' }));
+    });
+    return Array.from(months);
+  }, [requests]);
+
+  // Filter requests based on selected month (in addition to existing backend filters)
+  const displayedRequests = React.useMemo(() => {
+    if (monthFilter === 'all') return requests;
+    return requests.filter(req => {
+      const date = new Date(req.requestDate || req.createdAt);
+      const monthYear = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+      return monthYear === monthFilter;
+    });
+  }, [requests, monthFilter]);
   
   return (
-    // Main Background
-    <div className={`min-h-screen bg-[${BACKGROUND_PRIMARY}]`}>
-      {/* Header - Use Accent Olive for the gradient/main color */}
-      <div className={`bg-gradient-to-r from-[#6E8D42] to-[${ACCENT_OLIVE}] text-white py-6 px-6 shadow-xl`}>
-        <div className="max-w-7xl mx-auto">
-          <button
-            onClick={() => navigate('/treasurer-dashboard')}
-            className={`flex items-center text-[${TEXT_SECONDARY}] hover:text-white mb-4 transition`}
-          >
-            <ArrowLeftIcon className="w-5 h-5 mr-2" />
-            Back to Dashboard
-          </button>
-          
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-[${TEXT_PRIMARY}]">
-                Reimbursement Requests
-              </h1>
-              <p className={`text-[${TEXT_SECONDARY}]/90 mt-2`}>
-                Review and process member reimbursement requests
-              </p>
+    <div className="min-h-screen bg-[#0B0B09] text-[#F5F3E7] font-inter relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#A6C36F]/5 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-[#8FAE5D]/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+      </div>
+
+      {/* Enhanced Header - Reverted to solid black theme */}
+      <div className="relative bg-black border-b border-[#A6C36F]/20 sticky top-0 z-40 shadow-xl">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-6 w-full md:w-auto">
+              <button
+                onClick={() => navigate('/treasurer-dashboard')}
+                className="group p-3 rounded-xl bg-[#0B0B09] border border-[#3A3E36] hover:border-[#A6C36F] text-[#F5F3E7] hover:text-[#A6C36F] transition-all duration-300 shadow-lg hover:shadow-[#A6C36F]/20"
+              >
+                <ArrowLeftIcon className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
+              </button>
+              <div>
+                <h1 className="text-3xl font-black text-[#F5F3E7] flex items-center gap-3">
+                  Reimbursements
+                  <Sparkles className="w-6 h-6 text-[#A6C36F] animate-pulse" />
+                </h1>
+                <p className="text-sm text-[#E8E3C5]/60 mt-1 font-medium">Manage and process reimbursement requests</p>
+              </div>
             </div>
             
-            {/* Wallet - Themed Wallet Panel */}
-            <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-xl p-4 min-w-[280px] border border-[${BORDER_DIVIDER}]`}>
-              <p className={`text-xs text-[${TEXT_SECONDARY}]/70 mb-1 flex items-center`}>
-                <WalletIcon className="w-4 h-4 mr-1 text-blue-400" /> Total Reimbursed
-              </p>
-              {walletLoading ? (
-                <div className={`h-8 w-32 bg-[${BORDER_DIVIDER}] rounded animate-pulse`}></div>
-              ) : (
-                <div className={`text-3xl font-bold flex items-center text-[${ACCENT_OLIVE}]`}>
-                  <CurrencyRupeeIcon className="w-8 h-8 mr-1" />
-                  {wallet?.totalReimbursed || 0}
+            {/* Enhanced Wallet Stats - Black theme */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-[#A6C36F]/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+              <div className="relative flex items-center bg-[#0B0B09] rounded-2xl px-6 py-4 border border-[#A6C36F]/30 shadow-xl">
+                <div className="p-3 bg-black rounded-xl mr-4 border border-[#A6C36F]/30">
+                  <WalletIcon className="w-6 h-6 text-[#A6C36F]" />
                 </div>
-              )}
+                <div>
+                  <p className="text-xs text-[#E8E3C5]/50 uppercase tracking-widest font-semibold mb-1 flex items-center gap-2">
+                    <TrendingUp className="w-3 h-3" />
+                    Total Reimbursed
+                  </p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-black text-[#A6C36F]">₹</span>
+                    <span className="text-2xl font-black text-[#F5F3E7]">
+                      {wallet?.totalReimbursed || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Enhanced Filters Bar - Solid colors */}
+          <div className="mt-6 flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+            {/* Search with icon animation */}
+            <div className="relative flex-grow group/search">
+              <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#A6C36F]/60 group-focus-within/search:text-[#A6C36F] transition-colors duration-300" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name, USN, description..."
+                className="w-full pl-12 pr-4 py-3 bg-[#0B0B09] border border-[#3A3E36] rounded-xl text-sm text-[#F5F3E7] focus:ring-1 focus:ring-[#A6C36F] focus:border-[#A6C36F] outline-none placeholder-[#E8E3C5]/30 transition-all duration-300 shadow-inner"
+              />
+            </div>
+
+            {/* Status Tabs with enhanced styling */}
+            <div className="flex overflow-x-auto pb-1 md:pb-0 gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              {[
+                { value: 'all', label: 'All', icon: Filter },
+                { value: 'pending', label: 'Pending', icon: null },
+                { value: 'paid', label: 'Paid', icon: null },
+                { value: 'rejected', label: 'Rejected', icon: null }
+              ].map(status => (
+                <button
+                  key={status.value}
+                  onClick={() => setStatusFilter(status.value)}
+                  className={`relative px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300 border ${
+                    statusFilter === status.value
+                      ? 'bg-[#A6C36F] text-black border-[#A6C36F] shadow-lg shadow-[#A6C36F]/20 scale-105' 
+                      : 'bg-[#0B0B09] text-[#E8E3C5]/70 hover:bg-[#1A1A1A] hover:text-[#F5F3E7] border-[#3A3E36] hover:border-[#A6C36F]/50'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    {status.icon && <status.icon className="w-3.5 h-3.5" />}
+                    {status.label}
+                    {status.value === 'pending' && pendingCount > 0 && (
+                      <span className="ml-1 px-2 py-0.5 bg-red-600 text-white text-[10px] rounded-full font-black animate-pulse">
+                        {pendingCount}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Month Select */}
+            <select
+              value={monthFilter}
+              onChange={(e) => setMonthFilter(e.target.value)}
+              className="px-4 py-3 bg-[#0B0B09] border border-[#3A3E36] rounded-xl text-sm text-[#F5F3E7] focus:ring-1 focus:ring-[#A6C36F] outline-none cursor-pointer hover:border-[#A6C36F]/50 transition-all duration-300 font-medium"
+            >
+              <option value="all">All Months</option>
+              {availableMonths.map(month => (
+                <option key={month} value={month}>{month}</option>
+              ))}
+            </select>
+
+            {/* Year Select with enhanced styling */}
+            <select
+              value={yearFilter}
+              onChange={(e) => setYearFilter(e.target.value)}
+              className="px-4 py-3 bg-[#0B0B09] border border-[#3A3E36] rounded-xl text-sm text-[#F5F3E7] focus:ring-1 focus:ring-[#A6C36F] outline-none cursor-pointer hover:border-[#A6C36F]/50 transition-all duration-300 font-medium"
+            >
+              <option value="all">All Years</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+
+            <button
+              onClick={handleRefresh}
+              className="group p-3 bg-[#0B0B09] border border-[#3A3E36] rounded-xl text-[#A6C36F] hover:bg-[#A6C36F]/10 hover:border-[#A6C36F]/50 transition-all duration-300 shadow-lg hover:shadow-[#A6C36F]/20"
+              title="Refresh"
+            >
+              <RefreshIcon className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
+            </button>
           </div>
         </div>
       </div>
       
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Filters & Search - Themed Filter Panel */}
-        <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-xl shadow-md p-6 mb-6 border border-[${BORDER_DIVIDER}] ${SHADOW_GLOW}`}>
-          <div className="flex justify-between items-center mb-4 border-b border-[${BORDER_DIVIDER}]/50 pb-4">
-            <h2 className={`text-lg font-bold text-[${TEXT_PRIMARY}]`}>Filters</h2>
-            {/* Refresh Button - Themed */}
-            <button
-              onClick={handleRefresh}
-              className={`flex items-center px-4 py-2 text-sm bg-[${BORDER_DIVIDER}]/50 text-[${ACCENT_OLIVE}] rounded-lg hover:bg-[${BORDER_DIVIDER}] transition`}
-            >
-              <RefreshIcon className="w-4 h-4 mr-2" />
-              Refresh
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Status Filter */}
-            <div>
-              <label className={`block text-sm font-medium text-[${TEXT_SECONDARY}] mb-2`}>Status</label>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { value: 'all', label: 'All', count: requests.length },
-                  { value: 'pending', label: 'Pending', count: pendingCount },
-                  { value: 'paid', label: 'Paid', count: paidCount },
-                  { value: 'received', label: 'Received', count: receivedCount },
-                  { value: 'rejected', label: 'Rejected', count: rejectedCount }
-                ].map(status => (
-                  <button
-                    key={status.value}
-                    onClick={() => setStatusFilter(status.value)}
-                    className={`px-3 py-1.5 rounded-xl text-sm font-medium transition ${
-                      statusFilter === status.value
-                        // Active: Olive Accent
-                        ? `bg-[${ACCENT_OLIVE}] text-[${BACKGROUND_PRIMARY}]` 
-                        // Inactive: Darker background, Primary Text
-                        : `bg-[${BORDER_DIVIDER}]/50 text-[${TEXT_PRIMARY}] hover:bg-[${BORDER_DIVIDER}]`
-                    }`}
-                  >
-                    {status.label} ({status.count})
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Year Filter */}
-            <div>
-              <label className={`block text-sm font-medium text-[${TEXT_SECONDARY}] mb-2`}>Member Year</label>
-              <select
-                value={yearFilter}
-                onChange={(e) => setYearFilter(e.target.value)}
-                // Themed Select
-                className={`w-full px-4 py-2 border border-[${BORDER_DIVIDER}] bg-[${BACKGROUND_SECONDARY}] text-[${TEXT_PRIMARY}] rounded-lg focus:ring-2 focus:ring-[${ACCENT_OLIVE}]/50 focus:border-[${ACCENT_OLIVE}]/50`}
-              >
-                <option className={`bg-[${BACKGROUND_SECONDARY}] text-[${TEXT_PRIMARY}]`} value="all">All Years</option>
-                <option className={`bg-[${BACKGROUND_SECONDARY}] text-[${TEXT_PRIMARY}]`} value="1st Year">1st Year</option>
-                <option className={`bg-[${BACKGROUND_SECONDARY}] text-[${TEXT_PRIMARY}]`} value="2nd Year">2nd Year</option>
-                <option className={`bg-[${BACKGROUND_SECONDARY}] text-[${TEXT_PRIMARY}]`} value="3rd Year">3rd Year</option>
-                <option className={`bg-[${BACKGROUND_SECONDARY}] text-[${TEXT_PRIMARY}]`} value="4th Year">4th Year</option>
-              </select>
-            </div>
-            
-            {/* Search */}
-            <div>
-              <label className={`block text-sm font-medium text-[${TEXT_SECONDARY}] mb-2`}>Search</label>
-              <div className="relative">
-                <SearchIcon className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[${TEXT_SECONDARY}]/60`} />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Name, USN, description..."
-                  // Themed Input
-                  className={`w-full pl-10 pr-4 py-2 border border-[${BORDER_DIVIDER}] bg-[${BACKGROUND_SECONDARY}] text-[${TEXT_PRIMARY}] rounded-lg focus:ring-2 focus:ring-[${ACCENT_OLIVE}]/50 focus:border-[${ACCENT_OLIVE}]/50 placeholder-[${TEXT_SECONDARY}]/40`}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Requests List */}
+      <div className="relative max-w-7xl mx-auto px-6 py-8">
+        {/* Requests Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {[1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6].map(i => <EnhancedSkeletonCard key={i} />)}
           </div>
-        ) : requests.length === 0 ? (
-          // Empty State - Themed
-          <div className={`text-center py-16 bg-[${BACKGROUND_SECONDARY}] rounded-xl shadow-md border border-[${BORDER_DIVIDER}] ${SHADOW_GLOW}`}>
-            <div className={`w-20 h-20 bg-[${BORDER_DIVIDER}] rounded-full flex items-center justify-center mx-auto mb-4`}>
-              <CurrencyRupeeIcon className={`w-10 h-10 text-[${TEXT_SECONDARY}]/40`} />
+        ) : displayedRequests.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="relative mb-8">
+              <div className="absolute inset-0 bg-[#A6C36F]/20 rounded-full blur-3xl animate-pulse" />
+              <div className="relative w-24 h-24 bg-[#0B0B09] rounded-full flex items-center justify-center border-4 border-[#A6C36F]/30 shadow-xl">
+                <CurrencyRupeeIcon className="w-12 h-12 text-[#A6C36F]/40" />
+              </div>
             </div>
-            <h3 className={`text-xl font-semibold text-[${TEXT_PRIMARY}] mb-2`}>No Requests Found</h3>
-            <p className={`text-[${TEXT_SECONDARY}]/70`}>
-              {statusFilter !== 'all' 
-                ? `No ${statusFilter} reimbursement requests`
-                : 'No reimbursement requests yet'
+            <h3 className="text-2xl font-bold text-[#F5F3E7] mb-2">No Requests Found</h3>
+            <p className="text-[#E8E3C5]/60 text-center max-w-md">
+              {statusFilter !== 'all' || monthFilter !== 'all'
+                ? `No reimbursement requests match your filters`
+                : 'No reimbursement requests have been submitted yet'
               }
             </p>
           </div>
         ) : (
           <>
-            <div className="mb-4 flex justify-between items-center">
-              <p className={`text-sm text-[${TEXT_SECONDARY}]/80`}>
-                Showing {requests.length} request{requests.length !== 1 ? 's' : ''}
+            {/* Results count with enhanced styling */}
+            <div className="mb-6 flex justify-between items-center">
+              <p className="text-sm text-[#E8E3C5]/70 font-medium">
+                Showing <span className="text-[#A6C36F] font-bold">{displayedRequests.length}</span> request{displayedRequests.length !== 1 ? 's' : ''}
               </p>
               {statusFilter === 'pending' && pendingCount > 0 && (
-                <p className="text-sm text-yellow-400 font-medium">
-                  ⚠️ {pendingCount} request{pendingCount !== 1 ? 's' : ''} awaiting your action
-                </p>
+                <div className="flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+                  <p className="text-sm text-yellow-400 font-semibold">
+                    {pendingCount} awaiting action
+                  </p>
+                </div>
               )}
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* ReimbursementRequestCard is already themed */}
-              {requests.map(request => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {displayedRequests.map(request => (
                 <ReimbursementRequestCard
                   key={request._id}
                   request={request}
@@ -283,7 +310,7 @@ const ReimbursementRequestsPage = () => {
         )}
       </div>
       
-      {/* Modals (Already Themed or next in queue) */}
+      {/* Modals */}
       <PayReimbursementModal
         isOpen={showPayModal}
         onClose={() => setShowPayModal(false)}
@@ -302,20 +329,21 @@ const ReimbursementRequestsPage = () => {
   );
 };
 
-// Themed Skeleton Card
-const SkeletonCard = () => (
-  <div className={`border border-[${BORDER_DIVIDER}]/50 rounded-2xl p-6 animate-pulse bg-[${BACKGROUND_SECONDARY}]`}>
+const EnhancedSkeletonCard = () => (
+  <div className="relative bg-[#0B0B09] rounded-2xl p-5 border border-[#3A3E36] animate-pulse overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#A6C36F]/5 to-transparent -translate-x-full animate-shimmer" />
     <div className="flex items-center space-x-3 mb-4">
-      <div className={`w-12 h-12 bg-[${BORDER_DIVIDER}] rounded-full`}></div>
+      <div className="w-12 h-12 bg-[#3A3E36] rounded-full" />
       <div className="flex-1">
-        <div className={`h-4 bg-[${BORDER_DIVIDER}] rounded w-32 mb-2`}></div>
-        <div className={`h-3 bg-[${BORDER_DIVIDER}] rounded w-24`}></div>
+        <div className="h-4 bg-[#3A3E36] rounded w-24 mb-2" />
+        <div className="h-3 bg-[#3A3E36] rounded w-16" />
       </div>
     </div>
-    <div className={`h-32 bg-[${BORDER_DIVIDER}] rounded-xl mb-4`}></div>
+    <div className="h-24 bg-[#3A3E36] rounded-xl mb-4" />
+    <div className="h-16 bg-[#3A3E36] rounded-lg mb-4" />
     <div className="flex space-x-2">
-      <div className={`h-10 bg-[${BORDER_DIVIDER}] rounded-xl flex-1`}></div>
-      <div className={`h-10 bg-[${BORDER_DIVIDER}] rounded-xl flex-1`}></div>
+      <div className="h-10 bg-[#3A3E36] rounded-lg flex-1" />
+      <div className="h-10 bg-[#3A3E36] rounded-lg flex-1" />
     </div>
   </div>
 );

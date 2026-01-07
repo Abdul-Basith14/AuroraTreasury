@@ -50,45 +50,49 @@ const PaymentSummaryCard = ({ totalPaid = 0 }) => {
   // --- End Year Logic Modification ---
 
   return (
-    // Card Container: Accent Olive BG, Deep Black Text
-    <div className="bg-[#A6C36F] rounded-2xl shadow-[0_0_25px_rgba(166,195,111,0.4)] p-6 text-[#0B0B09] 
-                 hover:shadow-[0_0_35px_rgba(166,195,111,0.6)] transition-all duration-300 transform hover:-translate-y-1">
+    // Card Container: Dark Glassmorphism with Olive Glow
+    <div className="bg-black/60 backdrop-blur-md rounded-2xl border border-[#A6C36F]/20 p-6 text-[#F5F3E7] 
+                 shadow-[0_0_15px_rgba(166,195,111,0.1)] hover:shadow-[0_0_25px_rgba(166,195,111,0.2)] 
+                 transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
+      
+      {/* Decorative Background Gradient */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[#A6C36F]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
       
       {/* Header and Icon */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-4 relative z-10">
         {/* Label */}
-        <p className="text-sm font-semibold text-[#0B0B09]/70 uppercase tracking-wider">
+        <p className="text-sm font-semibold text-[#E8E3C5]/70 uppercase tracking-wider">
           Total Club Payment
         </p>
         
-        {/* Icon Circle: Solid, slightly darker olive for depth */}
-        <div className="w-10 h-10 bg-[#8FAE5D] rounded-full flex items-center justify-center shadow-inner shadow-[#0B0B09]/10">
-          <Wallet className="w-5 h-5 text-[#0B0B09]" />
+        {/* Icon Circle: Olive outline, dark bg */}
+        <div className="w-10 h-10 rounded-full flex items-center justify-center border border-[#A6C36F]/30 bg-[#A6C36F]/10 group-hover:bg-[#A6C36F]/20 transition-colors">
+          <Wallet className="w-5 h-5 text-[#A6C36F]" />
         </div>
       </div>
 
       {/* Amount Display */}
-      <div className="space-y-1">
+      <div className="space-y-1 relative z-10">
         <div className="flex items-baseline justify-between">
-          {/* Amount: Explicitly set to Deep Black, larger font */}
-          <span className="text-5xl font-extrabold tracking-tight text-[#0B0B09]">
+          {/* Amount: Olive Green, larger font */}
+          <span className="text-5xl font-extrabold tracking-tight text-[#A6C36F] drop-shadow-sm">
             ₹ {displayAmount.toLocaleString('en-IN')}
           </span>
         </div>
       </div>
 
       {/* Decorative Footer/Trend Indicator */}
-      <div className="mt-4 pt-4 border-t border-[#0B0B09]/15 flex justify-between items-center">
+      <div className="mt-6 pt-4 border-t border-[#A6C36F]/10 flex justify-between items-center relative z-10">
         <div className="flex items-center space-x-2">
-            {/* Trend Indicator: text-[#0B0B09]/90 */}
-            <TrendingUp className="w-5 h-5 text-[#0B0B09]" />
-            <p className="text-sm font-medium text-[#0B0B09]/90">
+            {/* Trend Indicator */}
+            <TrendingUp className="w-4 h-4 text-[#A6C36F]" />
+            <p className="text-sm font-medium text-[#E8E3C5]/80">
                 Member Contributions
             </p>
         </div>
         
-        {/* Placeholder/Sub-label: MODIFIED TO REFLECT EARLIER YEAR */}
-        <p className="text-xs font-mono text-[#0B0B09]/60">
+        {/* Placeholder/Sub-label */}
+        <p className="text-xs font-mono text-[#E8E3C5]/50">
           Since {joiningYear}
         </p>
       </div>

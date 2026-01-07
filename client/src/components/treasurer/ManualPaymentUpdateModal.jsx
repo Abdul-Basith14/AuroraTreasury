@@ -3,16 +3,6 @@ import { toast } from 'react-hot-toast';
 import { manualPaymentUpdate } from '../../utils/treasurerAPI';
 import { X, CheckCircle, AlertCircle } from 'lucide-react';
 
-// --- Core Color Palette (from Styling System) ---
-const BACKGROUND_PRIMARY = '#0B0B09';
-const BACKGROUND_SECONDARY = '#1F221C';
-const TEXT_PRIMARY = '#F5F3E7';
-const TEXT_SECONDARY = '#E8E3C5';
-const ACCENT_OLIVE = '#A6C36F';
-const BORDER_DIVIDER = '#3A3E36';
-const SHADOW_GLOW = 'shadow-[0_0_25px_rgba(166,195,111,0.08)]';
-// ------------------------------------------------
-
 /**
  * Manual Payment Update Modal
  * Simplified confirmation dialog to mark payments as paid for cash/offline payments
@@ -56,16 +46,16 @@ const ManualPaymentUpdateModal = ({ isOpen, onClose, payment, member, onSuccess 
   
   return (
     // Backdrop - Darkened
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       {/* Modal Container - Themed Panel */}
-      <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-2xl max-w-md w-full border border-[${BORDER_DIVIDER}] ${SHADOW_GLOW}`}>
+      <div className="bg-[#1F221C] rounded-2xl max-w-md w-full border border-[#3A3E36] shadow-[0_0_25px_rgba(166,195,111,0.08)]">
         
         {/* Header - Themed */}
-        <div className={`flex justify-between items-center p-6 border-b border-[${BORDER_DIVIDER}]`}>
-          <h2 className={`text-xl font-bold text-[${TEXT_PRIMARY}]`}>Confirm Cash Payment</h2>
+        <div className="flex justify-between items-center p-6 border-b border-[#3A3E36]">
+          <h2 className="text-xl font-bold text-[#F5F3E7]">Confirm Cash Payment</h2>
           <button
             onClick={handleClose}
-            className={`text-[${TEXT_SECONDARY}]/70 hover:text-[${TEXT_PRIMARY}] p-2 rounded-full hover:bg-[${BORDER_DIVIDER}]`}
+            className="text-[#E8E3C5]/70 hover:text-[#F5F3E7] p-2 rounded-full hover:bg-[#3A3E36] transition-colors"
             disabled={updating}
           >
             <X className="w-6 h-6" />
@@ -75,66 +65,63 @@ const ManualPaymentUpdateModal = ({ isOpen, onClose, payment, member, onSuccess 
         {/* Content */}
         <div className="p-6 space-y-5">
           {/* Payment Info - Dark background for contrast */}
-          <div className={`bg-[${BACKGROUND_PRIMARY}] rounded-lg p-4 space-y-3 border border-[${BORDER_DIVIDER}]`}>
+          <div className="bg-[#0B0B09] rounded-lg p-4 space-y-3 border border-[#3A3E36]">
             <div>
-              <p className={`text-sm text-[${TEXT_SECONDARY}]/60`}>Member</p>
-              <p className={`text-lg font-semibold text-[${TEXT_PRIMARY}]`}>{member.name}</p>
-              <p className={`text-sm text-[${TEXT_SECONDARY}]/60`}>{member.usn}</p>
+              <p className="text-sm text-[#E8E3C5]/60">Member</p>
+              <p className="text-lg font-semibold text-[#F5F3E7]">{member.name}</p>
+              <p className="text-sm text-[#E8E3C5]/60">{member.usn}</p>
             </div>
             <div>
-              <p className={`text-sm text-[${TEXT_SECONDARY}]/60`}>Month</p>
-              <p className={`text-lg font-semibold text-[${TEXT_PRIMARY}]`}>{payment.month} {payment.year}</p>
+              <p className="text-sm text-[#E8E3C5]/60">Month</p>
+              <p className="text-lg font-semibold text-[#F5F3E7]">{payment.month} {payment.year}</p>
             </div>
             <div>
-              <p className={`text-sm text-[${TEXT_SECONDARY}]/60`}>Amount</p>
+              <p className="text-sm text-[#E8E3C5]/60">Amount</p>
               {/* Amount Highlighted in Green */}
-              <p className="text-2xl font-bold text-green-400">₹{payment.amount}</p>
+              <p className="text-2xl font-bold text-[#A6C36F]">₹{payment.amount}</p>
             </div>
           </div>
           
           {/* Confirmation Message - Themed Alert */}
-          <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-4">
+          <div className="bg-[#A6C36F]/10 border border-[#A6C36F]/30 rounded-lg p-4">
             <div className="flex items-start">
-              <AlertCircle className="w-5 h-5 text-red-400 mr-3 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-300 font-medium">
-                **Manual Action Warning:** Are you certain the member has **paid** the amount of **₹{payment.amount}** in cash? This action cannot be easily reversed.
+              <AlertCircle className="w-5 h-5 text-[#A6C36F] mr-3 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-[#E8E3C5] font-medium">
+                <strong className="text-[#A6C36F]">Manual Action Warning:</strong> Are you certain the member has <strong className="text-[#F5F3E7]">paid</strong> the amount of <strong className="text-[#F5F3E7]">₹{payment.amount}</strong> in cash? This action cannot be easily reversed.
               </p>
             </div>
           </div>
-        </div>
-        
-        {/* Footer - Themed */}
-        <div className={`flex justify-end space-x-3 p-6 border-t border-[${BORDER_DIVIDER}] bg-[${BACKGROUND_PRIMARY}]/50 rounded-b-2xl`}>
-          {/* Cancel Button - Themed Neutral */}
-          <button
-            onClick={handleClose}
-            className={`px-6 py-2.5 border border-[${BORDER_DIVIDER}] text-[${TEXT_SECONDARY}] rounded-lg hover:bg-[${BORDER_DIVIDER}] font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
-            disabled={updating}
-          >
-            Cancel
-          </button>
-          {/* Confirm Button - Themed Green (Action Color) */}
-          <button
-            onClick={handleConfirm}
-            className="px-6 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-600 font-medium flex items-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            disabled={updating}
-          >
-            {updating ? (
-              <>
-                {/* Themed Spinner */}
-                <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Confirming...
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-5 h-5 mr-2" />
-                Confirm Payment
-              </>
-            )}
-          </button>
+          
+          {/* Actions */}
+          <div className="flex space-x-3 pt-2">
+            <button
+              onClick={handleClose}
+              disabled={updating}
+              className="flex-1 px-4 py-3 border border-[#3A3E36] text-[#E8E3C5] rounded-xl hover:bg-[#3A3E36] hover:text-[#F5F3E7] transition-colors font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirm}
+              disabled={updating}
+              className="flex-1 px-4 py-3 bg-[#A6C36F] text-[#0B0B09] rounded-xl hover:bg-[#8FAE5D] transition-colors font-bold shadow-lg hover:shadow-[0_0_15px_rgba(166,195,111,0.4)] flex items-center justify-center"
+            >
+              {updating ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#0B0B09]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                <span className="flex items-center">
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  Confirm Payment
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

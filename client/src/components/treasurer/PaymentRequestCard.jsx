@@ -6,21 +6,11 @@ import {
   Camera,
   Calendar,
   IndianRupee,
-  Clock, // Added Clock for Pending status icon
-  AlertCircle // Added AlertCircle for Rejected status icon
+  Clock,
+  AlertCircle
 } from 'lucide-react';
 import VerifyPaymentModal from './VerifyPaymentModal';
 import RejectPaymentModal from './RejectPaymentModal';
-
-// --- Theme Tokens (These should be defined or imported where the component is used, but defined here for context) ---
-const TEXT_PRIMARY = '#F5F3E7';
-const TEXT_SECONDARY = '#E8E3C5';
-const ACCENT_OLIVE = '#A6C36F';
-const BACKGROUND_PRIMARY = '#0B0B09';
-const BACKGROUND_SECONDARY = '#1F221C';
-const BORDER_DIVIDER = '#3A3E36';
-const SHADOW_GLOW = 'shadow-[0_0_25px_rgba(166,195,111,0.08)]';
-// --------------------
 
 /**
  * Payment Request Card - Displays individual payment request with actions
@@ -61,8 +51,8 @@ const PaymentRequestCard = ({ request, onActionComplete, isResubmission }) => {
         };
       case 'Paid':
         return {
-          bg: `bg-[${ACCENT_OLIVE}]/10`,
-          text: `text-[${ACCENT_OLIVE}]`,
+          bg: 'bg-[#A6C36F]/10',
+          text: 'text-[#A6C36F]',
           icon: CheckCircle,
         };
       case 'Rejected':
@@ -73,8 +63,8 @@ const PaymentRequestCard = ({ request, onActionComplete, isResubmission }) => {
         };
       default:
         return {
-          bg: `bg-[${BORDER_DIVIDER}]/40`,
-          text: `text-[${TEXT_SECONDARY}]/70`,
+          bg: 'bg-[#3A3E36]/40',
+          text: 'text-[#E8E3C5]/70',
           icon: Clock,
         };
     }
@@ -85,9 +75,7 @@ const PaymentRequestCard = ({ request, onActionComplete, isResubmission }) => {
 
   return (
     <>
-      <div 
-        className={`bg-[${BACKGROUND_SECONDARY}] rounded-2xl ${SHADOW_GLOW} ring-1 ring-[${BORDER_DIVIDER}]/40 transition-shadow overflow-hidden`}
-      >
+      <div className="bg-black/60 backdrop-blur-xl rounded-2xl shadow-[0_0_25px_rgba(166,195,111,0.08)] border border-[#A6C36F]/20 transition-shadow overflow-hidden">
         <div className="p-6">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             
@@ -99,25 +87,25 @@ const PaymentRequestCard = ({ request, onActionComplete, isResubmission }) => {
                   <img
                     src={request.userId.profilePhoto}
                     alt={request.userId.name}
-                    className={`w-16 h-16 rounded-full object-cover border-2 border-[${ACCENT_OLIVE}]/50`}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-[#A6C36F]/50"
                   />
                 ) : (
-                  <UserCircle className={`w-16 h-16 text-[${BORDER_DIVIDER}]`} />
+                  <UserCircle className="w-16 h-16 text-[#3A3E36]" />
                 )}
               </div>
 
               {/* Member Details */}
               <div className="flex-1 min-w-0">
-                <h3 className={`text-lg font-semibold text-[${TEXT_PRIMARY}] truncate`}>
+                <h3 className="text-lg font-semibold text-[#F5F3E7] truncate">
                   {request.userId?.name || 'Unknown'}
                 </h3>
-                <p className={`text-sm text-[${TEXT_SECONDARY}]/80`}>{request.userId?.usn || 'N/A'}</p>
-                <p className={`text-sm text-[${TEXT_SECONDARY}]/80`}>{request.userId?.email || 'N/A'}</p>
+                <p className="text-sm text-[#E8E3C5]/80">{request.userId?.usn || 'N/A'}</p>
+                <p className="text-sm text-[#E8E3C5]/80">{request.userId?.email || 'N/A'}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[${ACCENT_OLIVE}]/10 text-[${ACCENT_OLIVE}]`}>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#A6C36F]/10 text-[#A6C36F]">
                     {request.userId?.year || 'N/A'} Year
                   </span>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[${BORDER_DIVIDER}]/50 text-[${TEXT_SECONDARY}]/80`}>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#3A3E36]/50 text-[#E8E3C5]/80">
                     {request.userId?.branch || 'N/A'}
                   </span>
                 </div>
@@ -134,26 +122,26 @@ const PaymentRequestCard = ({ request, onActionComplete, isResubmission }) => {
                 </span>
               </div>
 
-              <div className={`flex items-center space-x-2 text-[${TEXT_SECONDARY}]/90`}>
-                <Calendar className={`w-5 h-5 text-[${ACCENT_OLIVE}]/70`} />
+              <div className="flex items-center space-x-2 text-[#E8E3C5]/90">
+                <Calendar className="w-5 h-5 text-[#A6C36F]/70" />
                 <div>
                   <p className="text-sm font-medium">Payment Month</p>
                   <p className="text-sm">{request.month || 'N/A'} {request.year || ''}</p>
                 </div>
               </div>
               
-              <div className={`flex items-center space-x-2 text-[${TEXT_SECONDARY}]/90`}>
-                <IndianRupee className={`w-5 h-5 text-[${ACCENT_OLIVE}]`} />
+              <div className="flex items-center space-x-2 text-[#E8E3C5]/90">
+                <IndianRupee className="w-5 h-5 text-[#A6C36F]" />
                 <div>
                   <p className="text-sm font-medium">Amount</p>
-                  <p className={`text-lg font-semibold text-[${ACCENT_OLIVE}]`}>
+                  <p className="text-lg font-semibold text-[#A6C36F]">
                     ₹{request.amount || 0}
                   </p>
                 </div>
               </div>
 
-              <div className={`flex items-center space-x-2 text-[${TEXT_SECONDARY}]/90`}>
-                <Calendar className={`w-5 h-5 text-[${ACCENT_OLIVE}]/70`} />
+              <div className="flex items-center space-x-2 text-[#E8E3C5]/90">
+                <Calendar className="w-5 h-5 text-[#A6C36F]/70" />
                 <div>
                   <p className="text-sm font-medium">Submitted On</p>
                   <p className="text-sm">{formatDate(submissionDate)}</p>
@@ -161,7 +149,7 @@ const PaymentRequestCard = ({ request, onActionComplete, isResubmission }) => {
               </div>
 
               {isResubmission && request.rejectionReason && (
-                <div className={`mt-3 p-3 bg-red-800/20 rounded-lg border border-red-700/50`}>
+                <div className="mt-3 p-3 bg-red-800/20 rounded-lg border border-red-700/50">
                   <p className="text-sm font-medium text-red-400 mb-1">
                     Previous Rejection Reason:
                   </p>
@@ -173,8 +161,8 @@ const PaymentRequestCard = ({ request, onActionComplete, isResubmission }) => {
             {/* Right Section - Payment Proof */}
             <div className="flex-shrink-0">
               <div className="w-48">
-                <p className={`text-sm font-medium text-[${TEXT_SECONDARY}] mb-2 flex items-center`}>
-                  <Camera className={`w-4 h-4 mr-1 text-[${ACCENT_OLIVE}]`} />
+                <p className="text-sm font-medium text-[#E8E3C5] mb-2 flex items-center">
+                  <Camera className="w-4 h-4 mr-1 text-[#A6C36F]" />
                   Payment Proof
                 </p>
                 {paymentProofPhoto ? (
@@ -185,17 +173,17 @@ const PaymentRequestCard = ({ request, onActionComplete, isResubmission }) => {
                     <img
                       src={paymentProofPhoto}
                       alt="Payment Proof"
-                      className={`w-full h-32 object-cover rounded-lg border-2 border-[${BORDER_DIVIDER}] group-hover:border-[${ACCENT_OLIVE}] transition`}
+                      className="w-full h-32 object-cover rounded-lg border-2 border-[#3A3E36] group-hover:border-[#A6C36F] transition"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition flex items-center justify-center">
-                      <span className={`text-white opacity-0 group-hover:opacity-100 text-sm font-medium`}>
+                      <span className="text-white opacity-0 group-hover:opacity-100 text-sm font-medium">
                         Click to enlarge
                       </span>
                     </div>
                   </div>
                 ) : (
-                  <div className={`w-full h-32 bg-[${BORDER_DIVIDER}]/50 rounded-lg flex items-center justify-center`}>
-                    <p className={`text-sm text-[${TEXT_SECONDARY}]/60`}>No proof uploaded</p>
+                  <div className="w-full h-32 bg-[#3A3E36]/50 rounded-lg flex items-center justify-center">
+                    <p className="text-sm text-[#E8E3C5]/60">No proof uploaded</p>
                   </div>
                 )}
               </div>
@@ -203,7 +191,7 @@ const PaymentRequestCard = ({ request, onActionComplete, isResubmission }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className={`mt-6 flex justify-end space-x-3 pt-4 border-t border-[${BORDER_DIVIDER}]`}>
+          <div className="mt-6 flex justify-end space-x-3 pt-4 border-t border-[#A6C36F]/20">
             {/* Reject Button (Danger Red) */}
             <button
               onClick={() => setShowRejectModal(true)}
@@ -215,7 +203,7 @@ const PaymentRequestCard = ({ request, onActionComplete, isResubmission }) => {
             {/* Verify & Approve Button (Olive Accent) */}
             <button
               onClick={() => setShowVerifyModal(true)}
-              className={`px-6 py-2.5 bg-[${ACCENT_OLIVE}] text-[${BACKGROUND_PRIMARY}] rounded-lg hover:bg-[#8FAE5D] transition flex items-center space-x-2 font-medium`}
+              className="px-6 py-2.5 bg-[#A6C36F] text-black rounded-lg hover:bg-[#8FAE5D] transition flex items-center space-x-2 font-medium"
             >
               <CheckCircle className="w-5 h-5" />
               <span>Verify & Approve</span>
@@ -224,29 +212,29 @@ const PaymentRequestCard = ({ request, onActionComplete, isResubmission }) => {
         </div>
       </div>
 
-      {/* Image Modal (Themed) */}
+      {/* Image Modal */}
       {imageModalOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setImageModalOpen(false)}
         >
           <div className="relative max-w-4xl max-h-full">
             <img
               src={paymentProofPhoto}
               alt="Payment Proof"
-              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg border border-[#A6C36F]/20"
             />
             <button
               onClick={() => setImageModalOpen(false)}
-              className={`absolute top-4 right-4 bg-[${BACKGROUND_SECONDARY}] rounded-full p-2 ring-1 ring-[${BORDER_DIVIDER}]/50 hover:bg-[${BORDER_DIVIDER}] transition`}
+              className="absolute top-4 right-4 bg-black/60 rounded-full p-2 hover:bg-black/80 transition text-[#F5F3E7]"
             >
-              <XCircle className={`w-6 h-6 text-[${TEXT_SECONDARY}]`} />
+              <XCircle className="w-6 h-6" />
             </button>
           </div>
         </div>
       )}
 
-      {/* Verify Modal (Assumes VerifyPaymentModal is themed separately) */}
+      {/* Verify Modal */}
       {showVerifyModal && (
         <VerifyPaymentModal
           request={request}
@@ -256,7 +244,7 @@ const PaymentRequestCard = ({ request, onActionComplete, isResubmission }) => {
         />
       )}
 
-      {/* Reject Modal (Assumes RejectPaymentModal is themed separately) */}
+      {/* Reject Modal */}
       {showRejectModal && (
         <RejectPaymentModal
           request={request}

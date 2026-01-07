@@ -3,19 +3,10 @@ import { toast } from 'react-hot-toast';
 import { rejectPayment, rejectResubmission } from '../../utils/treasurerAPI';
 import { XCircle, X } from 'lucide-react';
 
-// --- Core Color Palette (from Styling System) ---
-const BACKGROUND_PRIMARY = '#0B0B09';
-const BACKGROUND_SECONDARY = '#1F221C';
-const TEXT_PRIMARY = '#F5F3E7';
-const TEXT_SECONDARY = '#E8E3C5';
-const ACCENT_OLIVE = '#A6C36F';
-const BORDER_DIVIDER = '#3A3E36';
-// ------------------------------------------------
-
 /**
  * Reject Payment Modal - Modal for rejecting payment with reason
  */
-const RejectReimbursementModal = ({ request, isResubmission, onClose, onSuccess }) => {
+const RejectPaymentModal = ({ request, isResubmission, onClose, onSuccess }) => {
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -50,20 +41,20 @@ const RejectReimbursementModal = ({ request, isResubmission, onClose, onSuccess 
 
   return (
     // Backdrop - Darkened
-    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       {/* Modal Content - Themed Panel */}
-      <div className={`bg-[${BACKGROUND_SECONDARY}] rounded-xl max-w-md w-full p-6 shadow-2xl border border-[${BORDER_DIVIDER}]`}>
+      <div className="bg-[#1F221C] rounded-xl max-w-md w-full p-6 shadow-[0_0_25px_rgba(166,195,111,0.08)] border border-[#3A3E36]">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 border-b border-[${BORDER_DIVIDER}]/50 pb-4">
+        <div className="flex items-center justify-between mb-6 border-b border-[#3A3E36] pb-4">
           <div className="flex items-center space-x-3">
             <XCircle className="w-8 h-8 text-red-500" /> {/* Keep red for rejection */}
-            <h3 className={`text-xl font-bold text-[${TEXT_PRIMARY}]`}>
+            <h3 className="text-xl font-bold text-[#F5F3E7]">
               Reject Request
             </h3>
           </div>
           <button
             onClick={onClose}
-            className={`text-[${TEXT_SECONDARY}]/70 hover:text-[${TEXT_PRIMARY}] transition p-1 rounded-full hover:bg-[${BORDER_DIVIDER}]`}
+            className="text-[#E8E3C5]/70 hover:text-[#F5F3E7] transition p-1 rounded-full hover:bg-[#3A3E36]"
             disabled={loading}
           >
             <X className="w-6 h-6" />
@@ -72,86 +63,66 @@ const RejectReimbursementModal = ({ request, isResubmission, onClose, onSuccess 
 
         {/* Content */}
         <div className="mb-6 space-y-4">
-          <p className={`text-[${TEXT_SECONDARY}]/90`}>
-            Please provide a **detailed and constructive** reason for rejecting this reimbursement request.
+          <p className="text-[#E8E3C5]/90">
+            Please provide a <strong className="text-[#F5F3E7]">detailed and constructive</strong> reason for rejecting this payment request.
           </p>
           
           {/* Request Details Panel - Darker background */}
-          <div className={`bg-[${BORDER_DIVIDER}]/50 rounded-lg p-4 space-y-2 text-[${TEXT_SECONDARY}]`}>
+          <div className="bg-[#0B0B09] rounded-lg p-4 space-y-2 border border-[#3A3E36]">
             <div className="flex justify-between">
-              <span className="text-sm font-medium text-[${TEXT_SECONDARY}]/80">Member:</span>
-              <span className="text-sm text-[${TEXT_PRIMARY}]">{request.userId?.name}</span>
+              <span className="text-sm font-medium text-[#E8E3C5]/80">Member:</span>
+              <span className="text-sm text-[#F5F3E7]">{request.userId?.name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm font-medium text-[${TEXT_SECONDARY}]/80">Amount:</span>
+              <span className="text-sm font-medium text-[#E8E3C5]/80">Amount:</span>
               <span className="text-sm font-semibold text-red-400">₹ {request.amount}</span> {/* Highlight amount in context */}
             </div>
             {/* Note: request.month and request.year are often missing in real data unless explicitly added, keeping for reference */}
             {/* <div className="flex justify-between">
-              <span className="text-sm font-medium text-[${TEXT_SECONDARY}]/80">Month:</span>
-              <span className="text-sm text-[${TEXT_PRIMARY}]">{request.month} {request.year}</span>
+              <span className="text-sm font-medium text-[#E8E3C5]/80">Month:</span>
+              <span className="text-sm text-[#F5F3E7]">{request.month} {request.year}</span>
             </div> */}
           </div>
 
           {/* Reason Input */}
           <div>
-            <label className={`block text-sm font-medium text-[${TEXT_SECONDARY}] mb-2`}>
+            <label className="block text-sm font-medium text-[#E8E3C5] mb-2">
               Rejection Reason <span className="text-red-500">*</span>
             </label>
             <textarea
               value={reason}
-              onChange={(e) => setReason(e.target.value).slice(0, 500)} // Added character limit slice
-              placeholder="e.g., Payment proof is unclear, wrong amount, incorrect details..."
-              rows={4}
-              // Themed Input
-              className={`w-full px-4 py-3 border border-[${BORDER_DIVIDER}] rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500/50 resize-none bg-[${BACKGROUND_PRIMARY}] text-[${TEXT_PRIMARY}] placeholder-[${TEXT_SECONDARY}]/40`}
+              onChange={(e) => setReason(e.target.value)}
+              className="w-full bg-[#0B0B09] border border-[#3A3E36] rounded-xl p-3 text-[#F5F3E7] placeholder-[#E8E3C5]/30 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all resize-none h-32"
+              placeholder="e.g., Incorrect amount, blurry screenshot, wrong month..."
               disabled={loading}
-              maxLength={500}
             />
-            <p className={`mt-1 text-sm text-[${TEXT_SECONDARY}]/60`}>
-              {reason.length}/500 characters
-            </p>
-          </div>
-
-          {/* Warning Note - Themed Red Panel */}
-          <div className="bg-red-900/30 border border-red-600/50 rounded-lg p-4">
-            <p className="text-sm text-red-400">
-              <strong>Note:</strong> After rejection:
-            </p>
-            <ul className="mt-2 ml-4 text-sm text-red-300 list-disc space-y-1">
-              <li>The member will be notified about the rejection</li>
-              <li>They can resubmit the request/proof</li>
-              {isResubmission && <li>The resubmission data will be cleared</li>}
-            </ul>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end space-x-3 pt-4 border-t border-[${BORDER_DIVIDER}]/50">
-          {/* Cancel Button - Themed Secondary Action */}
+        <div className="flex space-x-3">
           <button
             onClick={onClose}
+            className="flex-1 px-4 py-3 border border-[#3A3E36] text-[#E8E3C5] rounded-xl hover:bg-[#3A3E36] hover:text-[#F5F3E7] transition-colors font-medium"
             disabled={loading}
-            className={`px-6 py-2.5 border border-[${BORDER_DIVIDER}]/70 text-[${TEXT_SECONDARY}] rounded-xl hover:bg-[${BORDER_DIVIDER}] transition font-medium disabled:opacity-50`}
           >
             Cancel
           </button>
-          {/* Reject Button - Themed Primary Action (Red) */}
           <button
             onClick={handleReject}
             disabled={loading || !reason.trim()}
-            className="px-6 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition flex items-center space-x-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-bold shadow-lg hover:shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                <span>Rejecting...</span>
-              </>
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Rejecting...
+              </span>
             ) : (
-              <>
-                <XCircle className="w-5 h-5" />
-                <span>Reject Request</span>
-              </>
+              'Reject Payment'
             )}
           </button>
         </div>
@@ -160,4 +131,4 @@ const RejectReimbursementModal = ({ request, isResubmission, onClose, onSuccess 
   );
 };
 
-export default RejectReimbursementModal;
+export default RejectPaymentModal;

@@ -24,15 +24,15 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
       },
       Pending: {
         // Muted Olive/Secondary Text for Pending
-        bgColor: 'bg-[#3A3E36]/40', 
-        textColor: 'text-[#E8E3C5]',
+        bgColor: 'bg-yellow-500/20', 
+        textColor: 'text-yellow-500',
         icon: <Clock className="w-4 h-4" />,
         label: 'Pending',
       },
       Failed: {
         // Dark Panel/Secondary Text for Failed (keeping tone dark/muted)
-        bgColor: 'bg-[#1F221C]', 
-        textColor: 'text-[#E8E3C5]/70',
+        bgColor: 'bg-red-500/20', 
+        textColor: 'text-red-500',
         icon: <XCircle className="w-4 h-4" />,
         label: 'Failed',
       },
@@ -41,7 +41,7 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
     const config = statusConfig[status] || statusConfig.Pending;
 
     return (
-      <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-semibold ${config.bgColor} ${config.textColor}`}>
+      <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-semibold ${config.bgColor} ${config.textColor} border border-current/20`}>
         {config.icon}
         <span>{config.label}</span>
       </span>
@@ -82,18 +82,13 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
   // Show empty state if no payments
   if (!payments || payments.length === 0) {
     return (
-      // bg-white -> bg-[#1F221C], shadow-lg -> custom glow/shadow
-      <div className="bg-[#1F221C] rounded-2xl shadow-[0_0_25px_rgba(166,195,111,0.08)] p-8 border border-[#3A3E36]/40">
+      <div className="bg-black/60 backdrop-blur-xl rounded-2xl shadow-[0_0_25px_rgba(166,195,111,0.08)] p-8 border border-[#A6C36F]/20">
         <div className="text-center space-y-3">
-          {/* bg-gray-100 -> bg-[#3A3E36]/40 */}
-          <div className="w-16 h-16 bg-[#3A3E36]/40 rounded-full flex items-center justify-center mx-auto">
-            {/* text-gray-400 -> text-accent-olive */}
+          <div className="w-16 h-16 bg-black/40 rounded-full flex items-center justify-center mx-auto border border-[#A6C36F]/20">
             <Calendar className="w-8 h-8 text-[#A6C36F]" />
           </div>
-          {/* text-gray-900 -> text-primary */}
           <h3 className="text-lg font-semibold text-[#F5F3E7]">No Payment Records</h3>
-          {/* text-gray-500 -> text-secondary */}
-          <p className="text-sm text-[#E8E3C5]">
+          <p className="text-sm text-[#E8E3C5]/60">
             Your payment history will appear here once you start making payments.
           </p>
         </div>
@@ -102,61 +97,47 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
   }
 
   return (
-    // bg-white -> bg-[#1F221C], shadow-lg -> custom glow/shadow
-    <div className="bg-[#1F221C] rounded-2xl shadow-[0_0_25px_rgba(166,195,111,0.08)] overflow-hidden border border-[#3A3E36]/40">
+    <div className="bg-black/60 backdrop-blur-xl rounded-2xl shadow-[0_0_25px_rgba(166,195,111,0.08)] overflow-hidden border border-[#A6C36F]/20">
       {/* Table Header */}
-      {/* border-gray-200 -> border-[#3A3E36], bg-gradient... -> bg-[#1F221C] (Panel BG) */}
-      <div className="px-6 py-4 border-b border-[#3A3E36] bg-[#1F221C]">
-        {/* text-gray-900 -> text-primary */}
+      <div className="px-6 py-4 border-b border-[#A6C36F]/20 bg-black/40">
         <h3 className="text-lg font-bold text-[#F5F3E7]">Payment History</h3>
-        {/* text-gray-600 -> text-secondary */}
-        <p className="text-sm text-[#E8E3C5]">Track your monthly group fund payments</p>
+        <p className="text-sm text-[#E8E3C5]/60">Track your monthly group fund payments</p>
       </div>
 
       {/* Desktop Table View */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
-          {/* bg-gray-50 -> bg-[#0B0B09], border-gray-200 -> border-[#3A3E36] */}
-          <thead className="bg-[#0B0B09] border-b border-[#3A3E36]">
+          <thead className="bg-black/60 border-b border-[#A6C36F]/20">
             <tr>
-              {/* text-gray-700 -> text-secondary */}
-              <th className="px-6 py-3 text-left text-xs font-semibold text-[#E8E3C5] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-[#E8E3C5]/60 uppercase tracking-wider">
                 Month
               </th>
-              {/* text-gray-700 -> text-secondary */}
-              <th className="px-6 py-3 text-left text-xs font-semibold text-[#E8E3C5] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-[#E8E3C5]/60 uppercase tracking-wider">
                 Amount
               </th>
-              {/* text-gray-700 -> text-secondary */}
-              <th className="px-6 py-3 text-left text-xs font-semibold text-[#E8E3C5] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-[#E8E3C5]/60 uppercase tracking-wider">
                 Status
               </th>
-              {/* text-gray-700 -> text-secondary */}
-              <th className="px-6 py-3 text-left text-xs font-semibold text-[#E8E3C5] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-[#E8E3C5]/60 uppercase tracking-wider">
                 Deadline
               </th>
-              {/* text-gray-700 -> text-secondary */}
-              <th className="px-6 py-3 text-left text-xs font-semibold text-[#E8E3C5] uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-[#E8E3C5]/60 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          {/* divide-gray-200 -> divide-[#3A3E36] */}
-          <tbody className="divide-y divide-[#3A3E36]">
+          <tbody className="divide-y divide-[#A6C36F]/10">
             {payments.map((payment) => (
               <tr
                 key={payment._id}
-                // hover:bg-gray-50 -> hover:bg-[#1F221C]/80, bg-red-50/50 -> bg-[#1F221C]/80 + Red text for overdue details
-                className={`hover:bg-[#1F221C]/80 transition-colors ${
-                  isOverdue(payment.deadline, payment.status) ? 'bg-[#1F221C]/80' : ''
+                className={`hover:bg-[#A6C36F]/5 transition-colors ${
+                  isOverdue(payment.deadline, payment.status) ? 'bg-red-500/5' : ''
                 }`}
               >
                 {/* Month */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center space-x-2">
-                    {/* text-gray-400 -> text-accent-olive */}
                     <Calendar className="w-4 h-4 text-[#A6C36F]" />
-                    {/* text-gray-900 -> text-primary */}
                     <span className="text-sm font-medium text-[#F5F3E7]">
                       {payment.month}
                     </span>
@@ -166,9 +147,7 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
                 {/* Amount */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center space-x-1">
-                    {/* text-gray-400 -> text-accent-olive */}
                     <DollarSign className="w-4 h-4 text-[#A6C36F]" />
-                    {/* text-gray-900 -> text-primary */}
                     <span className="text-sm font-semibold text-[#F5F3E7]">
                       ₹ {payment.amount}
                     </span>
@@ -188,10 +167,9 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
                 {/* Deadline */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`text-sm ${
-                    // text-red-600 -> text-red-500, text-gray-600 -> text-secondary
                     isOverdue(payment.deadline, payment.status)
                       ? 'text-red-500 font-semibold'
-                      : 'text-[#E8E3C5]'
+                      : 'text-[#E8E3C5]/80'
                   }`}>
                     {formatDate(payment.deadline)}
                   </span>
@@ -202,20 +180,17 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
                   {payment.status === 'Paid' && payment.paymentProof ? (
                     <button
                       onClick={() => handleDownload(payment._id, payment.month)}
-                      // Action Button: text-blue-700/bg-blue-50/hover:bg-blue-100 -> (d) Accent Olive Button style
-                      className="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-medium text-[#0B0B09] bg-[#A6C36F] hover:bg-[#8FAE5D] rounded-2xl transition-colors"
+                      className="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-medium text-black bg-[#A6C36F] hover:bg-[#8FAE5D] rounded-lg transition-colors shadow-[0_0_10px_rgba(166,195,111,0.2)]"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>Download</span>
                     </button>
                   ) : payment.status === 'Pending' && payment.paymentProof ? (
-                    // text-gray-500 -> text-secondary
-                    <span className="text-xs text-[#E8E3C5]/80 italic">
+                    <span className="text-xs text-[#E8E3C5]/60 italic">
                       Under Review
                     </span>
                   ) : (
-                    // text-gray-400 -> text-secondary/50
-                    <span className="text-xs text-[#E8E3C5]/50">
+                    <span className="text-xs text-[#E8E3C5]/30">
                       -
                     </span>
                   )}
@@ -227,22 +202,18 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
       </div>
 
       {/* Mobile Card View */}
-      {/* divide-gray-200 -> divide-[#3A3E36] */}
-      <div className="md:hidden divide-y divide-[#3A3E36]">
+      <div className="md:hidden divide-y divide-[#A6C36F]/10">
         {payments.map((payment) => (
           <div
             key={payment._id}
-            // bg-red-50/50 -> darker panel bg
             className={`p-4 space-y-3 ${
-              isOverdue(payment.deadline, payment.status) ? 'bg-[#1F221C]/80' : ''
+              isOverdue(payment.deadline, payment.status) ? 'bg-red-500/5' : ''
             }`}
           >
             {/* Month and Status */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                {/* text-gray-400 -> text-accent-olive */}
                 <Calendar className="w-4 h-4 text-[#A6C36F]" />
-                {/* text-gray-900 -> text-primary */}
                 <span className="text-sm font-semibold text-[#F5F3E7]">
                   {payment.month}
                 </span>
@@ -252,18 +223,14 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
 
             {/* Amount */}
             <div className="flex items-center justify-between">
-              {/* text-gray-600 -> text-secondary */}
-              <span className="text-xs text-[#E8E3C5]">Amount</span>
-              {/* text-gray-900 -> text-primary */}
+              <span className="text-xs text-[#E8E3C5]/60">Amount</span>
               <span className="text-sm font-bold text-[#F5F3E7]">₹ {payment.amount}</span>
             </div>
 
             {/* Deadline */}
             <div className="flex items-center justify-between">
-              {/* text-gray-600 -> text-secondary */}
-              <span className="text-xs text-[#E8E3C5]">Deadline</span>
+              <span className="text-xs text-[#E8E3C5]/60">Deadline</span>
               <span className={`text-sm ${
-                // text-red-600 -> text-red-500, text-gray-900 -> text-primary
                 isOverdue(payment.deadline, payment.status)
                   ? 'text-red-500 font-semibold'
                   : 'text-[#F5F3E7]'
@@ -276,8 +243,7 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
             {payment.status === 'Paid' && payment.paymentProof && (
               <button
                 onClick={() => handleDownload(payment._id, payment.month)}
-                // Action Button: text-blue-700/bg-blue-50/hover:bg-blue-100 -> (d) Accent Olive Button style
-                className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-sm font-medium text-[#0B0B09] bg-[#A6C36F] hover:bg-[#8FAE5D] rounded-2xl transition-colors"
+                className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-sm font-medium text-black bg-[#A6C36F] hover:bg-[#8FAE5D] rounded-lg transition-colors shadow-[0_0_10px_rgba(166,195,111,0.2)]"
               >
                 <Download className="w-4 h-4" />
                 <span>Download Payment Proof</span>
@@ -288,11 +254,9 @@ const PaymentHistoryTable = ({ payments = [], onDownload }) => {
       </div>
 
       {/* Footer */}
-      {/* bg-gray-50 -> bg-[#0B0B09], border-gray-200 -> border-[#3A3E36] */}
-      <div className="px-6 py-4 bg-[#0B0B09] border-t border-[#3A3E36]">
-        {/* text-gray-600 -> text-secondary */}
-        <p className="text-xs text-[#E8E3C5] text-center">
-          Total Records: <span className="font-semibold">{payments.length}</span>
+      <div className="px-6 py-4 bg-black/40 border-t border-[#A6C36F]/20">
+        <p className="text-xs text-[#E8E3C5]/60 text-center">
+          Total Records: <span className="font-semibold text-[#A6C36F]">{payments.length}</span>
         </p>
       </div>
     </div>

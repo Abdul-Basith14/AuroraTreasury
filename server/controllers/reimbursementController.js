@@ -118,10 +118,32 @@ export const createReimbursementRequest = async (req, res) => {
  */
 export const getMyRequests = async (req, res) => {
   try {
+    console.log('Fetching reimbursements for user:', req.user._id);
+    
     // Find all reimbursement requests for the logged-in user
-    const reimbursements = await Reimbursement.find({ userId: req.user._id })
-      .populate('treasurerResponse.respondedBy', 'name email role')
-      .sort({ createdAt: -1 }); // Sort by newest first
+    let reimbursements = await Reimbursement.find({ userId: req.user._id })
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .lean(); // Convert to plain JavaScript objects for better performance
+
+    console.log(`Found ${reimbursements.length} reimbursements`);
+
+    // Manually populate treasurerResponse.respondedBy if it exists
+    const User = (await import('../models/User.js')).default;
+    for (let reimb of reimbursements) {
+      if (reimb.treasurerResponse && reimb.treasurerResponse.respondedBy) {
+        try {
+          const treasurer = await User.findById(reimb.treasurerResponse.respondedBy)
+            .select('name email role')
+            .lean();
+          if (treasurer) {
+            reimb.treasurerResponse.respondedBy = treasurer;
+          }
+        } catch (popError) {
+          console.error('Error populating treasurer for reimbursement:', reimb._id, popError);
+          // Keep the ObjectId if population fails
+        }
+      }
+    }
 
     // Calculate summary statistics
     const summary = {
@@ -137,6 +159,8 @@ export const getMyRequests = async (req, res) => {
         .reduce((sum, r) => sum + r.amount, 0),
     };
 
+    console.log('Summary:', summary);
+
     res.status(200).json({
       success: true,
       data: {
@@ -146,9 +170,11 @@ export const getMyRequests = async (req, res) => {
     });
   } catch (error) {
     console.error('Get My Requests Error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
       message: 'Error fetching reimbursement requests',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
