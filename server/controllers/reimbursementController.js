@@ -1,0 +1,640 @@
+import Reimbursement from '../models/Reimbursement.js';
+import User from '../models/User.js';
+import GroupFund from '../models/GroupFund.js';
+import Wallet from '../models/Wallet.js';
+import { deleteImageFromCloudinary } from '../middleware/upload.js';
+
+/**
+ * @desc    Create a new reimbursement request
+ * @route   POST /api/reimbursement/request
+ * @access  Private (Member)
+ */
+export const createReimbursementRequest = async (req, res) => {
+  try {
+    const { name, year, mobileNumber, description, amount } = req.body;
+
+    // Validate all required fields
+    if (!name || !year || !mobileNumber || !description || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide all required fields: name, year, mobileNumber, description, amount',
+      });
+    }
+
+    // Validate file upload
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Bill proof photo is required',
+      });
+    }
+
+    // Validate name length
+    if (name.length < 3 || name.length > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name must be between 3-100 characters',
+      });
+    }
+
+    // Validate year
+    const validYears = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+    if (!validYears.includes(year)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please select a valid academic year',
+      });
+    }
+
+    // Validate mobile number (Indian format: 10 digits starting with 6-9)
+    const mobileRegex = /^[6-9]\d{9}$/;
+    if (!mobileRegex.test(mobileNumber)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid 10-digit mobile number is required',
+      });
+    }
+
+    // Validate description length
+    if (description.length < 10 || description.length > 500) {
+      return res.status(400).json({
+        success: false,
+        message: 'Description must be between 10-500 characters',
+      });
+    }
+
+    // Validate amount
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0 || parsedAmount > 100000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount must be greater than 0 and less than ₹1,00,000',
+      });
+    }
+
+    // Create new reimbursement request
+    const reimbursement = await Reimbursement.create({
+      userId: req.user._id,
+      name: name.trim(),
+      year,
+      mobileNumber,
+      description: description.trim(),
+      amount: parsedAmount,
+      billProofPhoto: req.file.path, // Cloudinary URL
+      status: 'Pending',
+      requestDate: new Date(),
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Reimbursement request submitted successfully! Treasurer will review it soon.',
+      data: {
+        reimbursement,
+      },
+    });
+  } catch (error) {
+    console.error('Create Reimbursement Request Error:', error);
+
+    // Handle mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({
+        success: false,
+        message: messages.join(', '),
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Server error while submitting reimbursement request. Please try again.',
+    });
+  }
+};
+
+/**
+ * @desc    Get all reimbursement requests for logged-in user
+ * @route   GET /api/reimbursement/my-requests
+ * @access  Private (Member)
+ */
+export const getMyRequests = async (req, res) => {
+  try {
+    // Find all reimbursement requests for the logged-in user
+    const reimbursements = await Reimbursement.find({ userId: req.user._id })
+      .populate('treasurerResponse.respondedBy', 'name email role')
+      .sort({ createdAt: -1 }); // Sort by newest first
+
+    // Calculate summary statistics
+    const summary = {
+      total: reimbursements.length,
+      pending: reimbursements.filter((r) => r.status === 'Pending').length,
+      approved: reimbursements.filter((r) => r.status === 'Approved').length,
+      paid: reimbursements.filter((r) => r.status === 'Paid').length,
+      received: reimbursements.filter((r) => r.status === 'Received').length,
+      rejected: reimbursements.filter((r) => r.status === 'Rejected').length,
+      totalAmount: reimbursements.reduce((sum, r) => sum + r.amount, 0),
+      totalReceived: reimbursements
+        .filter((r) => r.status === 'Received')
+        .reduce((sum, r) => sum + r.amount, 0),
+    };
+
+    res.status(200).json({
+      success: true,
+      data: {
+        reimbursements,
+        summary,
+      },
+    });
+  } catch (error) {
+    console.error('Get My Requests Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching reimbursement requests',
+    });
+  }
+};
+
+/**
+ * @desc    Get a single reimbursement request by ID
+ * @route   GET /api/reimbursement/request/:id
+ * @access  Private (Member - own requests only)
+ */
+export const getRequestById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find reimbursement by ID
+    const reimbursement = await Reimbursement.findById(id).populate(
+      'treasurerResponse.respondedBy',
+      'name email role'
+    );
+
+    if (!reimbursement) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reimbursement request not found',
+      });
+    }
+
+    // Security check: Verify the request belongs to the logged-in user
+    if (reimbursement.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not authorized to view this reimbursement request',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        reimbursement,
+      },
+    });
+  } catch (error) {
+    console.error('Get Request By ID Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching reimbursement request',
+    });
+  }
+};
+
+/**
+ * @desc    Confirm receipt of payment
+ * @route   POST /api/reimbursement/confirm-receipt/:id
+ * @access  Private (Member)
+ */
+export const confirmReceipt = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find reimbursement by ID
+    const reimbursement = await Reimbursement.findById(id);
+
+    console.log(`ConfirmReceipt: requestId=${id} user=${req.user?._id} found=${!!reimbursement} status=${reimbursement?reimbursement.status:'N/A'}`);
+
+    if (!reimbursement) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reimbursement request not found',
+      });
+    }
+
+    // Security check: Verify the request belongs to the logged-in user
+    if (reimbursement.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not authorized to modify this reimbursement request',
+      });
+    }
+
+    // Check if status is 'Paid'
+    if (reimbursement.status !== 'Paid') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot confirm receipt for ${reimbursement.status} request. Only Paid requests can be confirmed.`,
+      });
+    }
+
+    // Deduct amount from treasurer wallet before finalizing receipt
+    // Find treasurer user to mark who performed the deduction (fallback to system/member if not found)
+    const treasurerUser = await User.findOne({ role: 'treasurer' });
+    let treasurerId = treasurerUser ? treasurerUser._id : req.user._id;
+
+    const wallet = await Wallet.getWallet();
+
+    try {
+      // Attempt to remove money from wallet; will throw if insufficient
+      await wallet.removeMoney(reimbursement.amount, `Reimbursement paid for request ${id} to user ${reimbursement.userId}`, treasurerId);
+    } catch (walletError) {
+      console.error('Wallet deduction failed during confirmReceipt:', walletError);
+      return res.status(400).json({
+        success: false,
+        message: walletError.message || 'Insufficient wallet balance to confirm receipt. Please contact administrator.'
+      });
+    }
+
+    // After successful wallet deduction, delete the reimbursement request
+    // This will keep the list clean by removing confirmed/received requests
+    await Reimbursement.findByIdAndDelete(id);
+
+    console.log(`ConfirmReceipt: requestId=${id} payment confirmed and request deleted by user=${treasurerId}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Payment receipt confirmed successfully! Request removed from list.',
+      data: {
+        wallet: await Wallet.getWallet()
+      },
+    });
+  } catch (error) {
+    console.error('Confirm Receipt Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error confirming receipt. Please try again.',
+    });
+  }
+};
+
+/**
+ * @desc    Delete a reimbursement request
+ * @route   DELETE /api/reimbursement/request/:id
+ * @access  Private (Member - can only delete own Pending/Rejected requests)
+ */
+export const deleteRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find reimbursement by ID
+    const reimbursement = await Reimbursement.findById(id);
+
+    if (!reimbursement) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reimbursement request not found',
+      });
+    }
+
+    // Security check: Verify the request belongs to the logged-in user
+    if (reimbursement.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not authorized to delete this reimbursement request',
+      });
+    }
+
+    // Check if request can be deleted (Pending, Rejected, or Received)
+    if (!['Pending', 'Rejected', 'Received'].includes(reimbursement.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete ${reimbursement.status} request. Only Pending, Rejected, or Received requests can be deleted.`,
+      });
+    }
+
+    // Delete bill proof photo from Cloudinary
+    try {
+      if (reimbursement.billProofPhoto) {
+        // Extract public ID from Cloudinary URL
+        const urlParts = reimbursement.billProofPhoto.split('/');
+        const filename = urlParts[urlParts.length - 1];
+        const publicId = `aurora-treasury/reimbursement-bills/${filename.split('.')[0]}`;
+        
+        await deleteImageFromCloudinary(publicId);
+      }
+    } catch (cloudinaryError) {
+      console.error('Error deleting image from Cloudinary:', cloudinaryError);
+      // Continue with deletion even if Cloudinary delete fails
+    }
+
+    // Delete reimbursement request
+    await Reimbursement.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Reimbursement request deleted successfully',
+    });
+  } catch (error) {
+    console.error('Delete Request Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting reimbursement request. Please try again.',
+    });
+  }
+};
+
+/**
+ * @desc    Get reimbursement statistics for the user
+ * @route   GET /api/reimbursement/statistics
+ * @access  Private (Member)
+ */
+export const getStatistics = async (req, res) => {
+  try {
+    // Get all reimbursements for the user
+    const reimbursements = await Reimbursement.find({ userId: req.user._id });
+
+    // Calculate statistics
+    const stats = {
+      total: reimbursements.length,
+      byStatus: {
+        pending: reimbursements.filter((r) => r.status === 'Pending').length,
+        approved: reimbursements.filter((r) => r.status === 'Approved').length,
+        paid: reimbursements.filter((r) => r.status === 'Paid').length,
+        rejected: reimbursements.filter((r) => r.status === 'Rejected').length,
+      },
+      amounts: {
+        total: reimbursements.reduce((sum, r) => sum + r.amount, 0),
+        pending: reimbursements
+          .filter((r) => r.status === 'Pending')
+          .reduce((sum, r) => sum + r.amount, 0),
+        approved: reimbursements
+          .filter((r) => r.status === 'Approved')
+          .reduce((sum, r) => sum + r.amount, 0),
+        paid: reimbursements
+          .filter((r) => r.status === 'Paid')
+          .reduce((sum, r) => sum + r.amount, 0),
+        rejected: reimbursements
+          .filter((r) => r.status === 'Rejected')
+          .reduce((sum, r) => sum + r.amount, 0),
+      },
+      latestRequest: reimbursements.length > 0 
+        ? reimbursements.sort((a, b) => b.createdAt - a.createdAt)[0]
+        : null,
+    };
+
+    res.status(200).json({
+      success: true,
+      data: { stats },
+    });
+  } catch (error) {
+    console.error('Get Statistics Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching statistics',
+    });
+  }
+};
+
+/**
+ * TREASURER CONTROLLERS
+ */
+
+/**
+ * @desc    Get all reimbursement requests for treasurer
+ * @route   GET /api/reimbursement/all-requests
+ * @access  Private (Treasurer)
+ */
+export const getAllReimbursementRequests = async (req, res) => {
+  try {
+    const { status, year, search } = req.query;
+    
+    // Build query
+    let query = {};
+    
+    // Status filter
+    if (status && status !== 'all') {
+      query.status = status.charAt(0).toUpperCase() + status.slice(1);
+    }
+    
+    // Fetch requests with member details
+    let requests = await Reimbursement.find(query)
+      .populate('userId', 'name usn email year branch profilePhoto mobileNumber')
+      .populate('treasurerResponse.respondedBy', 'name email')
+      .sort({ requestDate: 1 }); // Oldest first
+    
+    // Filter by member's year
+    if (year && year !== 'all') {
+      requests = requests.filter(r => r.userId && r.userId.year === year);
+    }
+    
+    // Search filter
+    if (search) {
+      const searchLower = search.toLowerCase();
+      requests = requests.filter(r => {
+        if (!r.userId) return false;
+        return (
+          r.userId.name.toLowerCase().includes(searchLower) ||
+          r.userId.usn.toLowerCase().includes(searchLower) ||
+          r.description.toLowerCase().includes(searchLower)
+        );
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      count: requests.length,
+      requests: requests
+    });
+  } catch (error) {
+    console.error('Get reimbursement requests error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch reimbursement requests',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Pay reimbursement and upload proof
+ * @route   POST /api/reimbursement/pay/:id
+ * @access  Private (Treasurer)
+ */
+export const payReimbursement = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { message } = req.body;
+    
+    // Check if payment proof was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment proof screenshot is required'
+      });
+    }
+    
+    // Find reimbursement request with member details
+    const request = await Reimbursement.findById(id).populate('userId');
+    
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reimbursement request not found'
+      });
+    }
+    
+    // Check if already paid/received
+    if (request.status === 'Paid' || request.status === 'Received') {
+      return res.status(400).json({
+        success: false,
+        message: `Request already ${request.status.toLowerCase()}`
+      });
+    }
+    
+    // Check if status is Pending
+    if (request.status !== 'Pending') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot pay request with status: ${request.status}`
+      });
+    }
+    
+    // Update request with treasurer's payment
+    request.status = 'Paid';
+    request.treasurerResponse = {
+      message: message || 'Payment sent. Please check your account and confirm receipt.',
+      paymentProofPhoto: req.file.path, // Cloudinary URL
+      respondedBy: req.user._id,
+      respondedDate: new Date()
+    };
+    
+    await request.save();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Payment proof uploaded successfully. Awaiting member confirmation.',
+      request: request
+    });
+    
+  } catch (error) {
+    console.error('Pay reimbursement error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process payment',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Reject reimbursement request
+ * @route   POST /api/reimbursement/reject/:id
+ * @access  Private (Treasurer)
+ */
+export const rejectReimbursement = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { reason } = req.body;
+    
+    if (!reason || reason.trim().length < 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rejection reason is required (min 10 characters)'
+      });
+    }
+    
+    const request = await Reimbursement.findById(requestId);
+    
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Reimbursement request not found'
+      });
+    }
+    
+    if (request.status === 'Rejected') {
+      return res.status(400).json({
+        success: false,
+        message: 'Request already rejected'
+      });
+    }
+    
+    if (request.status === 'Paid' || request.status === 'Received') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot reject a paid/received request'
+      });
+    }
+    
+    request.status = 'Rejected';
+    request.rejectionReason = reason;
+    request.treasurerResponse = {
+      message: `Request rejected: ${reason}`,
+      respondedBy: req.user._id,
+      respondedDate: new Date()
+    };
+    
+    await request.save();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Reimbursement request rejected',
+      request: request
+    });
+    
+  } catch (error) {
+    console.error('Reject reimbursement error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reject request',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Get treasurer wallet balance
+ * @route   GET /api/reimbursement/treasurer-wallet
+ * @access  Private (Treasurer)
+ */
+export const getTreasurerWallet = async (req, res) => {
+  try {
+    // Get total collected from paid group funds
+    const paidPayments = await GroupFund.find({ status: 'Paid' });
+    const totalCollected = paidPayments.reduce((sum, p) => sum + p.amount, 0);
+    
+    // Get total reimbursed (confirmed/received)
+    const receivedReimbursements = await Reimbursement.find({ status: 'Received' });
+    const totalReimbursed = receivedReimbursements.reduce((sum, r) => sum + r.amount, 0);
+
+    // Get paid but not yet received reimbursements
+    const paidReimbursements = await Reimbursement.find({ status: 'Paid' });
+    const totalPaidPending = paidReimbursements.reduce((sum, r) => sum + r.amount, 0);
+
+    // Calculate balances
+    const currentBalance = totalCollected - totalReimbursed; // Balance excluding pending payments
+    const availableBalance = currentBalance - totalPaidPending; // Actual available balance
+    
+    // Get request counts
+    const pendingCount = await Reimbursement.countDocuments({ status: 'Pending' });
+    const paidAwaitingConfirmation = paidReimbursements.length;
+    
+    res.status(200).json({
+      success: true,
+      wallet: {
+        totalCollected,
+        totalReimbursed,         // Amount officially deducted (received)
+        totalPaidPending,        // Amount paid but awaiting confirmation
+        currentBalance,          // Balance without pending payments
+        availableBalance,        // Balance minus pending payments
+        pendingCount,            // New requests awaiting review
+        paidAwaitingConfirmation // Payments awaiting confirmation
+      }
+    });
+  } catch (error) {
+    console.error('Get treasurer wallet error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch wallet balance',
+      error: error.message
+    });
+  }
+};
