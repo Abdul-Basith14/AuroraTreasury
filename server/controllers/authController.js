@@ -219,6 +219,45 @@ export const login = async (req, res) => {
 };
 
 /**
+ * @desc    Get current authenticated user
+ * @route   GET /api/auth/me
+ * @access  Private
+ */
+export const getMe = async (req, res) => {
+  try {
+    // `protect` middleware should have attached the user ID to req.user
+    const userId = req.user?._id || req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized',
+      });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: { user },
+    });
+  } catch (error) {
+    console.error('Get Me Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching current user',
+    });
+  }
+};
+
+/**
  * @desc    Verify JWT token
  * @route   POST /api/auth/verify
  * @access  Private
