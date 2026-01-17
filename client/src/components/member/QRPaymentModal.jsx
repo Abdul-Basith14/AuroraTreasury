@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, QrCode, Loader2, Copy, CheckCircle, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { groupFundAPI } from '../../utils/api';
@@ -114,7 +115,7 @@ const QRPaymentModal = ({ isOpen, onClose, paymentMonth, activeRecords = [], onS
   const amountDisplay = qrData?.amount ?? paymentMonth?.amount;
   const payeeDisplay = qrData?.treasurerUPI ?? paymentMonth?.treasurerUPI;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
       <div className="bg-black/85 border border-[#A6C36F]/25 rounded-2xl max-w-lg w-full shadow-[0_20px_60px_rgba(0,0,0,0.5)] max-h-[85vh] overflow-y-auto">
         {/* Header */}
@@ -291,7 +292,8 @@ const QRPaymentModal = ({ isOpen, onClose, paymentMonth, activeRecords = [], onS
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

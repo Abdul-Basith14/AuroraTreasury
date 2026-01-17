@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertTriangle } from 'lucide-react';
 
 /**
@@ -13,7 +14,7 @@ import { X, CheckCircle, AlertTriangle } from 'lucide-react';
 const ConfirmReceiptModal = ({ isOpen, onClose, onConfirm, request, loading }) => {
   if (!isOpen || !request) return null;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -131,7 +132,8 @@ const ConfirmReceiptModal = ({ isOpen, onClose, onConfirm, request, loading }) =
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 };
 

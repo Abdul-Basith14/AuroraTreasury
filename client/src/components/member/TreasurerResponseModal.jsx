@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { X, MessageSquare, Download, CheckCircle } from 'lucide-react';
 
 /**
@@ -36,7 +37,7 @@ const TreasurerResponseModal = ({ isOpen, onClose, request, onConfirmReceipt }) 
     return badges[status] || `bg-white/5 text-white/60 border border-white/10`;
   };
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -197,7 +198,8 @@ const TreasurerResponseModal = ({ isOpen, onClose, request, onConfirmReceipt }) 
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 };
 

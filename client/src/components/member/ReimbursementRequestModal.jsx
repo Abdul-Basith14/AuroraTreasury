@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Upload, FileText, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { reimbursementAPI } from '../../utils/api';
@@ -157,7 +158,7 @@ const ReimbursementRequestModal = ({ isOpen, onClose, userData, onSuccess }) => 
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -421,7 +422,8 @@ const ReimbursementRequestModal = ({ isOpen, onClose, userData, onSuccess }) => 
           </form>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 };
 
