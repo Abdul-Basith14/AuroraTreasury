@@ -1,6 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import { verifyCloudinaryConfig } from './config/cloudinary.js';
 import authRoutes from './routes/auth.js';
@@ -12,6 +14,9 @@ import { startCronJobs } from './utils/cronJobs.js';
 
 // Load environment variables
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Initialize Express app
 const app = express();
@@ -60,20 +65,35 @@ app.use('/api/reimbursement', reimbursementRoutes);
 app.use('/api/treasurer', treasurerRoutes);
 app.use('/api/party-amount', partyAmountRoutes);
 
-// Root Route
-app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'AuroraTreasury API is running',
-    version: '1.0.0',
-    endpoints: {
-      auth: '/api/auth',
-      groupFund: '/api/groupfund',
-      reimbursement: '/api/reimbursement',
-      treasurer: '/api/treasurer',
-    },
+// Serve static assets in production
+if (process.env.NODE_ENV === 'production') {
+  // Set static folder
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+
+  // Handle SPA routing - return index.html for any route not caught by API
+  app.get('*', (req, res) => {
+    // Skip if it looks like an API call (though API routes are defined above, this is a safety check)
+    if (req.originalUrl.startsWith('/api')) {
+      return res.status(404).json({ success: false, message: `API Route ${req.originalUrl} not found` });
+    }
+    res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
   });
-});
+} else {
+  // Root Route (Development only)
+  app.get('/', (req, res) => {
+    res.json({
+      success: true,
+      message: 'AuroraTreasury API is running',
+      version: '1.0.0',
+      endpoints: {
+        auth: '/api/auth',
+        groupFund: '/api/groupfund',
+        reimbursement: '/api/reimbursement',
+        treasurer: '/api/treasurer',
+      },
+    });
+  });
+}
 
 // Health Check Route
 app.get('/health', (req, res) => {
