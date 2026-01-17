@@ -150,7 +150,12 @@ const Signup = () => {
     }
 
     try {
-      await authAPI.verifyOTP(formData.email, formData.otp);
+      await authAPI.verifyOTP({
+        email: formData.email,
+        otp: formData.otp,
+        type: 'signup',
+      });
+
       const result = await signup(formData);
 
       if (result.success) {
