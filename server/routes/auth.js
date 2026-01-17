@@ -5,10 +5,12 @@ import {
   getMe,
   verifyToken,
   logout,
-  requestPasswordReset,
-  resetPassword,
   updateProfile
 } from '../controllers/authController.js';
+import {
+  requestPasswordReset,
+  checkResetStatus
+} from '../controllers/resetPasswordController.js';
 import { protect } from '../middleware/auth.js';
 import { uploadProfilePhoto, handleUploadError } from '../middleware/upload.js';
 
@@ -44,14 +46,14 @@ router.post('/verify', protect, verifyToken);
 router.post('/logout', protect, logout);
 
 // @route   POST /api/auth/request-reset
-// @desc    Request password reset (sends email with reset link)
+// @desc    Request password reset (creates request for treasurer verification)
 // @access  Public
 router.post('/request-reset', requestPasswordReset);
 
-// @route   POST /api/auth/reset
-// @desc    Reset password using token
+// @route   GET /api/auth/reset-status/:email
+// @desc    Check password reset request status
 // @access  Public
-router.post('/reset', resetPassword);
+router.get('/reset-status/:email', checkResetStatus);
 
 // @route   PUT /api/auth/profile
 // @desc    Update profile details and photo

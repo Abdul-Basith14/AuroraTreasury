@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { getStatistics, getWallet, setTreasurerUPI, getTreasurerUPISettings } from '../../utils/treasurerAPI';
-import { Users, Wallet, Menu, LogOut, ClipboardCheck, FileText as ReimburseIcon } from 'lucide-react';
+import { Users, Wallet, Menu, LogOut, ClipboardCheck, FileText as ReimburseIcon, KeyRound } from 'lucide-react';
 import WalletManagement from './WalletManagement';
 import MembersListByMonth from './MembersListByMonth';
 import CreateMonthlyRecord from './CreateMonthlyRecord';
 import VerifyMembers from './VerifyMembers';
+import PasswordResetRequests from './PasswordResetRequests';
 
 /**
  * New Treasurer Dashboard
@@ -145,7 +146,8 @@ const TreasurerDashboardNew = () => {
                     <div className="py-2">
                       <MenuItem label="🔍 Group Fund Verification" onClick={() => { setShowMenu(false); navigate('/treasurer/payment-requests'); }} icon={<ClipboardCheck className="w-4 h-4" />} />
                       <MenuItem label="✅ Verify Members" onClick={() => { setShowMenu(false); setActiveTab('verify-members'); }} icon={<Users className="w-4 h-4" />} />
-                      <MenuItem label="💸 Reimbursement" onClick={() => { setShowMenu(false); navigate('/treasurer/reimbursement-requests'); }} icon={<ReimburseIcon className="w-4 h-4" />} />
+                      <MenuItem label="� Password Reset Requests" onClick={() => { setShowMenu(false); setActiveTab('password-reset'); }} icon={<KeyRound className="w-4 h-4" />} />
+                      <MenuItem label="�💸 Reimbursement" onClick={() => { setShowMenu(false); navigate('/treasurer/reimbursement-requests'); }} icon={<ReimburseIcon className="w-4 h-4" />} />
                       <MenuItem label="🗓️ Create Monthly Records" onClick={() => { setShowMenu(false); setActiveTab('create-record'); }} icon={<Users className="w-4 h-4" />} />
                       <MenuItem label="🆔 Set UPI ID" onClick={() => { setShowMenu(false); setShowUpiModal(true); }} icon={<Wallet className="w-4 h-4" />} />
                     </div>
@@ -230,6 +232,7 @@ const TreasurerDashboardNew = () => {
         {activeTab === 'members' && <MembersListByMonth />}
         {activeTab === 'create-record' && <CreateMonthlyRecord />}
         {activeTab === 'verify-members' && <VerifyMembers />}
+        {activeTab === 'password-reset' && <PasswordResetRequests />}
         {activeTab === 'wallet' && <WalletManagement />}
       </div>
 

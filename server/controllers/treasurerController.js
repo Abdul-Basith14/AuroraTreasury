@@ -3,7 +3,9 @@ import GroupFund from '../models/GroupFund.js';
 import Wallet from '../models/Wallet.js';
 import MonthlyGroupFundRecord from '../models/MonthlyGroupFundRecord.js';
 import ClubSettings from '../models/ClubSettings.js';
+import PasswordResetRequest from '../models/PasswordResetRequest.js';
 import { generatePaymentReference } from '../utils/qrCodeUtils.js';
+import { sendPasswordResetApprovalEmail, sendPasswordResetRejectionEmail } from '../utils/emailService.js';
 
 // Utility: mark overdue payments as Failed for given filter
 const markOverduePayments = async (filter = {}, changedBy) => {
@@ -1713,7 +1715,12 @@ export const getTreasurerUPISettings = async (_req, res) => {
  */
 export const getUnverifiedUsers = async (req, res) => {
   try {
-    const users = await User.find({ isVerified: false }).select('-password').sort({ createdAt: -1 });
+    // Only fetch members (not treasurers) who need verification
+    const users = await User.find({ 
+      isVerified: false,
+      role: 'member' 
+    }).select('-password').sort({ createdAt: -1 });
+    
     res.status(200).json({
       success: true,
       data: users,
@@ -1757,6 +1764,156 @@ export const verifyUser = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to verify user'
+    });
+  }
+};
+
+/**
+ * @desc    Get all pending password reset requests
+ * @route   GET /api/treasurer/password-reset-requests
+ * @access  Private (Treasurer)
+ */
+export const getPasswordResetRequests = async (req, res) => {
+  try {
+    const { status = 'pending' } = req.query;
+    
+    const query = status === 'all' ? {} : { status };
+    
+    const requests = await PasswordResetRequest.find(query)
+      .populate('user', 'name email usn year branch')
+      .populate('verifiedBy', 'name')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: requests
+    });
+  } catch (error) {
+    console.error('Get Password Reset Requests Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch password reset requests'
+    });
+  }
+};
+
+/**
+ * @desc    Approve password reset request
+ * @route   POST /api/treasurer/approve-password-reset/:requestId
+ * @access  Private (Treasurer)
+ */
+export const approvePasswordReset = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const treasurerId = req.user._id;
+
+    const resetRequest = await PasswordResetRequest.findById(requestId).populate('user');
+
+    if (!resetRequest) {
+      return res.status(404).json({
+        success: false,
+        message: 'Password reset request not found'
+      });
+    }
+
+    if (resetRequest.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: `This request has already been ${resetRequest.status}`
+      });
+    }
+
+    // Update the user's password
+    const user = await User.findById(resetRequest.user._id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Set the new password (already hashed in the request) - use updateOne to bypass pre-save hook
+    await User.updateOne(
+      { _id: user._id },
+      { $set: { password: resetRequest.newPassword } }
+    );
+
+    // Update the request status
+    resetRequest.status = 'approved';
+    resetRequest.verifiedBy = treasurerId;
+    resetRequest.verifiedAt = new Date();
+    await resetRequest.save();
+
+    // Send approval email to user
+    try {
+      await sendPasswordResetApprovalEmail(user);
+    } catch (emailError) {
+      console.error('Failed to send approval email:', emailError);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset approved successfully'
+    });
+  } catch (error) {
+    console.error('Approve Password Reset Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to approve password reset'
+    });
+  }
+};
+
+/**
+ * @desc    Reject password reset request
+ * @route   POST /api/treasurer/reject-password-reset/:requestId
+ * @access  Private (Treasurer)
+ */
+export const rejectPasswordReset = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { reason } = req.body;
+    const treasurerId = req.user._id;
+
+    const resetRequest = await PasswordResetRequest.findById(requestId).populate('user');
+
+    if (!resetRequest) {
+      return res.status(404).json({
+        success: false,
+        message: 'Password reset request not found'
+      });
+    }
+
+    if (resetRequest.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: `This request has already been ${resetRequest.status}`
+      });
+    }
+
+    // Update the request status
+    resetRequest.status = 'rejected';
+    resetRequest.verifiedBy = treasurerId;
+    resetRequest.verifiedAt = new Date();
+    resetRequest.rejectionReason = reason || 'No reason provided';
+    await resetRequest.save();
+
+    // Send rejection email to user
+    try {
+      await sendPasswordResetRejectionEmail(resetRequest.user, reason);
+    } catch (emailError) {
+      console.error('Failed to send rejection email:', emailError);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset request rejected'
+    });
+  } catch (error) {
+    console.error('Reject Password Reset Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reject password reset'
     });
   }
 };

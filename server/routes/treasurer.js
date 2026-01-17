@@ -25,7 +25,10 @@ import {
   setTreasurerUPI,
   getTreasurerUPISettings,
   getUnverifiedUsers,
-  verifyUser
+  verifyUser,
+  getPasswordResetRequests,
+  approvePasswordReset,
+  rejectPasswordReset
 } from '../controllers/treasurerController.js';
 import { protect } from '../middleware/auth.js';
 import treasurerAuth from '../middleware/treasurerAuth.js';
@@ -233,5 +236,27 @@ router.get('/unverified-users', getUnverifiedUsers);
  * @access  Private (Treasurer only)
  */
 router.post('/verify-user/:userId', verifyUser);
+
+/**
+ * @route   GET /api/treasurer/password-reset-requests
+ * @desc    Get all password reset requests
+ * @access  Private (Treasurer only)
+ * @params  Query: status (pending/approved/rejected/all)
+ */
+router.get('/password-reset-requests', getPasswordResetRequests);
+
+/**
+ * @route   POST /api/treasurer/approve-password-reset/:requestId
+ * @desc    Approve a password reset request
+ * @access  Private (Treasurer only)
+ */
+router.post('/approve-password-reset/:requestId', approvePasswordReset);
+
+/**
+ * @route   POST /api/treasurer/reject-password-reset/:requestId
+ * @desc    Reject a password reset request
+ * @access  Private (Treasurer only)
+ */
+router.post('/reject-password-reset/:requestId', rejectPasswordReset);
 
 export default router;
