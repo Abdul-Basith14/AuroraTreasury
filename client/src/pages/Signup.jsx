@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { UserPlus, User, Mail, Lock, GraduationCap, Building } from 'lucide-react';
-import { authAPI } from '../utils/api';
 import toast from 'react-hot-toast';
 import Background3D from '../components/Background3D';
 import { motion } from 'framer-motion';
@@ -19,14 +18,10 @@ const Signup = () => {
     confirmPassword: '',
     year: '',
     branch: '',
-    role: 'member',
-    otp: ''
+    role: 'member'
   });
 
   const [errors, setErrors] = useState({});
-  const [showOTPInput, setShowOTPInput] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [countdown, setCountdown] = useState(0);
 
   const years = ['1st', '2nd', '3rd', '4th'];
   const branches = [
@@ -98,40 +93,6 @@ const Signup = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const startCountdown = () => {
-    setCountdown(60);
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  const handleSendOTP = async () => {
-    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
-      setErrors({ email: 'Please enter a valid email address' });
-      return;
-    }
-
-    setIsVerifying(true);
-    try {
-      const response = await authAPI.sendOTP({ email: formData.email, type: 'signup' });
-      if (response.success) {
-        toast.success('OTP sent to your email');
-        setShowOTPInput(true);
-        startCountdown();
-      }
-    } catch (error) {
-      toast.error(error.message || 'Failed to send OTP');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -139,27 +100,11 @@ const Signup = () => {
       return;
     }
 
-    if (!showOTPInput) {
-      await handleSendOTP();
-      return;
-    }
-
-    if (!formData.otp) {
-      setErrors((prev) => ({ ...prev, otp: 'OTP is required' }));
-      return;
-    }
-
     try {
-      await authAPI.verifyOTP({
-        email: formData.email,
-        otp: formData.otp,
-        type: 'signup',
-      });
-
       const result = await signup(formData);
 
       if (result.success) {
-        toast.success('Account created successfully! Please login.');
+        // toast handles the success message in AuthContext
         navigate('/login');
       }
     } catch (error) {
@@ -374,48 +319,6 @@ const Signup = () => {
               </div>
             </div>
 
-            {/* OTP */}
-            {showOTPInput && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-              >
-                <label htmlFor="otp" className="block text-sm font-medium text-[#E8E3C5] mb-2 ml-1">
-                  Enter OTP
-                </label>
-                <div className="relative group">
-                  <input
-                    id="otp"
-                    name="otp"
-                    type="text"
-                    value={formData.otp}
-                    onChange={handleChange}
-                    className={`block w-full pl-4 pr-24 py-2.5 bg-black/40 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/20 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/40 focus:border-[#A6C36F] transition-all duration-300 ${
-                      errors.otp ? 'border-red-500' : 'border-[#3A3E36]/40 hover:border-[#A6C36F]/30'
-                    }`}
-                    maxLength="6"
-                    placeholder="6-digit OTP"
-                  />
-                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                    {countdown > 0 ? (
-                      <span className="text-sm text-[#E8E3C5]/60 font-mono bg-black/40 px-2 py-1 rounded">
-                        {countdown}s
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleSendOTP}
-                        className="text-xs text-black bg-[#A6C36F] hover:bg-[#8FAE5D] px-2 py-1 rounded transition-colors font-medium"
-                      >
-                        Resend
-                      </button>
-                    )}
-                  </div>
-                </div>
-                {errors.otp && <p className="mt-1 text-sm text-red-400 ml-1">{errors.otp}</p>}
-              </motion.div>
-            )}
-
             {/* Role */}
             <div>
               <label className="block text-sm font-medium text-[#E8E3C5] mb-2 ml-1">Role</label>
@@ -451,15 +354,14 @@ const Signup = () => {
               </div>
             </div>
 
-            {/* Button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-[#A6C36F] to-[#8FAE5D] text-black py-3 px-4 rounded-xl hover:shadow-[0_0_20px_rgba(166,195,111,0.3)] focus:outline-none focus:ring-2 focus:ring-[#A6C36F] focus:ring-offset-2 focus:ring-offset-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold text-lg mt-4"
+              className="w-full bg-[#A6C36F] hover:bg-[#8FAE5D] text-black font-bold py-3 px-4 rounded-xl shadow-lg shadow-[#A6C36F]/20 transition-all duration-300 flex items-center justify-center"
             >
-              {isLoading || isVerifying ? (
+              {isLoading ? (
                 <>
                   <svg
                     className="animate-spin -ml-1 mr-3 h-5 w-5 text-black"

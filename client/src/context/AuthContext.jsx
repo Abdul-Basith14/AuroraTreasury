@@ -107,8 +107,8 @@ export const AuthProvider = ({ children }) => {
           toast.success('OTP sent to your email!');
           return { success: true, requireOTP: true };
         }
-        toast.success('Registration successful! Please login.');
-        return { success: true };
+        toast.success(response.message || 'Registration successful! Please login.');
+        return { success: true, message: response.message };
       }
     } catch (error) {
       toast.error(error.message || 'Signup failed');

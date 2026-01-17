@@ -55,6 +55,15 @@ export const signup = async (req, res) => {
       });
     }
 
+    // Validation: Check email domain
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|sit\.ac\.in)$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Only @gmail.com and @sit.ac.in emails are allowed.',
+      });
+    }
+
     // Validation: Check valid year
     const validYears = ['1st', '2nd', '3rd', '4th'];
     if (!validYears.includes(year)) {
@@ -73,18 +82,15 @@ export const signup = async (req, res) => {
       year,
       branch: branch.trim(),
       role: role || 'member', // Default to member if not specified
+      isVerified: false
     });
-
-    // Generate JWT token
-    const token = generateToken(user._id);
 
     // Send response (password is automatically excluded due to toJSON method)
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'Registration successful! Please wait for treasurer verification to login.',
       data: {
-        user,
-        token,
+        user
       },
     });
   } catch (error) {
@@ -160,6 +166,15 @@ export const login = async (req, res) => {
       });
     }
 
+    // Check if user is verified (only for new users who have this field set to false)
+    // Treasurers are exempt from this check as they are authenticated via the treasurer key
+    if (user.role !== 'treasurer' && user.isVerified === false) {
+      return res.status(401).json({
+        success: false,
+        message: 'Your account is pending verification by the Treasurer.',
+      });
+    }
+
     // If the user is a treasurer, require the treasurerKey to access treasurer features
     if (user.role === 'treasurer') {
       // For this deployment, the treasurer key is fixed to 'ADARSH'
@@ -168,7 +183,7 @@ export const login = async (req, res) => {
       if (!treasurerKey || treasurerKey.trim().toUpperCase() !== expectedKey) {
         return res.status(401).json({
           success: false,
-          message: `Treasurer key is required and must be '${expectedKey}' to login as treasurer.`,
+          message: 'Invalid Treasurer key.',
         });
       }
     }
@@ -183,32 +198,17 @@ export const login = async (req, res) => {
       });
     }
 
-    // Generate OTP for 2FA and save
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate JWT token
+    const token = generateToken(user._id);
 
-    await OTP.create({
-      email: email.toLowerCase(),
-      otp,
-      type: 'login',
-    });
-
-    // Respond immediately; send OTP email in the background (best-effort)
+    // Send response
     res.status(200).json({
       success: true,
-      requireOTP: true,
-      message: 'Please check your email for OTP',
+      data: {
+        user,
+        token,
+      },
     });
-
-    // Fire-and-forget email send to avoid blocking the HTTP response
-    sendOTPEmail(email, otp)
-      .then((result) => {
-        if (!result) {
-          console.error('Login OTP email was not sent (best-effort failure)');
-        }
-      })
-      .catch((err) => {
-        console.error('Error sending login OTP email:', err.message || err);
-      });
   } catch (error) {
     console.error('Login Error:', error);
     res.status(500).json({

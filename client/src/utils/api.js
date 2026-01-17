@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 // Prefer environment-provided API base; fallback to same-origin /api to avoid hard-coded hosts
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || `${window.location.origin.replace(/\/$/, '')}/api`;
+export const API_BASE_URL = 'http://localhost:5001/api';
 
 // Create axios instance with default config
 const api = axios.create({

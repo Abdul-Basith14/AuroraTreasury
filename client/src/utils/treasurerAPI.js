@@ -514,4 +514,33 @@ export const deleteMonthlyRecord = async (id) => {
   }
 };
 
+/**
+ * Get all unverified users
+ * @returns {Promise}
+ */
+export const getUnverifiedUsers = async () => {
+  try {
+    const response = await API.get('/treasurer/unverified-users');
+    return response;
+  } catch (error) {
+    console.error('Get unverified users error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Verify a user
+ * @param {string} userId
+ * @returns {Promise}
+ */
+export const verifyUser = async (userId) => {
+  try {
+    const response = await API.post(`/treasurer/verify-user/${userId}`);
+    return response;
+  } catch (error) {
+    console.error('Verify user error:', error);
+    throw error;
+  }
+};
+
 export default API;

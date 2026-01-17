@@ -23,7 +23,9 @@ import {
   updateMonthlyGroupFundRecord,
   deleteMonthlyGroupFundRecord,
   setTreasurerUPI,
-  getTreasurerUPISettings
+  getTreasurerUPISettings,
+  getUnverifiedUsers,
+  verifyUser
 } from '../controllers/treasurerController.js';
 import { protect } from '../middleware/auth.js';
 import treasurerAuth from '../middleware/treasurerAuth.js';
@@ -217,5 +219,19 @@ router.get('/upi', getTreasurerUPISettings);
  * @access  Private (Treasurer only)
  */
 router.post('/upi', setTreasurerUPI);
+
+/**
+ * @route   GET /api/treasurer/unverified-users
+ * @desc    Get all users pending verification
+ * @access  Private (Treasurer only)
+ */
+router.get('/unverified-users', getUnverifiedUsers);
+
+/**
+ * @route   POST /api/treasurer/verify-user/:userId
+ * @desc    Verify and approve a user
+ * @access  Private (Treasurer only)
+ */
+router.post('/verify-user/:userId', verifyUser);
 
 export default router;

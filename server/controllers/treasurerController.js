@@ -1705,3 +1705,58 @@ export const getTreasurerUPISettings = async (_req, res) => {
     });
   }
 };
+
+/**
+ * @desc    Get all users pending verification
+ * @route   GET /api/treasurer/unverified-users
+ * @access  Private (Treasurer)
+ */
+export const getUnverifiedUsers = async (req, res) => {
+  try {
+    const users = await User.find({ isVerified: false }).select('-password').sort({ createdAt: -1 });
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    console.error('Get Unverified Users Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch unverified users'
+    });
+  }
+};
+
+/**
+ * @desc    Verify a user
+ * @route   POST /api/treasurer/verify-user/:userId
+ * @access  Private (Treasurer)
+ */
+export const verifyUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    user.isVerified = true;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'User verified successfully',
+      data: user
+    });
+  } catch (error) {
+    console.error('Verify User Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to verify user'
+    });
+  }
+};

@@ -9,19 +9,15 @@ import { motion } from 'framer-motion';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isLoading, verifyOTP } = useAuth();
+  const { login, isLoading } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     treasurerKey: '',
-    otp: ''
   });
 
   const [loginAs, setLoginAs] = useState('member');
-  const [showOTPInput, setShowOTPInput] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [countdown, setCountdown] = useState(0);
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
@@ -66,74 +62,17 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const startCountdown = () => {
-    setCountdown(60);
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  const handleSendOTP = async () => {
-    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
-      setErrors({ email: 'Please enter a valid email address' });
-      return;
-    }
-    setIsVerifying(true);
-    try {
-      const response = await authAPI.sendOTP({
-        email: formData.email,
-        type: 'login'
-      });
-      if (response.success) {
-        toast.success('OTP sent to your email');
-        setShowOTPInput(true);
-        startCountdown();
-      }
-    } catch (error) {
-      toast.error(error.message || 'Failed to send OTP');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     try {
-      if (!showOTPInput) {
-        const loginResult = await login(formData);
-        if (loginResult.success) {
-          if (loginResult.user) {
-            if (loginResult.user.role === 'treasurer') navigate('/treasurer-dashboard');
-            else navigate('/member-dashboard');
-          } else if (loginResult.requireOTP) {
-            setShowOTPInput(true);
-            startCountdown();
-          }
+      const loginResult = await login(formData);
+      if (loginResult.success) {
+        if (loginResult.user) {
+          if (loginResult.user.role === 'treasurer') navigate('/treasurer-dashboard');
+          else navigate('/member-dashboard');
         }
-        return;
-      }
-
-      if (!formData.otp) {
-        setErrors((prev) => ({ ...prev, otp: 'OTP is required' }));
-        return;
-      }
-
-      const result = await verifyOTP(formData.email, formData.otp, 'login');
-      if (result.success && result.user) {
-        if (result.user.role === 'treasurer') navigate('/treasurer-dashboard');
-        else navigate('/member-dashboard');
-      } else if (result.success) {
-        toast.success('OTP verified');
-      } else {
-        toast.error(result.error || 'OTP verification failed');
       }
     } catch (error) {
       toast.error(error.message || 'Login failed');
@@ -275,46 +214,6 @@ const Login = () => {
               </motion.div>
             )}
 
-            {/* OTP Input */}
-            {showOTPInput && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-              >
-                <label htmlFor="otp" className="block text-sm font-medium text-[#E8E3C5] mb-2 ml-1">
-                  Enter OTP
-                </label>
-                <div className="relative group">
-                  <input
-                    id="otp"
-                    name="otp"
-                    type="text"
-                    value={formData.otp}
-                    onChange={handleChange}
-                    className={`block w-full pl-4 pr-24 py-2.5 bg-black/40 border rounded-xl text-[#F5F3E7] placeholder-[#E8E3C5]/20 focus:outline-none focus:ring-2 focus:ring-[#A6C36F]/40 focus:border-[#A6C36F] transition-all duration-300 ${
-                      errors.otp ? 'border-red-500' : 'border-[#3A3E36]/40 hover:border-[#A6C36F]/30'
-                    }`}
-                    placeholder="6-digit OTP"
-                    maxLength="6"
-                  />
-                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                    {countdown > 0 ? (
-                      <span className="text-sm text-[#E8E3C5]/60 font-mono bg-black/40 px-2 py-1 rounded">{countdown}s</span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleSendOTP}
-                        className="text-xs text-black bg-[#A6C36F] hover:bg-[#8FAE5D] px-2 py-1 rounded transition-colors font-medium"
-                      >
-                        Resend
-                      </button>
-                    )}
-                  </div>
-                </div>
-                {errors.otp && <p className="mt-1 text-sm text-red-400 ml-1">{errors.otp}</p>}
-              </motion.div>
-            )}
-
             {/* Submit */}
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -323,18 +222,18 @@ const Login = () => {
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-[#A6C36F] to-[#8FAE5D] text-black py-3 px-4 rounded-xl hover:shadow-[0_0_20px_rgba(166,195,111,0.2)] focus:outline-none focus:ring-2 focus:ring-[#A6C36F] focus:ring-offset-2 focus:ring-offset-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold text-lg mt-2"
             >
-              {isLoading || isVerifying ? (
+              {isLoading ? (
                 <>
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  {isVerifying ? 'Sending OTP...' : 'Signing in...'}
+                  {'Signing in...'}
                 </>
               ) : (
                 <>
                   <LogIn className="w-5 h-5 mr-2" />
-                  {showOTPInput ? 'Verify & Sign In' : 'Continue with Email'}
+                  {'Sign In'}
                 </>
               )}
             </motion.button>

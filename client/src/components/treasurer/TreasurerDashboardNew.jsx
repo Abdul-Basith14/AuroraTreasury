@@ -7,6 +7,7 @@ import { Users, Wallet, Menu, LogOut, ClipboardCheck, FileText as ReimburseIcon 
 import WalletManagement from './WalletManagement';
 import MembersListByMonth from './MembersListByMonth';
 import CreateMonthlyRecord from './CreateMonthlyRecord';
+import VerifyMembers from './VerifyMembers';
 
 /**
  * New Treasurer Dashboard
@@ -18,7 +19,7 @@ const TreasurerDashboardNew = () => {
   const [statistics, setStatistics] = useState(null);
   const [walletBalance, setWalletBalance] = useState(0);
   const [statsLoading, setStatsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('members'); // 'members', 'wallet', 'create-record'
+  const [activeTab, setActiveTab] = useState('members'); // 'members', 'wallet', 'create-record', 'verify-members'
   const [showMenu, setShowMenu] = useState(false);
   const [showUpiModal, setShowUpiModal] = useState(false);
   const [upiInput, setUpiInput] = useState('');
@@ -143,6 +144,7 @@ const TreasurerDashboardNew = () => {
                   <div className="absolute right-0 mt-3 w-64 bg-black/90 border border-[#A6C36F]/30 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.45)] z-50">
                     <div className="py-2">
                       <MenuItem label="🔍 Group Fund Verification" onClick={() => { setShowMenu(false); navigate('/treasurer/payment-requests'); }} icon={<ClipboardCheck className="w-4 h-4" />} />
+                      <MenuItem label="✅ Verify Members" onClick={() => { setShowMenu(false); setActiveTab('verify-members'); }} icon={<Users className="w-4 h-4" />} />
                       <MenuItem label="💸 Reimbursement" onClick={() => { setShowMenu(false); navigate('/treasurer/reimbursement-requests'); }} icon={<ReimburseIcon className="w-4 h-4" />} />
                       <MenuItem label="🗓️ Create Monthly Records" onClick={() => { setShowMenu(false); setActiveTab('create-record'); }} icon={<Users className="w-4 h-4" />} />
                       <MenuItem label="🆔 Set UPI ID" onClick={() => { setShowMenu(false); setShowUpiModal(true); }} icon={<Wallet className="w-4 h-4" />} />
@@ -227,6 +229,7 @@ const TreasurerDashboardNew = () => {
         {/* Tab Content */}
         {activeTab === 'members' && <MembersListByMonth />}
         {activeTab === 'create-record' && <CreateMonthlyRecord />}
+        {activeTab === 'verify-members' && <VerifyMembers />}
         {activeTab === 'wallet' && <WalletManagement />}
       </div>
 
