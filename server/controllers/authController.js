@@ -183,63 +183,37 @@ export const login = async (req, res) => {
       });
     }
 
-    // Generate OTP for 2FA
+    // Generate OTP for 2FA and save
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    try {
-      // Save OTP to database with type 'login'
-      await OTP.create({
-        email: email.toLowerCase(),
-        otp,
-        type: 'login',
-      });
 
-      // Send OTP via email
-      await sendOTPEmail(email, otp);
+    await OTP.create({
+      email: email.toLowerCase(),
+      otp,
+      type: 'login',
+    });
 
-      // Send success response indicating OTP is required
-      res.status(200).json({
-        success: true,
-        requireOTP: true,
-        message: 'Please check your email for OTP',
+    // Respond immediately; send OTP email in the background (best-effort)
+    res.status(200).json({
+      success: true,
+      requireOTP: true,
+      message: 'Please check your email for OTP',
+    });
+
+    // Fire-and-forget email send to avoid blocking the HTTP response
+    sendOTPEmail(email, otp)
+      .then((result) => {
+        if (!result) {
+          console.error('Login OTP email was not sent (best-effort failure)');
+        }
+      })
+      .catch((err) => {
+        console.error('Error sending login OTP email:', err.message || err);
       });
-    } catch (error) {
-      console.error('OTP Error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error sending OTP. Please try again.',
-      });
-    }
   } catch (error) {
     console.error('Login Error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error during login. Please try again.',
-    });
-  }
-};
-
-/**
- * @desc    Get current logged in user
- * @route   GET /api/auth/me
- * @access  Private
- */
-export const getMe = async (req, res) => {
-  try {
-    // req.user is set by protect middleware
-    const user = await User.findById(req.user._id);
-
-    res.status(200).json({
-      success: true,
-      data: {
-        user,
-      },
-    });
-  } catch (error) {
-    console.error('Get Me Error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching user data',
     });
   }
 };
@@ -309,7 +283,7 @@ export const sendOTP = async (req, res) => {
 
     // Generate a 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
+
     // Save OTP to database
     await OTP.create({
       email: email.toLowerCase(),
@@ -317,13 +291,22 @@ export const sendOTP = async (req, res) => {
       type,
     });
 
-    // Send OTP via email
-    await sendOTPEmail(email, otp);
-
+    // Respond immediately; send OTP email in the background (best-effort)
     res.status(200).json({
       success: true,
-      message: 'OTP sent successfully',
+      message: 'OTP has been generated. Please check your email shortly.',
     });
+
+    // Fire-and-forget email send to avoid blocking the HTTP response
+    sendOTPEmail(email, otp)
+      .then((result) => {
+        if (!result) {
+          console.error('OTP email was not sent (best-effort failure)');
+        }
+      })
+      .catch((err) => {
+        console.error('Error sending OTP email:', err.message || err);
+      });
   } catch (error) {
     console.error('Send OTP Error:', error);
     res.status(500).json({
@@ -446,34 +429,34 @@ export const requestPasswordReset = async (req, res) => {
       });
     }
 
-    // Generate and send OTP
+    // Generate and save OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
+
     console.log('Generated OTP for user:', { email, otp: '*****' });
 
-    try {
-      // First, save OTP to database
-      await OTP.create({
-        email: email.toLowerCase(),
-        otp,
-        type: 'reset',
-      });
-      console.log('OTP saved to database successfully');
+    await OTP.create({
+      email: email.toLowerCase(),
+      otp,
+      type: 'reset',
+    });
+    console.log('OTP saved to database successfully');
 
-      // Then try to send email
-      await sendOTPEmail(email, otp);
-      console.log('OTP email sent successfully');
+    // Respond immediately; send OTP email in the background (best-effort)
+    res.status(200).json({
+      success: true,
+      message: 'Password reset OTP generated. Please check your email shortly.',
+    });
 
-      res.status(200).json({
-        success: true,
-        message: 'OTP sent successfully',
+    // Fire-and-forget email send to avoid blocking the HTTP response
+    sendOTPEmail(email, otp)
+      .then((result) => {
+        if (!result) {
+          console.error('Password reset OTP email was not sent (best-effort failure)');
+        }
+      })
+      .catch((err) => {
+        console.error('Error sending password reset OTP email:', err.message || err);
       });
-    } catch (emailError) {
-      // If email fails, delete the OTP record
-      await OTP.deleteOne({ email: email.toLowerCase(), otp, type: 'reset' });
-      console.error('Failed to complete OTP process:', emailError);
-      throw emailError; // Re-throw to be caught by outer catch
-    }
   } catch (error) {
     console.error('Request Password Reset Error:', error);
     console.error('Stack trace:', error.stack);

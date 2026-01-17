@@ -2,35 +2,43 @@ import nodemailer from 'nodemailer';
 
 // Verify required environment variables
 const requiredEnvVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM'];
-const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+
+let emailEnabled = true;
 
 if (missingVars.length > 0) {
-  console.error('Missing required environment variables:', missingVars);
-  throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+  emailEnabled = false;
+  console.error('Email disabled. Missing required environment variables:', missingVars);
 }
 
-// Create reusable transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT),
-  secure: parseInt(process.env.EMAIL_PORT) === 465, // Use true for port 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  debug: process.env.NODE_ENV === 'development', // Enable debug logs in development
-  logger: process.env.NODE_ENV === 'development', // Enable logging in development
-});
+let transporter = null;
 
-// Verify the connection
-transporter.verify(function(error, success) {
-  if (error) {
-    console.error('SMTP Connection Error:', error);
-    throw new Error('Failed to establish SMTP connection');
-  } else {
-    console.log('SMTP Connection successful');
-  }
-});
+if (emailEnabled) {
+  transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT, 10),
+    secure: parseInt(process.env.EMAIL_PORT, 10) === 465,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    // Helpful for slow or flaky SMTP connections in production
+    connectionTimeout: 5000,
+    greetingTimeout: 5000,
+    socketTimeout: 5000,
+    debug: process.env.NODE_ENV === 'development',
+    logger: process.env.NODE_ENV === 'development',
+  });
+
+  // Verify the connection once at startup, but never crash the server if it fails
+  transporter.verify((error) => {
+    if (error) {
+      console.error('SMTP Connection Error (email will remain best-effort):', error.message);
+    } else {
+      console.log('SMTP server is ready to send emails');
+    }
+  });
+}
 
 /**
  * Send OTP via email
@@ -43,6 +51,11 @@ transporter.verify(function(error, success) {
  */
 export const sendEmail = async (emailData) => {
   try {
+    if (!emailEnabled || !transporter) {
+      console.warn('Email send skipped: email is not enabled or transporter not configured');
+      return false;
+    }
+
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
       ...emailData
@@ -61,6 +74,11 @@ export const sendEmail = async (emailData) => {
  */
 export const sendOTPEmail = async (email, otp) => {
   try {
+    if (!emailEnabled || !transporter) {
+      console.warn('OTP email skipped: email is not enabled or transporter not configured');
+      return false;
+    }
+
     console.log('Attempting to send OTP email to:', email);
     console.log('Email configuration:', {
       host: process.env.EMAIL_HOST,
@@ -98,6 +116,7 @@ export const sendOTPEmail = async (email, otp) => {
       responseCode: error.responseCode,
       stack: error.stack
     });
-    throw new Error(`Failed to send email: ${error.message}`);
+    // Don't crash callers; surface a simple failure signal
+    return false;
   }
 };
