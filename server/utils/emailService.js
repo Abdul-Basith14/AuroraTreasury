@@ -1,43 +1,20 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-// Verify required environment variables
-const requiredEnvVars = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM'];
+// Verify required environment variables for Resend
+const requiredEnvVars = ['RESEND_API_KEY', 'EMAIL_FROM'];
 const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
 
 let emailEnabled = true;
 
 if (missingVars.length > 0) {
   emailEnabled = false;
-  console.error('Email disabled. Missing required environment variables:', missingVars);
+  console.error('Email disabled. Missing required environment variables for Resend:', missingVars);
 }
 
-let transporter = null;
+let resendClient = null;
 
 if (emailEnabled) {
-  transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT, 10),
-    secure: parseInt(process.env.EMAIL_PORT, 10) === 465,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    // Helpful for slow or flaky SMTP connections in production
-    connectionTimeout: 5000,
-    greetingTimeout: 5000,
-    socketTimeout: 5000,
-    debug: process.env.NODE_ENV === 'development',
-    logger: process.env.NODE_ENV === 'development',
-  });
-
-  // Verify the connection once at startup, but never crash the server if it fails
-  transporter.verify((error) => {
-    if (error) {
-      console.error('SMTP Connection Error (email will remain best-effort):', error.message);
-    } else {
-      console.log('SMTP server is ready to send emails');
-    }
-  });
+  resendClient = new Resend(process.env.RESEND_API_KEY);
 }
 
 /**
@@ -51,19 +28,19 @@ if (emailEnabled) {
  */
 export const sendEmail = async (emailData) => {
   try {
-    if (!emailEnabled || !transporter) {
-      console.warn('Email send skipped: email is not enabled or transporter not configured');
+    if (!emailEnabled || !resendClient) {
+      console.warn('Email send skipped: email is not enabled or Resend client not configured');
       return false;
     }
 
-    await transporter.sendMail({
+    await resendClient.emails.send({
       from: process.env.EMAIL_FROM,
-      ...emailData
+      ...emailData,
     });
     return true;
   } catch (error) {
     console.error('Send Email Error:', error);
-    throw new Error('Failed to send email');
+    return false;
   }
 };
 
@@ -74,21 +51,19 @@ export const sendEmail = async (emailData) => {
  */
 export const sendOTPEmail = async (email, otp) => {
   try {
-    if (!emailEnabled || !transporter) {
-      console.warn('OTP email skipped: email is not enabled or transporter not configured');
+    if (!emailEnabled || !resendClient) {
+      console.warn('OTP email skipped: email is not enabled or Resend client not configured');
       return false;
     }
 
     console.log('Attempting to send OTP email to:', email);
     console.log('Email configuration:', {
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      user: process.env.EMAIL_USER,
-      from: process.env.EMAIL_FROM
+      provider: 'Resend',
+      from: process.env.EMAIL_FROM,
     });
 
-    // Send mail
-    const result = await transporter.sendMail({
+    // Send mail via Resend
+    const result = await resendClient.emails.send({
       from: process.env.EMAIL_FROM,
       to: email,
       subject: 'Your Aurora Treasury Verification Code',
