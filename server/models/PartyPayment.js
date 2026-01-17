@@ -17,14 +17,30 @@ const partyPaymentSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Pending', 'Approved', 'Rejected', 'Paid'],
+    enum: ['Pending', 'AwaitingVerification', 'Approved', 'Rejected', 'Paid'],
     default: 'Pending',
   },
-  proofPhotos: [String], // allow multiple proof images
+  // Unique payment reference code (e.g., AT-PARTY-P123-U456-20260117)
+  paymentReference: {
+    type: String,
+    required: true,
+    unique: true,
+    index: true,
+  },
+  // Whether member has clicked "I have paid"
+  memberConfirmedPayment: {
+    type: Boolean,
+    default: false,
+  },
+  // Date when member confirmed payment
+  memberConfirmedDate: {
+    type: Date,
+    default: null,
+  },
   paymentMethod: {
     type: String,
-    enum: ['Online', 'Cash', 'Bank Transfer', 'Other'],
-    default: 'Online',
+    enum: ['UPI', 'Cash', 'Bank Transfer', 'Other'],
+    default: 'UPI',
   },
   submittedDate: {
     type: Date,

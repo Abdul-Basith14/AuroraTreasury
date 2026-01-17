@@ -9,7 +9,10 @@ import {
   resubmitPayment,
   getPaymentHistory,
   verifyResubmittedPayment,
+  generateGroupFundQR,
+  confirmPayment,
 } from '../controllers/groupFundController.js';
+import { getCurrentMonthlyRecord, getActiveMonthlyRecords } from '../controllers/treasurerController.js';
 import { protect } from '../middleware/auth.js';
 import { uploadPaymentProof, uploadResubmissionProof, handleUploadError } from '../middleware/upload.js';
 
@@ -28,13 +31,23 @@ const router = express.Router();
 router.get('/my-payments', protect, getMyPayments);
 
 /**
+ * @route   POST /api/groupfund/generate-qr
+ * @desc    Generate QR code for group fund payment
+ * @access  Private (Member)
+ */
+router.post('/generate-qr', protect, generateGroupFundQR);
+
+/**
+ * @route   POST /api/groupfund/confirm-payment/:id
+ * @desc    Member confirms payment (clicks "I have paid")
+ * @access  Private (Member)
+ */
+router.post('/confirm-payment/:id', protect, confirmPayment);
+
+/**
  * @route   POST /api/groupfund/submit-payment
- * @desc    Submit payment proof with image upload
+ * @desc    LEGACY - Submit payment proof with image upload (deprecated)
  * @access  Private
- * 
- * This route handles multipart/form-data with image file
- * Required fields: month, year, monthNumber, paymentProof (file)
- * Optional fields: notes, academicYear
  */
 router.post(
   '/submit-payment',
@@ -102,5 +115,13 @@ router.get('/payment-history/:id', protect, getPaymentHistory);
  * @access  Private (Treasurer)
  */
 router.post('/verify-resubmission/:id', protect, verifyResubmittedPayment);
+
+/**
+ * @route   GET /api/groupfund/current-record
+ * @desc    Get current active monthly group fund record
+ * @access  Private
+ */
+router.get('/current-record', protect, getCurrentMonthlyRecord);
+router.get('/active-records', protect, getActiveMonthlyRecords);
 
 export default router;

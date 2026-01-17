@@ -1,8 +1,12 @@
 import axios from 'axios';
 
+// Prefer environment-provided API base; fallback to same-origin /api to avoid hard-coded hosts
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL || `${window.location.origin.replace(/\/$/, '')}/api`;
+
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -102,6 +106,16 @@ export const authAPI = {
   resendOTP: (data) => api.post('/auth/resend-otp', data),
   requestPasswordReset: (email) => api.post('/auth/request-reset', { email }),
   resetPassword: (email, otp, newPassword) => api.post('/auth/reset', { email, otp, newPassword }),
+  updateProfile: (formData) =>
+    axios
+      .put(`${API_BASE_URL}/auth/profile`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        timeout: 20000,
+      })
+      .then((res) => res.data),
 };
 
 // Group Fund API calls
@@ -109,24 +123,34 @@ export const groupFundAPI = {
   // Get all payments for logged-in user
   getMyPayments: () => api.get('/groupfund/my-payments'),
   
-  // Submit payment proof with image
+  // Generate QR code for group fund payment (NEW)
+  generateQR: (data) => api.post('/groupfund/generate-qr', data),
+  
+  // Confirm payment after paying via UPI (NEW)
+  confirmPayment: (paymentId) => api.post(`/groupfund/confirm-payment/${paymentId}`),
+  
+  // LEGACY: Submit payment proof with image (deprecated)
   submitPayment: (formData) => {
     // Create a separate axios instance for multipart/form-data
-    return axios.post(
-      `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/groupfund/submit-payment`,
-      formData,
-      {
+    return axios
+      .post(`${API_BASE_URL}/groupfund/submit-payment`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         timeout: 30000, // 30 seconds for file upload
-      }
-    ).then(res => res.data);
+      })
+      .then((res) => res.data);
   },
   
   // Get club settings (QR code, payment info)
   getSettings: () => api.get('/groupfund/settings'),
+  
+  // Get current monthly record set by treasurer
+  getCurrentRecord: () => api.get('/groupfund/current-record'),
+
+  // Get all active monthly records for the member's year
+  getActiveRecords: () => api.get('/groupfund/active-records'),
   
   // Get payment proof URL for a specific payment
   downloadProof: (paymentId) => api.get(`/groupfund/download-proof/${paymentId}`),
@@ -137,20 +161,8 @@ export const groupFundAPI = {
   // Get all failed payments for current user
   getFailedPayments: () => api.get('/groupfund/failed-payments'),
 
-  // Resubmit payment proof for failed payment
-  resubmitPayment: (paymentId, formData) => {
-    return axios.post(
-      `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/groupfund/resubmit-payment/${paymentId}`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        timeout: 30000, // 30 seconds for file upload
-      }
-    ).then(res => res.data);
-  },
+  // Resubmit payment for failed payment (generates new QR)
+  resubmitPayment: (paymentId) => api.post(`/groupfund/resubmit-payment/${paymentId}`),
 
   // Get payment history with status changes
   getPaymentHistory: (paymentId) => api.get(`/groupfund/payment-history/${paymentId}`),
@@ -164,17 +176,15 @@ export const groupFundAPI = {
 export const reimbursementAPI = {
   // Create a new reimbursement request with bill proof photo
   createRequest: (formData) => {
-    return axios.post(
-      `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/reimbursement/request`,
-      formData,
-      {
+    return axios
+      .post(`${API_BASE_URL}/reimbursement/request`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         timeout: 30000, // 30 seconds for file upload
-      }
-    ).then(res => res.data);
+      })
+      .then((res) => res.data);
   },
 
   // Get all reimbursement requests for logged-in user

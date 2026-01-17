@@ -1,9 +1,30 @@
-import { User, Award, BookOpen, Calendar } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { User, Award, BookOpen, Calendar, Pencil, X, Check } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 /**
  * MemberInfoCard — Bright Olive Elegance Theme (Lighter Interior)
  */
 const MemberInfoCard = ({ user }) => {
+  const { updateProfile } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formState, setFormState] = useState({
+    name: user?.name || '',
+    usn: user?.usn || '',
+    branch: user?.branch || '',
+    year: normalizeYear(user?.year),
+  });
+  const [photoPreview, setPhotoPreview] = useState(user?.profilePhoto || '');
+  const [photoFile, setPhotoFile] = useState(null);
+
+  function normalizeYear(year) {
+    if (!year) return '1st';
+    const match = `${year}`.match(/\d/);
+    return match ? `${match[0]}${match[0] === '1' ? 'st' : match[0] === '2' ? 'nd' : match[0] === '3' ? 'rd' : 'th'}` : '1st';
+  }
+
   const getInitials = (name) => {
     if (!name) return 'AU';
     const parts = name.split(' ');
@@ -17,44 +38,113 @@ const MemberInfoCard = ({ user }) => {
    * If the createdAt year is the current year (which can be inaccurate for older members),
    * it calculates a more realistic start year based on the academic year (user.year).
    */
-  const getMemberSinceYear = () => {
-    const currentYear = new Date().getFullYear();
-    const createdAtYear = new Date(user?.createdAt || Date.now()).getFullYear();
+  const memberSinceYear = useMemo(() => {
+    const now = new Date();
+    const academicBaseYear = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+    const yearMatch = `${user?.year || ''}`.match(/\d/);
+    const yearIndex = yearMatch ? parseInt(yearMatch[0], 10) : 1;
+    const clampedYearIndex = Math.min(Math.max(yearIndex, 1), 4);
+    const yearsCompleted = clampedYearIndex - 1;
+    return academicBaseYear - yearsCompleted;
+  }, [user?.year]);
 
-    // 1. If createdAt is provided and is NOT the current year, use it.
-    if (user?.createdAt && createdAtYear < currentYear) {
-      return createdAtYear;
+  useEffect(() => {
+    if (!isEditing) {
+      setFormState({
+        name: user?.name || '',
+        usn: user?.usn || '',
+        branch: user?.branch || '',
+        year: normalizeYear(user?.year),
+      });
+      setPhotoPreview(user?.profilePhoto || '');
+      setPhotoFile(null);
+    }
+  }, [user, isEditing]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormState((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const resetForm = () => {
+    setFormState({
+      name: user?.name || '',
+      usn: user?.usn || '',
+      branch: user?.branch || '',
+      year: normalizeYear(user?.year),
+    });
+    setPhotoPreview(user?.profilePhoto || '');
+    setPhotoFile(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const payload = new FormData();
+    payload.append('name', formState.name.trim());
+    payload.append('usn', formState.usn.trim());
+    payload.append('branch', formState.branch.trim());
+    payload.append('year', formState.year);
+    if (photoFile) {
+      payload.append('profilePhoto', photoFile);
     }
 
-    // 2. Fallback: Calculate based on academic year ('1st Year', '3rd Year', etc.)
-    const yearMap = {
-      '1st Year': 0,
-      '2nd Year': 1,
-      '3rd Year': 2, // 2025 - 2 = 2023
-      '4th Year': 3,
-    };
-    
-    // Convert '3rd Year' to 3, then subtract 1 because 1st year means 0 years passed.
-    const yearIndex = parseInt(user?.year) || 1; // Default to 1st year (index 1)
-    
-    // Calculate years passed (e.g., 3rd year means 2 years have passed)
-    const yearsPassed = yearIndex > 0 ? yearIndex - 1 : 0; 
-    
-    // Calculate assumed joining year
-    return currentYear - yearsPassed;
+    try {
+      setSaving(true);
+      const result = await updateProfile(payload);
+      if (result?.success) {
+        toast.success('Profile saved');
+        setIsEditing(false);
+      }
+    } catch (err) {
+      toast.error(err?.message || 'Could not update profile');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div className="bg-black/60 backdrop-blur-xl rounded-2xl border border-[#A6C36F]/20 shadow-lg hover:shadow-[0_0_20px_rgba(166,195,111,0.15)] transition-all duration-300 transform hover:-translate-y-1">
       <div className="p-6 space-y-4">
+
+        <div className="flex justify-between items-start">
+          <div className="flex-1" />
+          <button
+            onClick={() => {
+              if (isEditing) {
+                resetForm();
+              }
+              setIsEditing((prev) => !prev);
+            }}
+            className="flex items-center space-x-2 px-3 py-2 text-sm font-semibold text-[#E8E3C5] bg-[#A6C36F]/15 border border-[#A6C36F]/30 rounded-lg hover:bg-[#A6C36F]/25 transition-colors"
+          >
+            {isEditing ? (
+              <>
+                <X className="w-4 h-4" />
+                <span>Cancel</span>
+              </>
+            ) : (
+              <>
+                <Pencil className="w-4 h-4" />
+                <span>Edit</span>
+              </>
+            )}
+          </button>
+        </div>
         
         {/* Profile Photo */}
         <div className="flex justify-center">
           <div className="relative">
-            {user?.profilePhoto ? (
+            {photoPreview ? (
               <img
-                src={user.profilePhoto}
-                alt={user.name}
+                src={photoPreview}
+                alt={user?.name}
                 className="w-24 h-24 rounded-full object-cover border-4 border-[#A6C36F]/30"
               />
             ) : (
@@ -79,33 +169,106 @@ const MemberInfoCard = ({ user }) => {
         </div>
 
         {/* Member Details */}
-        <div className="space-y-3 text-center">
-          <h3 className="text-xl font-bold text-[#F5F3E7]">
-            {user?.name || 'Member'}
-          </h3>
+        {!isEditing ? (
+          <div className="space-y-3 text-center">
+            <h3 className="text-xl font-bold text-[#F5F3E7]">
+              {user?.name || 'Member'}
+            </h3>
 
-          <div className="flex items-center justify-center space-x-2 text-[#E8E3C5]/80">
-            <User className="w-4 h-4 text-[#A6C36F]" />
-            <p className="text-sm font-mono font-semibold">{user?.usn || 'N/A'}</p>
-          </div>
+            <div className="flex items-center justify-center space-x-2 text-[#E8E3C5]/80">
+              <User className="w-4 h-4 text-[#A6C36F]" />
+              <p className="text-sm font-mono font-semibold">{user?.usn || 'N/A'}</p>
+            </div>
 
-          <div className="flex items-center justify-center space-x-4 text-[#E8E3C5]/80">
-            <div className="flex items-center space-x-1">
-              <BookOpen className="w-4 h-4 text-[#A6C36F]" />
-              <span className="text-sm font-medium">{user?.branch || 'N/A'}</span>
-            </div>
-            <span className="text-[#A6C36F]/40">•</span>
-            <div className="flex items-center space-x-1">
-              <Calendar className="w-4 h-4 text-[#A6C36F]" />
-              <span className="text-sm font-medium">{user?.year || 'N/A'} Year</span>
+            <div className="flex items-center justify-center space-x-4 text-[#E8E3C5]/80">
+              <div className="flex items-center space-x-1">
+                <BookOpen className="w-4 h-4 text-[#A6C36F]" />
+                <span className="text-sm font-medium">{user?.branch || 'N/A'}</span>
+              </div>
+              <span className="text-[#A6C36F]/40">•</span>
+              <div className="flex items-center space-x-1">
+                <Calendar className="w-4 h-4 text-[#A6C36F]" />
+                <span className="text-sm font-medium">{user?.year ? `${user.year} Year` : 'N/A'}</span>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-3">
+              <div>
+                <label className="block text-xs text-[#E8E3C5]/60 mb-1">Name</label>
+                <input
+                  name="name"
+                  value={formState.name}
+                  onChange={handleInputChange}
+                  className="w-full bg-black/40 border border-[#A6C36F]/30 rounded-lg px-3 py-2 text-sm text-[#E8E3C5] focus:outline-none focus:border-[#A6C36F]"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[#E8E3C5]/60 mb-1">USN</label>
+                <input
+                  name="usn"
+                  value={formState.usn}
+                  onChange={handleInputChange}
+                  className="w-full bg-black/40 border border-[#A6C36F]/30 rounded-lg px-3 py-2 text-sm text-[#E8E3C5] focus:outline-none focus:border-[#A6C36F] uppercase"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[#E8E3C5]/60 mb-1">Branch</label>
+                <input
+                  name="branch"
+                  value={formState.branch}
+                  onChange={handleInputChange}
+                  className="w-full bg-black/40 border border-[#A6C36F]/30 rounded-lg px-3 py-2 text-sm text-[#E8E3C5] focus:outline-none focus:border-[#A6C36F]"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[#E8E3C5]/60 mb-1">Year</label>
+                <select
+                  name="year"
+                  value={formState.year}
+                  onChange={handleInputChange}
+                  className="w-full bg-black/40 border border-[#A6C36F]/30 rounded-lg px-3 py-2 text-sm text-[#E8E3C5] focus:outline-none focus:border-[#A6C36F]"
+                >
+                  <option value="1st">1st</option>
+                  <option value="2nd">2nd</option>
+                  <option value="3rd">3rd</option>
+                  <option value="4th">4th</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-[#E8E3C5]/60 mb-1">Profile Photo</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="w-full text-sm text-[#E8E3C5]/80"
+                />
+                {photoPreview && (
+                  <div className="mt-2 flex justify-center">
+                    <img src={photoPreview} alt="Preview" className="w-20 h-20 rounded-full object-cover border border-[#A6C36F]/30" />
+                  </div>
+                )}
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={saving}
+              className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-[#A6C36F] text-black font-semibold rounded-lg hover:shadow-[0_0_20px_rgba(166,195,111,0.35)] transition disabled:opacity-50"
+            >
+              <Check className="w-4 h-4" />
+              <span>{saving ? 'Saving...' : 'Save Profile'}</span>
+            </button>
+          </form>
+        )}
 
         {/* Decorative Bottom Border and Member Since */}
         <div className="pt-4 border-t border-[#A6C36F]/20">
           <p className="text-xs text-center text-[#E8E3C5]/60">
-            Member since {getMemberSinceYear()}
+            Member since {memberSinceYear}
           </p>
         </div>
       </div>

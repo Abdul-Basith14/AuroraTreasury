@@ -3,7 +3,7 @@ import { AlertCircle, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { groupFundAPI } from '../../utils/api';
 import FailedPaymentCard from './FailedPaymentCard';
-import PayFailedPaymentModal from './PayFailedPaymentModal';
+import QRPaymentModal from './QRPaymentModal';
 import PaymentHistoryModal from './PaymentHistoryModal';
 
 /**
@@ -119,11 +119,15 @@ const FailedPaymentsSection = () => {
       </div>
 
       {/* Modals */}
-      <PayFailedPaymentModal
+      <QRPaymentModal
         isOpen={showPayModal}
         onClose={() => setShowPayModal(false)}
-        payment={selectedPayment}
-        refreshPayments={fetchFailedPayments}
+        paymentMonth={selectedPayment ? {
+          month: selectedPayment.month,
+          year: selectedPayment.year,
+          monthNumber: selectedPayment.monthNumber
+        } : null}
+        onSuccess={fetchFailedPayments}
       />
 
       <PaymentHistoryModal

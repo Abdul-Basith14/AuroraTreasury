@@ -202,6 +202,29 @@ const partyPaymentUpload = multer({
 export const uploadPartyPaymentProof = partyPaymentUpload.array('paymentProofs', 5);
 
 /**
+ * Configure Cloudinary storage for Profile Photos
+ * Keeps profile uploads separate from payment proofs
+ */
+const profilePhotoStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'aurora-treasury/profile-photos',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'heic', 'webp'],
+    transformation: [{ width: 600, height: 600, crop: 'limit' }],
+  },
+});
+
+const profilePhotoUpload = multer({
+  storage: profilePhotoStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+  fileFilter: fileFilter,
+});
+
+export const uploadProfilePhoto = profilePhotoUpload.single('profilePhoto');
+
+/**
  * Error handling middleware for Multer
  * Usage: Add this after routes that use upload middleware
  */

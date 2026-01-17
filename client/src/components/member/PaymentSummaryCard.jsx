@@ -4,27 +4,27 @@ import { useEffect, useState } from 'react';
 /**
  * PaymentSummaryCard Component
  * Displays total amount paid by the member with animated counter
- * * @param {number} totalPaid - Total amount paid by member
+ * @param {number} totalPaidAmount - Total paid amount
  */
-const PaymentSummaryCard = ({ totalPaid = 0 }) => {
+const PaymentSummaryCard = ({ totalPaidAmount = 0 }) => {
   const [displayAmount, setDisplayAmount] = useState(0);
 
   // Animated counter effect
   useEffect(() => {
-    if (totalPaid === 0) {
+    if (totalPaidAmount === 0) {
       setDisplayAmount(0);
       return;
     }
 
-    const duration = 1000; // Animation duration in ms
-    const steps = 50; // Number of animation steps
-    const increment = totalPaid / steps;
+    const duration = 600; // Animation duration in ms
+    const steps = 30; // Number of animation steps
+    const increment = totalPaidAmount / steps;
     let currentStep = 0;
 
     const timer = setInterval(() => {
       currentStep++;
       if (currentStep >= steps) {
-        setDisplayAmount(totalPaid);
+        setDisplayAmount(totalPaidAmount);
         clearInterval(timer);
       } else {
         setDisplayAmount(Math.floor(increment * currentStep));
@@ -32,7 +32,7 @@ const PaymentSummaryCard = ({ totalPaid = 0 }) => {
     }, duration / steps);
 
     return () => clearInterval(timer);
-  }, [totalPaid]);
+  }, [totalPaidAmount]);
   
   // --- Start Year Logic Modification ---
   // In a real application, the joining year should be passed via props (e.g., props.user.joiningYear)
@@ -62,7 +62,7 @@ const PaymentSummaryCard = ({ totalPaid = 0 }) => {
       <div className="flex items-center justify-between mb-4 relative z-10">
         {/* Label */}
         <p className="text-sm font-semibold text-[#E8E3C5]/70 uppercase tracking-wider">
-          Total Club Payment
+          Total Amount Paid
         </p>
         
         {/* Icon Circle: Olive outline, dark bg */}
@@ -74,7 +74,7 @@ const PaymentSummaryCard = ({ totalPaid = 0 }) => {
       {/* Amount Display */}
       <div className="space-y-1 relative z-10">
         <div className="flex items-baseline justify-between">
-          {/* Amount: Olive Green, larger font */}
+          {/* Amount display */}
           <span className="text-5xl font-extrabold tracking-tight text-[#A6C36F] drop-shadow-sm">
             ₹ {displayAmount.toLocaleString('en-IN')}
           </span>

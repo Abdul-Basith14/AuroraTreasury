@@ -147,6 +147,32 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
+   * Update profile details and optional profile photo
+   */
+  const updateProfile = async (formData) => {
+    try {
+      setIsLoading(true);
+      const response = await authAPI.updateProfile(formData);
+
+      if (response.success) {
+        const updatedUser = response.data.user;
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        toast.success('Profile updated');
+        return { success: true, user: updatedUser };
+      }
+
+      toast.error(response.message || 'Unable to update profile');
+      return { success: false };
+    } catch (error) {
+      toast.error(error.message || 'Unable to update profile');
+      return { success: false, error: error.message };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
    * Verify OTP for login/signup
    * @param {string} email - User's email
    * @param {string} otp - OTP code
@@ -251,6 +277,7 @@ export const AuthProvider = ({ children }) => {
     signup,
     logout,
     updateUser,
+    updateProfile,
     verifyOTP,
     resendOTP,
     requestPasswordReset,

@@ -1,4 +1,4 @@
-import api from './api';
+import api, { API_BASE_URL } from './api';
 import axios from 'axios';
 
 const BASE = '/party-amount';
@@ -10,17 +10,15 @@ const partyAmountAPI = {
 
   // Submit payment (multipart)
   submitPayment: (formData) => {
-    return axios.post(
-      `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}${BASE}/submit`,
-      formData,
-      {
+    return axios
+      .post(`${API_BASE_URL}${BASE}/submit`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         timeout: 30000,
-      }
-    ).then(res => res.data);
+      })
+      .then((res) => res.data);
   },
 
   getMyPayments: () => api.get(`${BASE}/my/payments`),

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { getResubmissionRequests } from '../../utils/treasurerAPI';
-import PaymentRequestCard from './PaymentRequestCard';
+import PaymentVerificationCard from './PaymentVerificationCard';
 import { RotateCw } from 'lucide-react';
 
 /**
@@ -84,11 +84,10 @@ const ResubmissionsTab = ({ refreshTrigger, onActionComplete }) => {
       ) : (
         <div className="grid gap-6">
           {requests.map((request) => (
-            <PaymentRequestCard
+            <PaymentVerificationCard
               key={request._id}
-              request={request}
-              onActionComplete={handleActionComplete}
-              isResubmission={true}
+              payment={request}
+              onVerified={handleActionComplete}
             />
           ))}
         </div>

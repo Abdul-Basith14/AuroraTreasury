@@ -28,9 +28,13 @@ verifyCloudinaryConfig();
 // Middleware
 
 // CORS Configuration - Allow requests from frontend
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map((o) => o.trim())
+  : undefined; // undefined lets cors use default (reflects origin or * depending on version)
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: allowedOrigins || true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -105,7 +109,7 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`\n🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
   console.log(`📍 API URL: http://localhost:${PORT}`);
-  console.log(`🌐 Client URL: ${process.env.CLIENT_URL || 'http://localhost:5173'}`);
+  console.log(`🌐 Client URL: ${process.env.CLIENT_URL || 'not set (CORS allows all origins in dev)'}`);
   console.log(`\n📚 Available Routes:`);
   console.log(`   - POST   http://localhost:${PORT}/api/auth/signup`);
   console.log(`   - POST   http://localhost:${PORT}/api/auth/login`);

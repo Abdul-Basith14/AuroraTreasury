@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { getMonthBasedMemberList, deleteMonthlyRecords, createMonthlyRecords } from '../../utils/treasurerAPI';
-import axios from 'axios';
-import { Download, Trash2, Calendar, Users, IndianRupee, CheckCircle, Clock, AlertCircle, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { getMonthBasedMemberList, deleteMonthlyRecords } from '../../utils/treasurerAPI';
+import { Download, Calendar, Users, CheckCircle, ChevronLeft, ChevronRight, Search, Trash2 } from 'lucide-react';
 import ManualPaymentUpdateModal from './ManualPaymentUpdateModal';
 
 /**
@@ -17,11 +16,8 @@ const MembersListByMonth = () => {
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [creatingRecords, setCreatingRecords] = useState(false);
   const [showManualUpdateModal, setShowManualUpdateModal] = useState(false);
   const [selectedMemberForUpdate, setSelectedMemberForUpdate] = useState(null);
-  const [clubSettings, setClubSettings] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   
   // Get current month and year and fetch club settings
@@ -31,28 +27,7 @@ const MembersListByMonth = () => {
     const year = now.getFullYear().toString();
     setSelectedMonth(month);
     setSelectedYear(year);
-    
-    // Fetch club settings for default amount
-    fetchClubSettings();
   }, []);
-  
-  /**
-    * Fetch club settings
-    */
-  const fetchClubSettings = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/groupfund/settings`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      setClubSettings(response.data.settings);
-    } catch (error) {
-      console.error('Failed to fetch club settings:', error);
-    }
-  };
   
   // Fetch member list when month/year changes
   useEffect(() => {
@@ -102,6 +77,7 @@ const MembersListByMonth = () => {
         usn: member.userId?.usn || 'N/A',
         year: member.userId?.year || 'N/A',
         branch: member.userId?.branch || 'N/A',
+        email: member.userId?.email || member.email || 'N/A',
         paymentStatus: member.status,
         amount: member.amount || 0,
         paymentDate: member.paymentDate,
@@ -160,66 +136,10 @@ const MembersListByMonth = () => {
   };
   
   /**
-    * Create monthly records for all members
-    */
-  const handleCreateMonthlyRecords = async ({ amounts, deadline }) => {
-    if (!amounts || !deadline) {
-      toast.error('Please provide all required information');
-      return;
-    }
-
-    setCreatingRecords(true);
-    try {
-      const data = await createMonthlyRecords({
-        month: selectedMonth,
-        year: parseInt(selectedYear),
-        yearAmounts: amounts, // Array of { year: number, amount: number }
-        deadline: deadline
-      });
-      
-      toast.success(data.message || `Created payment records for ${data.count} members`);
-      setShowCreateModal(false);
-      await fetchMemberList(); // Refresh the list
-    } catch (error) {
-      console.error('Create monthly records error:', error);
-      const errorMsg = error.response?.data?.message || error.message || 'Failed to create monthly records';
-      toast.error(errorMsg);
-    } finally {
-      setCreatingRecords(false);
-    }
-  };
-
-  /**
-    * Handle delete monthly records
-    */
-  const handleDelete = async () => {
-    try {
-      const result = await deleteMonthlyRecords(selectedMonth, selectedYear);
-      toast.success(`Deleted ${result.deletedCount} records`);
-      setShowDeleteConfirm(false);
-      fetchMemberList();
-    } catch (error) {
-      toast.error('Failed to delete records');
-      console.error('Delete error:', error);
-    }
-  };
-  
-  /**
     * Handle manual payment update
     */
   const handleManualUpdate = (member) => {
-    // Determine the default amount based on member's year
-    let defaultAmount = 100; // Fallback default
-    
-    if (clubSettings && clubSettings.fundAmountByYear) {
-      const yearMap = {
-        '1st': clubSettings.fundAmountByYear.firstYear,
-        '2nd': clubSettings.fundAmountByYear.secondYear,
-        '3rd': clubSettings.fundAmountByYear.thirdYear,
-        '4th': clubSettings.fundAmountByYear.fourthYear
-      };
-      defaultAmount = yearMap[member.year] || clubSettings.monthlyFundAmount || 100;
-    }
+    const defaultAmount = member.amount > 0 ? member.amount : 100;
     
     // Create payment object - only include _id if it exists and is valid
     const payment = {
@@ -245,6 +165,21 @@ const MembersListByMonth = () => {
     setShowManualUpdateModal(false);
     setSelectedMemberForUpdate(null);
     fetchMemberList(); // Refresh the list
+  };
+
+  /**
+    * Handle delete monthly records
+    */
+  const handleDelete = async () => {
+    try {
+      const result = await deleteMonthlyRecords(selectedMonth, selectedYear);
+      toast.success(`Deleted ${result.deletedCount} records`);
+      setShowDeleteConfirm(false);
+      fetchMemberList();
+    } catch (error) {
+      toast.error('Failed to delete records');
+      console.error('Delete error:', error);
+    }
   };
   
   /**
@@ -303,15 +238,6 @@ const MembersListByMonth = () => {
           
           {/* Action Buttons */}
           <div className="flex space-x-3">
-            {/* Create Button (Olive Accent) */}
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center px-4 py-2 bg-[#A6C36F] text-black rounded-lg hover:bg-[#8FAE5D] font-medium transition-colors duration-200"
-            >
-              <CheckCircle className="w-5 h-5 mr-2" />
-              Create Monthly Records
-            </button>
-            {/* Download Button (Secondary Color) */}
             <button
               onClick={handleDownload}
               disabled={memberList.length === 0}
@@ -320,10 +246,9 @@ const MembersListByMonth = () => {
               <Download className="w-5 h-5 mr-2" />
               Download CSV
             </button>
-            {/* Delete Button (Danger Red) */}
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              disabled={memberList.length === 0 || summary?.paidCount === 0}
+              disabled={memberList.length === 0}
               className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors duration-200 disabled:opacity-50"
             >
               <Trash2 className="w-5 h-5 mr-2" />
@@ -412,36 +337,28 @@ const MembersListByMonth = () => {
             </thead>
             <tbody className="divide-y divide-[#A6C36F]/10">
               {filteredMembers.map((member, index) => (
-                <tr key={member._id} className="hover:bg-[#A6C36F]/5 transition-colors duration-150">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/90">
-                    {index + 1}
-                  </td>
+                <tr key={member._id || index} className="hover:bg-[#A6C36F]/5 transition-colors duration-150">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/70">{index + 1}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-[#F5F3E7]">{member.name}</div>
+                    <div className="text-xs text-[#E8E3C5]/60">{member.email}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/80">
-                    {member.usn}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/80">
-                    {member.year}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/80">
-                    {member.branch}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/80">{member.usn}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/80">{member.year}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/80">{member.branch}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(member.paymentStatus)}`}>
+                    <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full border ${getStatusBadge(member.paymentStatus)}`}>
                       {member.paymentStatus}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-[#A6C36F]">
-                    {member.amount > 0 ? `₹ ${member.amount}` : '-'}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/80">
+                    {typeof member.amount === 'number' ? `INR ${member.amount.toLocaleString('en-IN')}` : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[#E8E3C5]/80">
                     {member.paymentDate ? new Date(member.paymentDate).toLocaleDateString('en-IN') : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     {member.paymentStatus === 'Pending' && !member.paymentProof ? (
-                      // Olive Accent Button for Manual Update
                       <button
                         onClick={() => handleManualUpdate(member)}
                         className="inline-flex items-center px-3 py-1.5 bg-[#A6C36F] text-black text-xs font-medium rounded-lg hover:bg-[#8FAE5D] transition-colors duration-200"
@@ -464,33 +381,37 @@ const MembersListByMonth = () => {
           </table>
         )}
       </div>
-      
-      {/* Delete Confirmation Modal (Themed) */}
+
       {showDeleteConfirm && (
-        <ThemedModal 
-          title="Delete Monthly Records?" 
-          onClose={() => setShowDeleteConfirm(false)}
-        >
-          <Trash2 className="w-16 h-16 text-red-600 mx-auto mb-4" />
-          <p className="text-[#E8E3C5]/80 mb-6">
-            This will permanently delete all payment records for **{selectedMonth} {selectedYear}**. 
-            This action cannot be undone.
-          </p>
-          <div className="flex space-x-3">
-            <button
-              onClick={() => setShowDeleteConfirm(false)}
-              className="flex-1 px-4 py-2 bg-black/40 text-[#E8E3C5] rounded-lg hover:bg-[#A6C36F]/10 font-medium transition-colors duration-200 border border-[#A6C36F]/20"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleDelete}
-              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors duration-200"
-            >
-              Delete
-            </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#0F120D] border border-[#A6C36F]/30 rounded-xl shadow-xl w-full max-w-md p-6 text-left">
+            <div className="flex items-start space-x-3 mb-4">
+              <div className="p-3 bg-red-900/30 rounded-lg border border-red-700/40">
+                <Trash2 className="w-6 h-6 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-[#F5F3E7]">Delete monthly records?</h3>
+                <p className="text-sm text-[#E8E3C5]/70 mt-1">
+                  This removes all payment records for <span className="font-semibold text-[#F5F3E7]">{selectedMonth} {selectedYear}</span>. You can recreate the month later, but this action cannot be undone.
+                </p>
+              </div>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 px-4 py-2 bg-black/40 text-[#E8E3C5] rounded-lg hover:bg-[#A6C36F]/10 font-medium transition-colors duration-200 border border-[#A6C36F]/20"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors duration-200"
+              >
+                Delete
+              </button>
+            </div>
           </div>
-        </ThemedModal>
+        </div>
       )}
       
       {/* Manual Payment Update Modal (Assumes ManualPaymentUpdateModal is themed separately) */}
@@ -503,151 +424,6 @@ const MembersListByMonth = () => {
           onSuccess={handleManualUpdateSuccess}
         />
       )}
-
-      {/* Create Monthly Records Modal (Themed) */}
-      {showCreateModal && (
-        <CreateMonthlyRecordsModal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          onSubmit={handleCreateMonthlyRecords}
-          defaultAmount={clubSettings?.monthlyFundAmount || 100}
-          month={selectedMonth}
-          year={selectedYear}
-          loading={creatingRecords}
-        />
-      )}
-    </div>
-  );
-};
-
-// Themed Generic Modal Wrapper
-const ThemedModal = ({ title, children, onClose }) => (
-  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div className="bg-black/90 rounded-2xl max-w-md w-full p-6 text-[#F5F3E7] shadow-xl border border-[#A6C36F]/20">
-      <div className="text-center">
-        <h3 className="text-2xl font-bold text-[#F5F3E7] mb-4">{title}</h3>
-        {children}
-      </div>
-    </div>
-  </div>
-);
-
-// Inline Create Monthly Records Modal (Themed)
-const CreateMonthlyRecordsModal = ({ isOpen, onClose, onSubmit, defaultAmount = 100, month, year, loading }) => {
-  const [yearlyAmounts, setYearlyAmounts] = useState({
-    '1': '',
-    '2': '',
-    '3': '',
-    '4': ''
-  });
-  const [deadline, setDeadline] = useState('');
-
-  useEffect(() => {
-    const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
-    // Set default deadline to 5th of the selected month/year
-    const defaultDate = new Date(parseInt(year), monthIndex, 5);
-    setDeadline(defaultDate.toISOString().split('T')[0]);
-    
-    // Set default amounts if provided
-    if (defaultAmount) {
-      setYearlyAmounts({
-        '1': String(defaultAmount),
-        '2': String(defaultAmount),
-        '3': String(defaultAmount),
-        '4': String(defaultAmount)
-      });
-    }
-  }, [month, year, defaultAmount]);
-
-  const handleYearAmountChange = (year, value) => {
-    setYearlyAmounts(prev => ({
-      ...prev,
-      [year]: value
-    }));
-  };
-
-  const submit = (e) => {
-    e.preventDefault();
-    
-    // Validate all fields
-    const amounts = Object.entries(yearlyAmounts).map(([year, amount]) => ({
-      year: parseInt(year),
-      amount: parseFloat(amount) || 0
-    }));
-    
-    if (amounts.some(item => item.amount <= 0)) {
-      toast.error('Please provide valid amounts for all years');
-      return;
-    }
-    
-    if (!deadline) {
-      toast.error('Please provide a deadline');
-      return;
-    }
-    
-    onSubmit({ amounts, deadline });
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-black/90 rounded-2xl max-w-md w-full p-6 text-[#F5F3E7] shadow-xl border border-[#A6C36F]/20">
-        <div className="mb-4">
-          <h3 className="text-xl font-bold text-[#F5F3E7]">Create Monthly Records</h3>
-          <p className="text-sm text-[#E8E3C5]/80">This will create Pending records for all members for **{month} {year}**.</p>
-        </div>
-        <form onSubmit={submit} className="space-y-4">
-          <div className="space-y-3">
-            <h4 className="font-medium text-[#E8E3C5]">Set Amount by Year (₹)</h4>
-            {[1, 2, 3, 4].map(year => (
-              <div key={year} className="flex items-center">
-                <label className="w-16 text-sm font-medium text-[#E8E3C5]/90">Year {year}:</label>
-                <input
-                  type="number"
-                  min="1"
-                  // Themed input styling
-                  className="flex-1 border border-[#A6C36F]/20 rounded-lg px-3 py-2 bg-black/40 text-[#F5F3E7] placeholder:text-[#E8E3C5]/60 focus:ring-2 focus:ring-[#A6C36F] outline-none"
-                  value={yearlyAmounts[year] || ''}
-                  onChange={(e) => handleYearAmountChange(year, e.target.value)}
-                  disabled={loading}
-                  placeholder={`Enter amount for Year ${year}`}
-                />
-              </div>
-            ))}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-[#E8E3C5]/90">Payment Deadline</label>
-            <input 
-              type="date" 
-              // Themed input styling
-              className="w-full border border-[#A6C36F]/20 rounded-lg px-3 py-2 bg-black/40 text-[#F5F3E7] focus:ring-2 focus:ring-[#A6C36F] outline-none"
-              value={deadline} 
-              onChange={(e) => setDeadline(e.target.value)} 
-              disabled={loading} 
-            />
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <button 
-              type="button" 
-              onClick={onClose} 
-              // Secondary button style
-              className="px-4 py-2 border border-[#A6C36F]/20 text-[#E8E3C5] rounded-lg hover:bg-[#A6C36F]/10 disabled:opacity-50 transition-colors duration-200" 
-              disabled={loading}
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              // Primary button style (Olive Accent)
-              className="px-4 py-2 bg-[#A6C36F] text-black rounded-lg hover:bg-[#8FAE5D] disabled:opacity-50 transition-colors duration-200" 
-              disabled={loading}
-            >
-              {loading ? 'Creating...' : 'Create Records'}
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   );
 };

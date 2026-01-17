@@ -17,7 +17,13 @@ import {
   verifyResubmission,
   rejectResubmission,
   createManualPayment,
-  manualPaymentUpdate
+  manualPaymentUpdate,
+  createMonthlyGroupFundRecord,
+  getMonthlyGroupFundRecords,
+  updateMonthlyGroupFundRecord,
+  deleteMonthlyGroupFundRecord,
+  setTreasurerUPI,
+  getTreasurerUPISettings
 } from '../controllers/treasurerController.js';
 import { protect } from '../middleware/auth.js';
 import treasurerAuth from '../middleware/treasurerAuth.js';
@@ -167,5 +173,49 @@ router.post('/create-manual-payment', createManualPayment);
  * @body    { paymentMethod: string ('Cash'|'Bank Transfer'|'Other'), note?: string }
  */
 router.post('/manual-payment-update/:paymentId', manualPaymentUpdate);
+
+/**
+ * @route   POST /api/treasurer/monthly-record
+ * @desc    Create a new monthly group fund record
+ * @access  Private (Treasurer only)
+ * @body    { month: string, year: number, deadline: Date, amounts: object, includedYears: array }
+ */
+router.post('/monthly-record', createMonthlyGroupFundRecord);
+
+/**
+ * @route   GET /api/treasurer/monthly-records
+ * @desc    Get all monthly group fund records
+ * @access  Private (Treasurer only)
+ */
+router.get('/monthly-records', getMonthlyGroupFundRecords);
+
+/**
+ * @route   PUT /api/treasurer/monthly-record/:id
+ * @desc    Update a monthly group fund record
+ * @access  Private (Treasurer only)
+ * @body    { deadline?: Date, amounts?: object, includedYears?: array, status?: string }
+ */
+router.put('/monthly-record/:id', updateMonthlyGroupFundRecord);
+
+/**
+ * @route   DELETE /api/treasurer/monthly-record/:id
+ * @desc    Delete a monthly group fund record
+ * @access  Private (Treasurer only)
+ */
+router.delete('/monthly-record/:id', deleteMonthlyGroupFundRecord);
+
+/**
+ * @route   GET /api/treasurer/upi
+ * @desc    Get Treasurer UPI settings and history
+ * @access  Private (Treasurer only)
+ */
+router.get('/upi', getTreasurerUPISettings);
+
+/**
+ * @route   POST /api/treasurer/upi
+ * @desc    Set or update Treasurer UPI ID
+ * @access  Private (Treasurer only)
+ */
+router.post('/upi', setTreasurerUPI);
 
 export default router;

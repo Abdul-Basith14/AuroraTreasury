@@ -485,6 +485,85 @@ export const requestPasswordReset = async (req, res) => {
 };
 
 /**
+ * @desc    Update profile details and optional profile photo
+ * @route   PUT /api/auth/profile
+ * @access  Private
+ */
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { name, branch, year, usn } = req.body;
+
+    const validYears = ['1st', '2nd', '3rd', '4th'];
+    const updates = {};
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized',
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    if (name) {
+      updates.name = name.trim();
+    }
+
+    if (branch) {
+      updates.branch = branch.trim();
+    }
+
+    if (year) {
+      if (!validYears.includes(year)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid academic year. Please select from 1st to 4th year.',
+        });
+      }
+      updates.year = year;
+    }
+
+    if (usn) {
+      const formattedUsn = usn.trim().toUpperCase();
+      const existingUser = await User.findOne({ usn: formattedUsn, _id: { $ne: userId } });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'USN already in use by another member.',
+        });
+      }
+      updates.usn = formattedUsn;
+    }
+
+    if (req.file?.path) {
+      updates.profilePhoto = req.file.path;
+    }
+
+    Object.assign(user, updates);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: { user },
+    });
+  } catch (error) {
+    console.error('Update Profile Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating profile',
+    });
+  }
+};
+
+/**
  * @desc    Reset password with OTP
  * @route   POST /api/auth/reset
  * @access  Public

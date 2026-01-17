@@ -8,9 +8,11 @@ import {
   sendOTP,
   verifyOTP,
   requestPasswordReset,
-  resetPassword
+  resetPassword,
+  updateProfile
 } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
+import { uploadProfilePhoto, handleUploadError } from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -62,5 +64,10 @@ router.post('/request-reset', requestPasswordReset);
 // @desc    Reset password using token
 // @access  Public
 router.post('/reset', resetPassword);
+
+// @route   PUT /api/auth/profile
+// @desc    Update profile details and photo
+// @access  Private
+router.put('/profile', protect, uploadProfilePhoto, handleUploadError, updateProfile);
 
 export default router;

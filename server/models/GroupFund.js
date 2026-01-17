@@ -52,13 +52,27 @@ const groupFundSchema = new mongoose.Schema(
     // Payment status
     status: {
       type: String,
-      enum: ['Pending', 'Paid', 'Failed'],
+      enum: ['Pending', 'AwaitingVerification', 'Paid', 'Failed'],
       default: 'Pending',
     },
 
-    // Cloudinary URL for payment proof screenshot
-    paymentProof: {
+    // Unique payment reference code (e.g., AT-FUND01-U123-20260117)
+    paymentReference: {
       type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+
+    // Whether member has clicked "I have paid"
+    memberConfirmedPayment: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Date when member confirmed payment
+    memberConfirmedDate: {
+      type: Date,
       default: null,
     },
 
@@ -93,35 +107,18 @@ const groupFundSchema = new mongoose.Schema(
       required: [true, 'Payment deadline is required'],
     },
 
-    // Additional notes from member or treasurer
-    notes: {
+    // Rejection reason if payment is rejected by treasurer
+    rejectionReason: {
       type: String,
       default: '',
-      maxlength: [500, 'Notes cannot exceed 500 characters'],
+      maxlength: [500, 'Rejection reason cannot exceed 500 characters'],
     },
 
     // Payment method - tracks how payment was made
     paymentMethod: {
       type: String,
-      enum: ['Online', 'Cash', 'Bank Transfer', 'Other'],
-      default: 'Online',
-    },
-
-    // Failed Payment Resubmission - for members to resubmit payment proof
-    failedPaymentSubmission: {
-      resubmittedPhoto: {
-        type: String, // Cloudinary URL for new payment proof
-        default: null,
-      },
-      resubmittedDate: {
-        type: Date,
-        default: null,
-      },
-      resubmissionNote: {
-        type: String, // Optional note from member
-        default: '',
-        maxlength: [200, 'Resubmission note cannot exceed 200 characters'],
-      },
+      enum: ['UPI', 'Cash', 'Bank Transfer', 'Other'],
+      default: 'UPI',
     },
 
     // Status History - tracks all status changes over time
@@ -129,7 +126,7 @@ const groupFundSchema = new mongoose.Schema(
       {
         status: {
           type: String,
-          enum: ['Pending', 'Paid', 'Failed'],
+          enum: ['Pending', 'AwaitingVerification', 'Paid', 'Failed'],
           required: true,
         },
         changedBy: {
@@ -155,28 +152,7 @@ const groupFundSchema = new mongoose.Schema(
       default: Date.now,
     },
     
-    // Treasurer-only marker: when treasurer marks a payment as paid in the
-    // members list, we set this flag so the treasurer UI can show it as paid
-    // without changing the official payment.status (which is what member
-    // dashboards and collection logic rely on).
-    treasurerMarkedPaid: {
-      type: Boolean,
-      default: false
-    },
-
-    treasurerMarkedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default: null
-    },
-
-    treasurerMarkedDate: {
-      type: Date,
-      default: null
-    },
     // Whether this record should be visible to the member's dashboard
-    // New records created by the treasurer (draft) will be created with
-    // visibleToMember: false so members don't see them until published.
     visibleToMember: {
       type: Boolean,
       default: true,

@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import PaymentSummaryCard from './PaymentSummaryCard';
 import MemberInfoCard from './MemberInfoCard';
 import PaymentHistoryTable from './PaymentHistoryTable';
-import PayGroupFundModal from './PayGroupFundModal';
+import QRPaymentModal from './QRPaymentModal';
 import ReimbursementSection from './ReimbursementSection';
 import FailedPaymentsSection from './FailedPaymentsSection';
 import Background3D from '../Background3D';
@@ -25,14 +25,19 @@ const MemberDashboard = () => {
   const [payments, setPayments] = useState([]);
   const [summary, setSummary] = useState({
     totalPaid: 0,
+    totalPaidAmount: 0,
     totalPending: 0,
     totalFailed: 0,
     totalRecords: 0,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeRecords, setActiveRecords] = useState([]);
+  const [currentRecord, setCurrentRecord] = useState(null);
+  const [openingPayment, setOpeningPayment] = useState(false);
 
   useEffect(() => {
     fetchPayments();
+    fetchActiveRecords();
     const handleVisibilityChange = () => {
       if (!document.hidden) fetchPayments(false);
     };
@@ -48,15 +53,29 @@ const MemberDashboard = () => {
       else setRefreshing(true);
 
       const response = await groupFundAPI.getMyPayments();
-      if (response.success) {
-        setPayments(response.data.payments || []);
-        setSummary(response.data.summary || {
-          totalPaid: 0,
-          totalPending: 0,
-          totalFailed: 0,
-          totalRecords: 0,
-        });
-      }
+      const myPayments = response.payments || response.data?.payments || [];
+
+      setPayments(myPayments);
+
+      // Build summary locally to avoid shape mismatches
+      const computed = myPayments.reduce(
+        (acc, p) => {
+          const amount = typeof p.amount === 'number' ? p.amount : Number(p.amount) || 0;
+          if (p.status === 'Paid') {
+            acc.totalPaid += 1;
+            acc.totalPaidAmount += amount;
+          } else if (p.status === 'Pending' || p.status === 'AwaitingVerification') {
+            acc.totalPending += 1;
+          } else if (p.status === 'Failed') {
+            acc.totalFailed += 1;
+          }
+          acc.totalRecords += 1;
+          return acc;
+        },
+        { totalPaid: 0, totalPaidAmount: 0, totalPending: 0, totalFailed: 0, totalRecords: 0 }
+      );
+
+      setSummary(computed);
     } catch (error) {
       console.error('Error fetching payments:', error);
       toast.error('Failed to load payment records');
@@ -87,6 +106,47 @@ const MemberDashboard = () => {
   const handleRefresh = () => {
     fetchPayments(false);
     toast.success('Payment data refreshed');
+  };
+
+  const fetchCurrentRecord = async () => {
+    const response = await groupFundAPI.getCurrentRecord();
+    if (response.success && response.recordExists) {
+      setCurrentRecord(response.record);
+      return response.record;
+    }
+    setCurrentRecord(null);
+    return null;
+  };
+
+  const fetchActiveRecords = async () => {
+    try {
+      const response = await groupFundAPI.getActiveRecords();
+      if (response.success && response.recordExists && Array.isArray(response.records)) {
+        setActiveRecords(response.records);
+        // Default selection to most recent
+        setCurrentRecord(response.records[0]);
+      } else {
+        setActiveRecords([]);
+        setCurrentRecord(null);
+      }
+    } catch (error) {
+      console.error('Error fetching active records:', error);
+      setActiveRecords([]);
+      setCurrentRecord(null);
+    }
+  };
+
+  const handleOpenPay = async () => {
+    try {
+      setOpeningPayment(true);
+      await fetchActiveRecords();
+      setIsModalOpen(true);
+    } catch (err) {
+      console.error('Error opening payment modal:', err);
+      toast.error(err?.message || 'Unable to start payment');
+    } finally {
+      setOpeningPayment(false);
+    }
   };
 
   const handleLogout = () => {
@@ -155,7 +215,7 @@ const MemberDashboard = () => {
           ) : (
             <div className="space-y-8 animate-fadeIn">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <PaymentSummaryCard totalPaid={summary.totalPaid} />
+                <PaymentSummaryCard totalPaidAmount={summary.totalPaidAmount} />
                 <MemberInfoCard user={user} />
               </div>
 
@@ -163,7 +223,7 @@ const MemberDashboard = () => {
                 <div className="bg-black/40 backdrop-blur-md rounded-xl p-4 border border-[#A6C36F]/30 hover:border-[#A6C36F]/60 transition-colors group">
                   <p className="text-sm text-[#E8E3C5]/60 font-medium group-hover:text-[#E8E3C5] transition-colors">Paid Payments</p>
                   <p className="text-3xl font-bold text-[#A6C36F] mt-1">
-                    {payments.filter(p => p.status === 'Paid').length}
+                    {summary.totalPaid}
                   </p>
                 </div>
 
@@ -187,11 +247,12 @@ const MemberDashboard = () => {
 
               <div className="flex justify-center">
                 <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="flex items-center space-x-2 px-8 py-4 text-lg font-bold text-black bg-gradient-to-r from-[#A6C36F] to-[#8FAE5D] hover:shadow-[0_0_25px_rgba(166,195,111,0.4)] rounded-xl transition-all transform hover:scale-105 active:scale-95"
+                  onClick={handleOpenPay}
+                  disabled={openingPayment}
+                  className="flex items-center space-x-2 px-8 py-4 text-lg font-bold text-black bg-gradient-to-r from-[#A6C36F] to-[#8FAE5D] hover:shadow-[0_0_25px_rgba(166,195,111,0.4)] rounded-xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-6 h-6" />
-                  <span>Pay Group Fund</span>
+                  <span>{openingPayment ? 'Preparing...' : 'Pay Group Fund'}</span>
                 </button>
               </div>
 
@@ -201,9 +262,18 @@ const MemberDashboard = () => {
         </main>
       </div>
 
-      <PayGroupFundModal
+      <QRPaymentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        paymentMonth={currentRecord ? {
+          month: currentRecord.month,
+          year: currentRecord.year,
+          monthNumber: currentRecord.monthNumber,
+          amount: currentRecord.amount,
+          treasurerUPI: currentRecord?.treasurerUPI,
+        } : null}
+        activeRecords={activeRecords}
+        onSelectRecord={(record) => setCurrentRecord(record)}
         onSuccess={handlePaymentSuccess}
       />
     </div>

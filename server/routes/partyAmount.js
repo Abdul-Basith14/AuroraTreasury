@@ -15,14 +15,22 @@ router.get('/all', protect, partyController.getAllPartyAmounts);
 // Get active party amounts (for members)
 router.get('/active', protect, partyController.getActivePartyAmounts);
 
-// Submit a payment for a party (member) - supports multiple files
-router.post('/submit', protect, upload.uploadPartyPaymentProof, partyController.submitPartyPayment);
+// Generate QR code for party payment (member)
+router.get('/:partyId/generate-qr', protect, partyController.generatePartyQR);
+
+// Member confirms payment (clicks "I have paid")
+router.post('/confirm-payment/:paymentId', protect, partyController.confirmPartyPayment);
+
+// LEGACY: Submit a payment for a party (deprecated - use QR system)
+router.post('/submit', protect, upload.uploadPartyPaymentProof, (req, res) => {
+  res.status(400).json({ message: 'Please use the new QR-based payment system' });
+});
 
 // Treasurer routes: get payments for a party
 router.get('/:partyId/payments', protect, treasurerAuth, partyController.getPartyPayments);
 
-// Treasurer verify a payment
-router.post('/verify', protect, treasurerAuth, partyController.verifyPayment);
+// Treasurer verify a payment by reference
+router.post('/verify/:paymentId', protect, treasurerAuth, partyController.verifyPayment);
 
 // Member: get my payments
 router.get('/my/payments', protect, partyController.getMyPartyPayments);

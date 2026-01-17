@@ -38,6 +38,23 @@ const clubSettingsSchema = new mongoose.Schema(
       type: String,
       default: null, // Cloudinary URL for treasurer's payment QR code
     },
+    treasurerUPI: {
+      type: String,
+      default: null, // UPI ID string, e.g., name@upi
+      trim: true,
+    },
+    treasurerName: {
+      type: String,
+      default: null,
+      trim: true,
+      maxlength: [100, 'Treasurer name cannot exceed 100 characters'],
+    },
+    treasurerUPIHistory: [{
+      upiId: { type: String, required: true, trim: true },
+      treasurerName: { type: String, default: null, trim: true },
+      setBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      setAt: { type: Date, default: Date.now }
+    }],
     paymentInstructions: {
       type: String,
       default: 'Please pay the monthly group fund by the deadline. Upload payment proof after payment.',

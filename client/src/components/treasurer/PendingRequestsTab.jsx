@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { getPaymentRequests } from '../../utils/treasurerAPI';
-import PaymentRequestCard from './PaymentRequestCard';
+import PaymentVerificationCard from './PaymentVerificationCard';
 import RequestFilters from './RequestFilters';
 import { Clock } from 'lucide-react';
 
@@ -12,7 +12,7 @@ const PendingRequestsTab = ({ refreshTrigger, onActionComplete }) => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    status: 'Pending',
+    status: 'AwaitingVerification',
     month: '',
     year: 'all'
   });
@@ -24,10 +24,9 @@ const PendingRequestsTab = ({ refreshTrigger, onActionComplete }) => {
       const data = await getPaymentRequests(filters);
       
       if (data.success) {
-        // Ensure that even if the API returns more statuses, only 'Pending' ones are shown here
-        // (assuming getPaymentRequests respects the filters, but double-check for safety)
-        const pendingRequests = (data.requests || []).filter(r => r.status === 'Pending' || r.status === 'Submitted');
-        setRequests(pendingRequests);
+        // AwaitingVerification is the QR flow state to review
+        const awaitingRequests = (data.requests || []).filter(r => r.status === 'AwaitingVerification');
+        setRequests(awaitingRequests);
       } else {
         toast.error(data.message || 'Failed to fetch payment requests');
       }
@@ -45,8 +44,8 @@ const PendingRequestsTab = ({ refreshTrigger, onActionComplete }) => {
 
   // Handle filter changes
   const handleFilterChange = (newFilters) => {
-    // Merge existing status filter to ensure it remains 'Pending'
-    setFilters({ ...newFilters, status: 'Pending' });
+    // Keep status fixed to AwaitingVerification for this tab
+    setFilters({ ...newFilters, status: 'AwaitingVerification' });
   };
 
   // Handle action complete (verify/reject)
@@ -81,7 +80,7 @@ const PendingRequestsTab = ({ refreshTrigger, onActionComplete }) => {
           <div className="flex items-center space-x-2">
             <Clock className="w-5 h-5 text-[#A6C36F]" />
             <span className="font-semibold text-[#F5F3E7]">
-              {requests.length} Pending {requests.length === 1 ? 'Request' : 'Requests'}
+              {requests.length} Awaiting Verification {requests.length === 1 ? 'Payment' : 'Payments'}
             </span>
           </div>
         </div>
@@ -92,20 +91,19 @@ const PendingRequestsTab = ({ refreshTrigger, onActionComplete }) => {
         <div className="bg-black/40 rounded-2xl p-12 text-center border border-[#A6C36F]/20 shadow-[0_0_25px_rgba(166,195,111,0.08)]">
           <Clock className="w-16 h-16 text-[#A6C36F]/20 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-[#F5F3E7] mb-2">
-            No Pending Requests
+            No Payments Awaiting Verification
           </h3>
           <p className="text-[#E8E3C5]/80">
-            All payment requests have been processed for the current filters.
+            All payments are verified for the current filters.
           </p>
         </div>
       ) : (
         <div className="grid gap-6">
           {requests.map((request) => (
-            <PaymentRequestCard
+            <PaymentVerificationCard
               key={request._id}
-              request={request}
-              onActionComplete={handleActionComplete}
-              isResubmission={false}
+              payment={request}
+              onVerified={handleActionComplete}
             />
           ))}
         </div>

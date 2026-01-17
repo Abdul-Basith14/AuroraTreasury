@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE_URL } from './api';
 
 /**
  * Treasurer API utility functions
@@ -7,7 +8,7 @@ import axios from 'axios';
 
 // Create axios instance with base configuration
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -256,6 +257,36 @@ export const getResubmissionRequests = async () => {
 };
 
 /**
+ * Get Treasurer UPI settings/history
+ * @returns {Promise}
+ */
+export const getTreasurerUPISettings = async () => {
+  try {
+    const response = await API.get('/treasurer/upi');
+    return response;
+  } catch (error) {
+    console.error('Get treasurer UPI settings error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Set or update Treasurer UPI ID
+ * @param {string} upi - UPI ID string
+ * @param {string} treasurerName - Treasurer display name
+ * @returns {Promise}
+ */
+export const setTreasurerUPI = async (upi, treasurerName) => {
+  try {
+    const response = await API.post('/treasurer/upi', { upi, treasurerName });
+    return response;
+  } catch (error) {
+    console.error('Set treasurer UPI error:', error);
+    throw error;
+  }
+};
+
+/**
  * Verify and approve a resubmitted payment
  * @param {string} paymentId - Payment ID to verify
  * @returns {Promise} - Verification result
@@ -419,6 +450,66 @@ export const getTreasurerWallet = async () => {
     return response;
   } catch (error) {
     console.error('Get treasurer wallet error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new monthly group fund record
+ * @param {Object} data - { month, year, deadline, amounts, includedYears }
+ * @returns {Promise} - Created record data
+ */
+export const createMonthlyRecord = async (data) => {
+  try {
+    const response = await API.post('/treasurer/monthly-record', data);
+    return response;
+  } catch (error) {
+    console.error('Create monthly record error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get all monthly group fund records
+ * @returns {Promise} - List of all monthly records
+ */
+export const getMonthlyRecords = async () => {
+  try {
+    const response = await API.get('/treasurer/monthly-records');
+    return response;
+  } catch (error) {
+    console.error('Get monthly records error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update a monthly group fund record
+ * @param {String} id - Record ID
+ * @param {Object} data - Updated fields
+ * @returns {Promise} - Updated record data
+ */
+export const updateMonthlyRecord = async (id, data) => {
+  try {
+    const response = await API.put(`/treasurer/monthly-record/${id}`, data);
+    return response;
+  } catch (error) {
+    console.error('Update monthly record error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a monthly group fund record
+ * @param {String} id - Record ID
+ * @returns {Promise} - Deletion confirmation
+ */
+export const deleteMonthlyRecord = async (id) => {
+  try {
+    const response = await API.delete(`/treasurer/monthly-record/${id}`);
+    return response;
+  } catch (error) {
+    console.error('Delete monthly record error:', error);
     throw error;
   }
 };
