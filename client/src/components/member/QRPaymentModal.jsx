@@ -183,14 +183,28 @@ const QRPaymentModal = ({ isOpen, onClose, paymentMonth, activeRecords = [], onS
               )}
 
               {/* QR Code */}
-              <div className="flex flex-col items-center p-6 bg-[#0E0F0B] border border-[#A6C36F]/15 rounded-xl">
+              <div className="flex flex-col items-center p-6 bg-white border border-[#A6C36F]/15 rounded-xl">
                 <QRCode
                   value={qrData.upiUrl}
                   size={256}
                   level="H"
                   className="w-full max-w-[256px] h-auto"
                 />
-                <p className="mt-4 text-sm text-[#E8E3C5]/70 text-center">Scan with any UPI app</p>
+                <p className="mt-4 text-sm text-[#E8E3C5]/70 text-center">Scan with any UPI app (Desktop)</p>
+                
+                {/* Direct UPI Payment Button */}
+                <div className="mt-4 w-full">
+                  <p className="text-xs text-[#A6C36F] mb-2 text-center font-semibold">On Mobile? Click below to pay</p>
+                  <a
+                    href={qrData.upiUrl}
+                    className="w-full py-3 px-4 bg-gradient-to-r from-[#A6C36F] to-[#8FAE5D] text-black font-bold rounded-xl hover:shadow-[0_0_20px_rgba(166,195,111,0.35)] transition-all flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+                    </svg>
+                    Open in UPI App & Pay
+                  </a>
+                </div>
               </div>
 
               {/* Payment Details */}
