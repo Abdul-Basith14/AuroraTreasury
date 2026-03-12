@@ -51,7 +51,7 @@ const PaymentVerificationCard = ({ payment, onVerified }) => {
 
     try {
       setVerifying(true);
-      await rejectPayment(payment._id, { reason: rejectReason });
+      await rejectPayment(payment._id, rejectReason.trim());
       toast.success('Payment rejected');
       setShowRejectModal(false);
       onVerified && onVerified();

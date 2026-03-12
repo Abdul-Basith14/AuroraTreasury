@@ -1282,7 +1282,20 @@ export const manualPaymentUpdate = async (req, res) => {
 
     // Save payment
     await payment.save();
-    console.log(`Manual payment update completed for ${payment._id} — treasurerMarkedPaid set. No wallet/user total updates performed.`);
+    
+    // Update wallet balance with the payment amount
+    try {
+      const wallet = await Wallet.getWallet();
+      await wallet.addMoney(
+        payment.amount,
+        `Payment from ${payment.userId.name} (${payment.userId.usn}) for ${payment.month} ${payment.year} (Cash/Manual payment)`,
+        req.user._id
+      );
+    } catch (walletError) {
+      console.error('Warning: Failed to update wallet:', walletError.message);
+    }
+    
+    console.log(`Manual payment update completed for ${payment._id} — treasurerMarkedPaid set and wallet updated.`);
     
     res.status(200).json({
       success: true,

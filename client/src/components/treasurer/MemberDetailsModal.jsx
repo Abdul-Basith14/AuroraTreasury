@@ -232,16 +232,6 @@ const MemberDetailsModal = ({ isOpen, onClose, member, refreshMembers }) => {
                     
                     {/* Action Buttons */}
                     <div className="flex space-x-2 mt-4 border-t border-[${BORDER_DIVIDER}]/70 pt-3">
-                      {/* Payment Proof Button (Themed) */}
-                      {payment.paymentProof && (
-                        <button
-                          onClick={() => window.open(payment.paymentProof, '_blank')}
-                          className={`flex-1 text-sm text-[${ACCENT_OLIVE}] hover:text-white font-medium py-2 px-3 border border-[${ACCENT_OLIVE}]/50 rounded hover:bg-[${ACCENT_OLIVE}]/20 transition-colors duration-200`}
-                        >
-                          View Proof
-                        </button>
-                      )}
-                      
                       {/* Manual Update Button (Themed) - Only for Pending status and when there's no payment proof */}
                       {payment.status === 'Pending' && !payment.paymentProof && (
                         <button
@@ -260,19 +250,11 @@ const MemberDetailsModal = ({ isOpen, onClose, member, refreshMembers }) => {
                     {/* Resubmission Info (Themed) */}
                     {payment.failedPaymentSubmission?.resubmittedPhoto && (
                       <div className="mt-3 p-3 bg-orange-900/20 border border-orange-700/50 rounded">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-semibold text-orange-400">Payment Resubmitted</p>
-                            <p className="text-xs text-orange-500">
-                              {new Date(payment.failedPaymentSubmission.resubmittedDate).toLocaleDateString('en-IN')}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => window.open(payment.failedPaymentSubmission.resubmittedPhoto, '_blank')}
-                            className="text-xs text-orange-500 hover:text-white font-medium px-3 py-1 bg-transparent rounded border border-orange-700/50 hover:bg-orange-700/50 transition-colors duration-200"
-                          >
-                            View New Proof
-                          </button>
+                        <div>
+                          <p className="text-xs font-semibold text-orange-400">Payment Resubmitted</p>
+                          <p className="text-xs text-orange-500">
+                            {new Date(payment.failedPaymentSubmission.resubmittedDate).toLocaleDateString('en-IN')}
+                          </p>
                         </div>
                         {payment.failedPaymentSubmission.resubmissionNote && (
                           <p className="text-xs text-orange-500 mt-2">
